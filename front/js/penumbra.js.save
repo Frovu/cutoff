@@ -1,0 +1,160 @@
+const canvas = $('#penumbra')[0];
+const forbiddenColor = 'black';
+const allowedColor = 'gray';
+const ctx = canvas.getContext("2d");
+
+let click_x = -1;
+let click_y = -1;
+
+let penumbras = [];
+
+/*
+window.addEventListener('resize', function(event){
+	canvas.width = get_width() / 2.0 - 30;
+	canvas.style.width  = get_width() / 2.0 - 30;
+});*/
+
+function change_energy (new_energy) {
+    if (painter > 0) return;
+    new_energy = parseFloat(float_to_step_precision(parseFloat(new_energy))); // fixing floating number issues, check without parsefloat's later
+    if (new_energy < settings.lower || new_energy >= settings.upper || isNaN(new_energy)) {
+        return;
+    }
+    update_settings ();
+    settings.energy = new_energy;
+    document.getElementById('energy').value = settings.energy;
+    drawPenumbra ();
+    //updateInfo ();
+    let index = data.particles.findIndex(el => el[0] == new_energy);
+    fetch_trace(index);
+}
+
+canvas.addEventListener('click', function(event) {
+    //const canvas_left = canvas.offsetLeft;
+    //const canvas_top = canvas.offsetTop;
+	const bounds = canvas.getBoundingClientRect();
+	click_x = event.pageX - bounds.left - scrollX;
+	click_y = event.pageY - bounds.top - scrollY;
+	// first normalize the mouse coordinates from 0 to 1 (0,0) top left
+	// off canvas and (1,1) bottom right by dividing by the bounds width and height
+	click_x /=  bounds.width;
+	click_y /=  bounds.height;
+
+	// then scale to canvas coordinates by multiplying the normalized coords with the canvas resolution
+
+	click_x *= canvas.width;
+	click_y *= canvas.height;
+
+    //click_x = event.pageX - canvas_left;
+    //click_y = event.pageY - canvas_top;
+    const clicked_energy = Math.floor(click_x)/ctx.lineWidth*settings.step;
+    change_energy(clicked_energy);
+}, false);
+
+window.addEventListener('keydown', function(event) {
+    if (event.keyCode == 'A' || event.keyCode == 37) {   // left
+        const new_energy = parseFloat(settings.energy)-parseFloat(settings.step);
+        change_energy(new_energy);
+        click_x = -1;
+        click_y = -1;
+    }
+
+    if (event.keyCode == 'D' || event.keyCode == 39) {   // right
+        const new_energy = parseFloat(settings.energy)+parseFloat(settings.step);
+        change_energy(new_energy)
+        click_x = -1
+        click_y = -1
+    }
+}, false);
+
+// destroy
+function expand () {
+    canvas.height += 120;
+    drawPenumbra();
+}
+
+function drawPenumbra () {
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+    if (data.particles.length > 400) {
+        ctx.lineWidth = 1
+    }
+
+    if (data.particles.length <= 400 && data.particles.length >= 60) {
+        ctx.lineWidth = 2
+    }
+
+    if (data.particles.length <= 60 && data.particles.length >= 20) {
+        ctx.lineWidth = 8
+    }
+
+    if (data.particles.length <= 20) {
+	        ctx.lineWidth = 16
+    }
+	canvas.width = 800
+
+    let clicked_energy = -1
+    if (click_x != -1 && click_y != -1)
+        clicked_energy =
+            Math.ceil(float_to_step_precision(Math.floor(click_x)/ctx.lineWidth))
+
+    ctx.fillStyle = 'white';
+    ctx.rect(0, 33, canvas.width - 60, 50);
+    ctx.fill();
+
+	// calculet how to skip lines
+	// 800 lines max
+	const csize = 800;
+	const l = data.particles.length;
+	let n = Math.ceil(l / (csize));
+	console.log('n = ' + n)
+	//debug
+	let lines = 0;
+	//data.partices
+	for (let i = 0; i < data.particles.length; i++) {
+		//if (i % 10 == 0) continue;
+		/*
+		if(l - csize > csize) {
+			if(i % n != 0)
+				continue;
+		} else if (l - csize <= csize) {
+			if(i % n == 0)
+				continue;
+		}*/
+		if (i % n == 0) continue;
+		lines+=1;
+        let selected = false;
+        if (clicked_energy != -1)
+            selected = i == clicked_energy
+        else
+            selected = i == Math.ceil(float_to_step_precision (settings.energy-settings.lower) / settings.step);
+
+		ctx.beginPath();
+		// + 0.5 - фикс странной системы коорднат
+		ctx.moveTo(lines * ctx.lineWidth + 1, 80);
+        let height = 30
+
+        if (selected) height += 25
+        if (data.particles[i][0]==data.lower || i*step==data.upper) {
+            height += 10
+        }
+        if (data.particles[i][0]==data.effective) {
+            height += 10
+        }
+
+		ctx.lineTo(lines * ctx.lineWidth + 1, 80-height);
+        ctx.strokeStyle = (data.particles[i][1] == 0 ? allowedColor : forbiddenColor);
+	    ctx.stroke();
+	}
+	console.log('drawn ' + lines + ' lines')
+
+    ctx.font = "16px Times New Roman";
+    ctx.fillText(settings.lower + "GV", 0, 100);
+    ctx.fillText(settings.upper + "GV", data.particles.length * ctx.lineWidth-50, 100);
+    ctx.fillText("lower: " + data.lower + "GV   " + "upper: " + data.upper + "GV    " + "effective: " + data.effective + "GV", 0, 120);
+    ctx.fillText($('#energy').val().toString() + "GV", Math.ceil(float_to_step_precision (settings.energy-settings.lower) / settings.step) * ctx.lineWidth+8, 30);
+    //ctx.font = "30px Arial";
+    //ctx.fillText("Hello World", 10, 50);
+}
