@@ -28,10 +28,9 @@ function fetch_status () {
         headers: { "Content-Type": "application/json" }
     }).then(res => {
 		res.json().then(res_status => {
-		console.log(res_status.status);
+		console.log(res_status.status+' '+res_status.percentage.toFixed(2));
         if (res_status.status == 'processing') {
-            let percentage = get_percent(res_status.precentage);
-            update_process(percentage);
+            update_process(res_status.percentage.toFixed(1));
             status_updater = setTimeout(function() {
                 fetch_status();
             }, status_update_ms);

@@ -1,11 +1,6 @@
 const progress = document.getElementById('progress');
 let processing = false;
 
-function get_percent(last_line) {
-	const total_lines = (settings.upper-settings.lower)/settings.step;
-	return Math.trunc(last_line/total_lines*100.0);
-}
-
 function start_process () {
     processing = true;
     const submit = document.getElementById('submit');
