@@ -1,192 +1,179 @@
-const express = require('express')
-const uuid = require('uuid/v4')
-const fs = require('fs-extra')
-const path = require('path')
-const meow = require('meow')
-//const scanf = require('scanf')
-//const cors = require('cors')
-const { spawn } = require('child_process')
+const express = require('express');
+const uuid = require('uuid/v4');
+const fs = require('fs-extra');
+const path = require('path');
+const { spawn } = require('child_process');
 
-/*function marshallIni(settings) {
-	return `\n01.07.2017\n00:00:00\n0.5\n-30.0\n-7.8\n-2.9\n1.8\n7.0\n1.99\n00\n20.00\n67.55\n33.33\n0.00\n0.00\n0.00\n2.00\n0.01\n180.00\n1`
-}*/
-
-let logStream = fs.createWriteStream('./log.log', {flags:'a'});
-function log(msg){
-	console.log(msg)
-	logStream.write(`[${new Date().toISOString().replace(/\..+/g, "")}] ${msg}\n`)
+const settings = {
+	port: 3050,
+	timeToLive: 3600000,
+	instancesDir: './cutoff/',
+	execPath: './Cutoff2050.exe',
+	iniFilename: 'CutOff.ini',
+	valueRanges: './valueranges.json'
 }
 
-const args = meow({
-	help: `
-Options:
-	--port, -p 					  application port
-		default: 3050
-	--time, -t 		        time of life of cutoff instance after calculation in seconds
-		default: 28800
-	--directory, -d 		  path to directory of cutoff instances
-		default: ./cutoff/
-	--command, -c 				command to run CutOff
-		default: ./Cutoff2050.exe
-`,
-	flags: {
-		port: {
-			type: 'string',
-			default: '3050',
-			alias: 'p'
-		},
-		time: {
-			type: 'string',
-			default: '28800',
-			alias: 't'
-		},
-		directory: {
-			type: 'string',
-			default: './cutoff/',
-			alias: 'd'
-		},
-		command: {
-			type: 'string',
-			default: './Cutoff2050.exe',
-			alias: 'c'
-		}
-	}
-})
+// logging
+let logStream = fs.createWriteStream('./log.log', {flags:'a'});
+function log(msg) {
+	console.log(msg);
+	logStream.write(`[${new Date().toISOString().replace(/\..+/g, "")}] ${msg}\n`);
+}
+process.on('unhandledRejection', error => {
+  log(error.stack);
+});
 
-args.flags.port = Number(args.flags.port)
-args.flags.time = Number(args.flags.time) * 1000
-try{fs.mkdir(args.flags.directory)}catch(e){}
+const ranges = require(settings.valueRanges);
+
+if(!fs.existsSync(settings.instancesDir)) {
+	fs.mkdirSync(settings.instancesDir);
+}
+
 // delete outdated data
-try{fs.readdir(args.flags.directory, (err, files) => {
-    for(f of files){
-	fs.removeSync(path.join(args.flags.directory, f))
-    }
-})}catch(e){log('failed to delete something')}
+try{
+	fs.readdir(settings.instancesDir, (err, files) => {
+	    for(f of files) {
+			fs.removeSync(path.join(settings.instancesDir, f));
+	    }
+	});
+} catch(e) {log('failed to delete something');}
 
-const app = express()
-app.use(express.json())
-app.use(require('compression')({ level: 9 }))
+const app = express();
+app.use(express.json());
+app.use(require('compression')({ level: 9 }));
 
-var instances = {} //
+let instances = {}; //
 
-setInterval(() =>
+/*setInterval(() =>
 	Object.keys(instances).forEach(el => {
 		if (typeof instances[el].timestamp !== 'undefined') {
-			if ((instances[el].timestamp + args.flags.time) <= Date.now()) {
-				fs.removeSync(path.join(args.flags.directory, el))
+			if ((instances[el].timestamp + settings.time) <= Date.now()) {
+				fs.removeSync(path.join(settings.instancesDir, el))
 				delete instances[el]
 			}
 		}
-	}, args.flags.time / 2))
+	}, settings.time / 2))*/
 
-// TODO remove on production
-//app.use(express.static('./front/'))
+// TODO: remove on production
+app.use(express.static('./front/'));
 
-app.post('/submit', (req, res) => {
-	let id = uuid()
-	let dir = path.join(args.flags.directory, id)
-
-	fs.mkdir(dir, (err) => {
-		if(err)
-			log(err)
-		/*{
-			"date": "01.07.2017",
-			"time": "00:00:00",
-			"pressure": 0.5,
-			"dstIndex": -30,
-			"imfBy": -7.8,
-			"imfBz": -2.9,
-			"g1": 1.8,
-			"g2": 7.0,
-			"kp": 1.99,
-			"model": "00",
-			"height": 20,
-			"latitude": 67.55,
-			"longitude": 33.33,
-			"verticalAngle": 0,
-			"azimutalAngle": 0,
-			"lower": 0,
-			"upper": 2,
-			"step": 0.001,
-			"maxTime": 180,
-			"trace": 0
-		}*/
-
-		let ini = `
-${req.body.date}
-${req.body.time}
-${req.body.swdp}
-${req.body.dst}
-${req.body.imfBy}
-${req.body.imfBz}
-${req.body.g1}
-${req.body.g2}
-${req.body.kp}
-${req.body.model}
-${req.body.alt}
-${req.body.lat}
-${req.body.lon}
-${req.body.vertical}
-${req.body.azimutal}
-${req.body.lower}
-${req.body.upper}
-${req.body.step}
-${req.body.flightTime}
-${req.body.trace}`
-fs.writeFile(path.join(dir, 'CutOff.ini'), ini, err => {
-	if (err) {
-		res.status(500).send({ err })
-		return log(err)}
-
-	// spawn process
-	let spawnedTime = new Date()
-	let cutoff = spawn('wine', [path.join(__dirname, 'CutOff2050.exe')], { cwd: dir })
-	//let cutoff = spawn(path.join(__dirname, 'CutOff2050.exe'), { cwd: dir })
-	let instance = instances[id] = {
-		status: 'processing',
-		precentage: 0,
-		process: cutoff  // I suppose I have autism but who cares
-	}
-
-	cutoff.on('error', e => {
-		log(e)
-	})
-	cutoff.stdout.on('data', data => {
-		for (let c of data)
-			if (c === 10)
-				instance.precentage++
-	})
-
-	cutoff.on('close', (code, signal) => {
-		log(`Cutoff exited with code: ${code}. ${signal}\nIn ${(Date.now()-spawnedTime)/1000} seconds`)
-		if (code === 0) {
-			instance.status = 'complete'
-			instance.timestamp = Date.now()
-		} else {
-			instance.status = 'failed'
-			instance.timestamp = Date.now()
+function assertIni(ini) {
+	// check value ranges
+	for(param of Object.keys(ranges)) {
+		if(typeof ini[param] === 'undefined') { // parameter was not specified
+			// fail if param is needed for every model or for current model
+			if((typeof ranges[param]["for"] === 'undefined') ||
+			 		(ranges[param]["for"].includes(ini["model"])) )
+				return false;
 		}
-	})
+		if(typeof ranges[param]["range"] !== 'undefined') {
+			if(!ranges[param]["range"].includes(ini[param]))
+				return false;
+		}
+		else
+			if(ini[param] > ranges[param]["max"] || ini[param] < ranges[param]["min"])
+				return false;
+		// round of needed
+		if(ranges[param]["int"] === true) {
+			ini[param] = Math.trunc(ini[param]);
+		}
+	}
+	// additional checks
+	if(ini["lower"] >= ini["upper"])
+		return false;
 
-	res.status(200).send(id)
-})
-})
-})
+	// all checks passed
+	return true;
+}
 
+function createInstance(ini, id, callback) {
+	let dir = path.join(settings.instancesDir, id);
+	let iniString = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
+${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
+${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${ini.trace}`; // )))0)
+
+	// create instance directory
+	fs.mkdir(dir, (err) => {
+		if(err) {
+			log(err);
+			callback(false);
+		}
+		fs.writeFile(path.join(dir, settings.iniFilename), iniString, (err) => {
+			if(err) {
+				log(err);
+				callback(false);
+			}
+			// spawn process
+			let cutoff = spawn('wine', [path.join(__dirname, 'CutOff2050.exe')], { cwd: dir })
+			let instance = instances[id] = {
+				status: 'processing',
+				spawnedAt: new Date(),
+				linesPredict: (ini["upper"]-ini["lower"])/ini["step"]*2, // for percentage count
+				linesGot: 0,
+				process: cutoff
+			};
+
+			cutoff.on('error', e => {
+				log(e);
+			});
+
+			cutoff.stdout.on('data', data => {
+				console.log('l:'+data);
+				instance.linesGot++;
+			});
+
+			cutoff.on('exit', (code, signal) => {
+				log(`Cutoff exited with code: ${code}. sig=${signal}\nIn ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
+				if (code === 0) {
+					instance.status = 'complete';
+					instance.completeAt = Date.now();
+				} else {
+					//
+					// FIXME: remove instance ()
+					//
+					instance.status = 'failed';
+					instance.completeAt = Date.now();
+				}
+			});
+
+			callback(true);
+		});
+	});
+};
+
+// client spawns instance
+app.post('/submit', (req, res) => {
+	if(!assertIni(req.body))
+		return res.status(400).send('bad settings');
+	else {
+		const id = uuid();
+		createInstance(req.body, id, (ok) => {
+			if(ok)
+				res.status(200).send(id);
+			else
+				res.status(500).send('failed');
+		});
+	}
+});
+
+// request instance status
 app.get('/:uuid/status', (req, res) => {
-	const id = req.params.uuid
+	const id = req.params.uuid;
+	log(instances[id].linesGot / instances[id].linesPredict * 100)
 	if (typeof instances[id] === 'undefined')
-		res.sendStatus(404)
+		res.sendStatus(404);
 	else
-		res.send({ status: instances[id].status, precentage: instances[id].precentage })
-})
+		res.status(200).send({ status: instances[id].status,
+			 percentage: (instances[id].linesGot / instances[id].linesPredict * 100) });
+});
 
+// request calculation result
 app.get('/:uuid/dat', (req, res) => {
 	const id = req.params.uuid
 	if (typeof instances[id] === 'undefined')
 		res.sendStatus(404)
 	else if (instances[id].status === 'complete'){
-		fs.readFile(path.join(args.flags.directory, id, 'Cutoff.dat'), (err, data) => {
+		fs.readFile(path.join(settings.instancesDir, id, 'Cutoff.dat'), (err, data) => {
 			if (err) {
 				log(err)
 				res.status(500).send({ err })
@@ -207,20 +194,22 @@ app.get('/:uuid/dat', (req, res) => {
 				res.send(response)
 			}
 		})
-	} else
+	}
+	else // processing
 		res.sendStatus(102)
-})
+});
 
+// request trace data
 app.get('/:uuid/:trace', (req, res) => {
 	const id = req.params.uuid
 	if (typeof instances[id] === 'undefined')
 		res.sendStatus(404)
 	else if (instances[id].status === 'complete') {
-		fs.readdir(path.join(args.flags.directory, id), (err, files) => {
+		fs.readdir(path.join(settings.instancesDir, id), (err, files) => {
 			if (err) {
 				res.status(500).send({ err })
 			} else {
-				fs.readFile(path.join(args.flags.directory, id,
+				fs.readFile(path.join(settings.instancesDir, id,
 					files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace]), //-1]),
 				(err, data) => {
 					if (err) {
@@ -234,8 +223,9 @@ app.get('/:uuid/:trace', (req, res) => {
 		})
 	} else
 		res.sendStatus(102)
-})
+});
 
+// kill running process
 app.post('/:uuid/kill', (req, res) => {
 	const id = req.params.uuid
 	if (typeof instances[id] === 'undefined')
@@ -245,13 +235,14 @@ app.post('/:uuid/kill', (req, res) => {
 		instances[id].process.kill('SIGHUP');
 		// remove file and stuff
 		delete instances[id]
-		try{fs.removeSync(path.join(args.flags.directory, id))}
+		try{fs.removeSync(path.join(settings.instancesDir, id))}
 		catch(e){log(e)}
 		log(`Process killed from front.`)
 		res.status(200).send(id)
 	}
 	else res.sendStatus(402)
-})
+});
 
-app.listen(args.flags.port, () =>
-log(`Server is started on port ${ args.flags.port }...`))
+// start server
+app.listen(settings.port, () =>
+	log(`Server is started on port ${ settings.port }...`));
