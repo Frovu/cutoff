@@ -46,15 +46,15 @@ app.use(require('compression')({ level: 9 }));
 let instances = {}; //
 instances.running = 0; // active instances count
 
-/*setInterval(() =>
+//
+setInterval(() =>
 	Object.keys(instances).forEach(el => {
-		if (typeof instances[el].timestamp !== 'undefined') {
-			if ((instances[el].timestamp + settings.time) <= Date.now()) {
-				fs.removeSync(path.join(settings.instancesDir, el))
-				delete instances[el]
-			}
+		if(Date.now() - instances[el].spawnedAt >= settings.timeToLive) {
+				fs.removeSync(path.join(settings.instancesDir, el));
+				delete instances[el];
+				log('instance rotted: '+el);
 		}
-	}, settings.time / 2))*/
+	}, settings.time / 4));
 
 // TODO: remove on production
 app.use(express.static('./front/'));
@@ -114,8 +114,9 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				linesGot: 0,
 				process: cutoff
 			};
+			log('instance spawned:'+id);
 			instances.running++;
-			log('running = '+instances.running)
+			//log('running = '+instances.running)
 
 			cutoff.on('error', e => {
 				log(e);
@@ -127,8 +128,8 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 
 			cutoff.on('exit', (code, signal) => {
 				instances.running--;
-				log('running = '+instances.running)
-				log(`Cutoff exited with code: ${code}. sig=${signal}\nIn ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
+				//log('running = '+instances.running)
+				log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
 				if (code === 0) {
 					instance.status = 'complete';
 					instance.completeAt = Date.now();
