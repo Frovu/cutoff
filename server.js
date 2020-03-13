@@ -7,6 +7,7 @@ const { spawn } = require('child_process');
 const settings = {
 	port: 3050,
 	timeToLive: 3600000,
+	maxRunningInstances: 3,
 	instancesDir: './cutoff/',
 	execPath: './Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
@@ -43,6 +44,7 @@ app.use(express.json());
 app.use(require('compression')({ level: 9 }));
 
 let instances = {}; //
+instances.running = 0; // active instances count
 
 /*setInterval(() =>
 	Object.keys(instances).forEach(el => {
@@ -112,17 +114,20 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				linesGot: 0,
 				process: cutoff
 			};
+			instances.running++;
+			log('running = '+instances.running)
 
 			cutoff.on('error', e => {
 				log(e);
 			});
 
 			cutoff.stdout.on('data', data => {
-				console.log('l:'+data);
 				instance.linesGot++;
 			});
 
 			cutoff.on('exit', (code, signal) => {
+				instances.running--;
+				log('running = '+instances.running)
 				log(`Cutoff exited with code: ${code}. sig=${signal}\nIn ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
 				if (code === 0) {
 					instance.status = 'complete';
@@ -143,9 +148,12 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 
 // client spawns instance
 app.post('/submit', (req, res) => {
-	if(!assertIni(req.body))
+	if(!assertIni(req.body)) {
 		return res.status(400).send('bad settings');
+	}
 	else {
+		if(instances.running >= settings.maxRunningInstances)
+			return res.status(503).send('busy');
 		const id = uuid();
 		createInstance(req.body, id, (ok) => {
 			if(ok)
@@ -159,7 +167,6 @@ app.post('/submit', (req, res) => {
 // request instance status
 app.get('/:uuid/status', (req, res) => {
 	const id = req.params.uuid;
-	log(instances[id].linesGot / instances[id].linesPredict * 100)
 	if (typeof instances[id] === 'undefined')
 		res.sendStatus(404);
 	else
