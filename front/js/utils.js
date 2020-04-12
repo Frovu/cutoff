@@ -20,12 +20,33 @@ function on_map (lat, lon) {
     window.open("https://www.google.com/maps/search/?api=1&query="+lat+","+lon);
 }
 
+function drawLine (x1, y1, z1, x2, y2, z2, color) {
+    const line = get_line_mesh(x1, y1, z1, x2, y2, z2, color);
+    scene.add(line);
+}
+
+function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
+    const material = new THREE.LineBasicMaterial({
+        color: color,
+    });
+
+    const geometry = new THREE.Geometry();
+    geometry.vertices.push(
+        new THREE.Vector3(x1, y1, z1),
+        new THREE.Vector3(x2, y2, z2)
+    );
+
+    return new THREE.Line(geometry, material);
+}
+
+
 // generates distinct random colors
 // by stackoverflow
 // [FIXME] NOT USED ANYMORE, USELESS
+/*
 function random_color(h)
 {
     let f= (n,k=(n+h*12)%12) => .5-.5*Math.max(Math.min(k-3,9-k,1),-1);
     let rgb2hex = (r,g,b) => "#"+[r,g,b].map(x=>Math.round(x*255).toString(16).padStart(2,0)).join('');
     return ( rgb2hex(f(0), f(8), f(4)) );
-}
+}*/
