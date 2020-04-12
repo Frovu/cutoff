@@ -106,11 +106,7 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				callback(false);
 			}
 			// spawn process
-			// UNCOMMENT IF LINUX
-			const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
-			let cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
-
-			
+			let cutoff = spawn('wine', [path.join(__dirname, 'CutOff2050.exe')], { cwd: dir })
 			let instance = instances[id] = {
 				status: 'processing',
 				spawnedAt: new Date(),

@@ -65,6 +65,6 @@ function fetch_trace (index) {
         //eraseAllPaths();    //if, of couse, we don't have to draw two paths
         let trace = data;
         trace.pop();    // useless last value from nowhere, so we just pop it
-        start_trace(trace);
+        draw_trace(trace);
     });
 }
