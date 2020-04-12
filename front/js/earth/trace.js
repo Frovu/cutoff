@@ -34,23 +34,20 @@ function start_trace (trace_data) {
 	const color = get_free_color();
 	const step = 1;	// step in trace segments (less = more data, more lag)
 	let current_segment = step;
-	const interval_ms = 10;
-	//const interval_ms = trace_data.length / (trace_data[trace_data.length-1][0] * 1000.0);	// = total segments / real flight time in ms
+	//const interval_ms = 10;
+	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length;	// = total segments / real flight time in ms
+	console.log(interval_ms)
 	for (let i = 0; i < trace_data.length-1; i++) {
+
 		painter = setTimeout(function(){
 			draw_trace_frame(trace_data, current_segment, step, color);
 	
-			if (current_segment < trace_data.length)
-			{
-				current_segment += step;
-			}
-			if (current_segment == trace_data.length-1)
-			{
-				painter = 0;
-			}
+			if (current_segment < trace_data.length) current_segment += step;
 			
-		}, interval_ms);
+		}, interval_ms * (i+1));
 	}
+
+	painter = 0;
 }
 
 function draw_trace_frame (trace_data, i, step, color) {
