@@ -26,7 +26,6 @@ function reset_process () {
 }
 
 function complete_process () {
-
     processing = false;
     const submit = document.getElementById('submit');
     submit.setAttribute("class", "btn btn-primary btn-block");
