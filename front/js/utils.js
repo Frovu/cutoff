@@ -39,7 +39,6 @@ function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
     return new THREE.Line(geometry, material);
 }
 
-
 // generates distinct random colors
 // by stackoverflow
 // [FIXME] NOT USED ANYMORE, USELESS
