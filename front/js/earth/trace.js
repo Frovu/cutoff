@@ -28,44 +28,53 @@ function get_free_color () {
 	return "#ffffff";
 }
 
-function draw_trace (trace_data) {
+function start_trace (trace_data) {
 	if (current_trace >= max_traces-1) return;
 	current_trace ++;
-    const step = 3;
 	const color = get_free_color();
-	draw_trace_animated(trace_data, step, step, color);
+	const step = 1;	// step in trace segments (less = more data, more lag)
+	let current_segment = step;
+	const interval_ms = 10;
+	//const interval_ms = trace_data.length / (trace_data[trace_data.length-1][0] * 1000.0);	// = total segments / real flight time in ms
+	for (let i = 0; i < trace_data.length-1; i++) {
+		painter = setTimeout(function(){
+			draw_trace_frame(trace_data, current_segment, step, color);
+	
+			if (current_segment < trace_data.length)
+			{
+				current_segment += step;
+			}
+			if (current_segment == trace_data.length-1)
+			{
+				painter = 0;
+			}
+			
+		}, interval_ms);
+	}
 }
 
-function draw_trace_animated (trace_data, i, step, color) {
-	painter = setTimeout(function(){
-		const line = get_line_mesh(
-			-trace_data[i-step][1], trace_data[i-step][3], trace_data[i-step][2],
-			-trace_data[i][1], trace_data[i][3], trace_data[i][2], color
-		);
+function draw_trace_frame (trace_data, i, step, color) {
+	const line = get_line_mesh(
+		-trace_data[i-step][1], trace_data[i-step][3], trace_data[i-step][2],
+		-trace_data[i][1], trace_data[i][3], trace_data[i][2], color
+	);
 
-		// previous frame of an animation is an old trace.
-		// current frame of an animation is an old trace + a small new segment.
-		if (i == step) {
-			// first step: creating initial animation frame
-			const time = trace_data[trace_data.length-1][0];
-			const trace = new Trace(settings, color, line, time);
-			scene.add(trace.mesh);
-			traces.push(trace);
-		} else {
-			const mesh = merged(traces[current_trace].mesh, line, color);
-			scene.remove(traces[current_trace].mesh);	// remove old trace from scene
-			//traces[current_trace] = new Trace(traces[current_trace].settings, colors[current_trace], mesh);
-			traces[current_trace].mesh = mesh;
-			scene.add(traces[current_trace].mesh);	// add new trace to scene
-		}
-
-		if (i+step < trace_data.length)
-			draw_trace_animated(trace_data, i+step, step, color);
-		else
-			painter = 0;
-		if (i == step)
-			updateInfo();
-	}, 3);
+	// previous frame of an animation is an old trace.
+	// current frame of an animation is an old trace + a small new segment.
+	if (i == step) {
+		// first step: creating initial animation frame
+		const time = trace_data[trace_data.length-1][0];
+		const trace = new Trace(settings, color, line, time);
+		scene.add(trace.mesh);
+		traces.push(trace);
+		updateInfo();
+	} else {
+		const mesh = merged(traces[current_trace].mesh, line, color);
+		scene.remove(traces[current_trace].mesh);	// remove old trace from scene
+		//traces[current_trace] = new Trace(traces[current_trace].settings, colors[current_trace], mesh);
+		traces[current_trace].mesh = mesh;
+		scene.add(traces[current_trace].mesh);	// add new trace to scene
+	}
 }
 
 function merged (a, b, color) {
