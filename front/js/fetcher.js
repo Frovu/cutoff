@@ -62,9 +62,9 @@ function fetch_trace (index) {
         method: 'GET',
         headers: { "Content-Type": "application/json" }
     }).then(res => res.json()).then(function (data) {
+        //eraseAllPaths();    //if, of couse, we don't have to draw two paths
         let trace = data;
         trace.pop();    // useless last value from nowhere, so we just pop it
-
         start_trace(trace);
     });
 }
