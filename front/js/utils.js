@@ -39,6 +39,12 @@ function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
     return new THREE.Line(geometry, material);
 }
 
+function show_error (error) {
+    let element = document.getElementById("error_alert");
+    element.innerHTML = "ERROR: " + error;
+    element.style["display"] = "inline-block";
+}
+
 // generates distinct random colors
 // by stackoverflow
 // [FIXME] NOT USED ANYMORE, USELESS

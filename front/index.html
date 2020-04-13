@@ -17,9 +17,13 @@
                     <h3 style='margin-top: 15px; height: 30px' class='bg-dark text-white'>Cutoff Rigidity Visualiser</h3>
                     <div id="info" style="font-size: 15px"></div>
                     <div>
-                        <canvas class="center" width=900 height=600 id="earth"></canvas>
+                        <canvas class="center" width=900 height=550 id="earth"></canvas>
                         <canvas class="center" width=800 height=130 id="penumbra"></canvas>
-                        <small class="mt-4 form-text center">
+                        <div class="alert alert-danger" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert">
+                            
+                        </div>
+                        <!--fix-->
+                        <small class="mt-4 form-text center" style="color: white; padding-bottom: 10px">
                             Navigate through penumbra by mouse click or arrow keys<br>
                             Drag mouse on the earth to rotate, scroll to zoom
                         </small>
