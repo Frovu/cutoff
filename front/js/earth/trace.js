@@ -36,7 +36,6 @@ function start_trace (trace_data) {
 	let step = 1;
 	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;	// = real flight time in ms / total segments
 
-
 	const line = get_line_mesh(
 		-trace_data[0][1], trace_data[0][3], trace_data[0][2],
 		-trace_data[1][1], trace_data[1][3], trace_data[1][2], color
