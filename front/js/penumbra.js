@@ -11,7 +11,7 @@ let active = false;
 let energy_per_line;
 
 function change_energy (value) {
-    if (painter > 0) return;
+    //if (painter > 0) return;
     value = parseFloat(float_to_step_precision(parseFloat(value))); // fixing floating number issues, check without parsefloat's later
 	value = settings.step*Math.round(value/settings.step);
 	value = float_to_step_precision(value);

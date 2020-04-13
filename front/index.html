@@ -17,16 +17,20 @@
                     <h3 style='margin-top: 15px; height: 30px' class='bg-dark text-white'>Cutoff Rigidity Visualiser</h3>
                     <div id="info" style="font-size: 15px"></div>
                     <div>
-                        <canvas class="center" width=900 height=600 id="earth"></canvas>
+                        <canvas class="center" width=900 height=550 id="earth"></canvas>
                         <canvas class="center" width=800 height=130 id="penumbra"></canvas>
-                        <small class="mt-4 form-text center">
+                        <div class="alert alert-danger" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert">
+                            
+                        </div>
+                        <!--fix-->
+                        <small class="mt-4 form-text center" style="color: white; padding-bottom: 10px">
                             Navigate through penumbra by mouse click or arrow keys<br>
                             Drag mouse on the earth to rotate, scroll to zoom
                         </small>
                     </div>
                 </div>
 
-                <div class="col-md-2" style="min-width: 940px">
+                <div class="col-md-2" style="min-width: 940px; padding-top: 35px">
                     <div class="mt-2 row ml-1">
                         <div class="col-md-3">
                             <div class="dropdown" id="modelDd">
@@ -197,16 +201,16 @@
     <script src="./js/bootstrap/bootstrap.min.js"></script>
     <script src="./js/gl/three.min.js"></script>
     <script src="./js/gl/gif/gif.js"></script>
-    <script src="./js/OrbitControls.js"></script>
-    <script src="./js/dimensions.js"></script>
     <script src="./js/utils.js"></script>
+    <script src="./js/dimensions.js"></script>
     <script src="./js/dropdown.js"></script>
     <script src="./js/process.js"></script>
     <script src="./js/settings.js"></script>
     <script src="./js/stations.js"></script>
     <script src="./js/models.js"></script>
     <script src="./js/penumbra.js"></script>
-    <script src="./js/recorder.js"></script>
+    <script src="./js/earth/OrbitControls.js"></script>
+    <script src="./js/earth/recorder.js"></script>
     <script src="./js/earth/trace.js"></script>
     <script src="./js/earth/earth.js"></script>
     <script src="./js/fetcher.js"></script>
