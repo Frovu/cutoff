@@ -52,9 +52,9 @@ function update_settings () {
     settings.energy = settings.lower;
 
 	//settings.station = isStation(); // document.getElementById('station').innerHTML;
-    settings.station = isStation(settings.latitude, settings.longitude);
     settings.longitude = document.getElementById('lon').value;
     settings.latitude = document.getElementById('lat').value;
+	settings.station = isStation(settings.latitude, settings.longitude);
     settings.altitude = document.getElementById('alt').value;
 }
 
