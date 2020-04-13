@@ -9,7 +9,7 @@ const settings = {
 	timeToLive: 3600000,
 	maxRunningInstances: 3,
 	instancesDir: './cutoff/',
-	execPath: './Cutoff2050.exe',
+	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
 	valueRanges: './valueranges.json'
 }
@@ -106,7 +106,7 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				callback(false);
 			}
 			// spawn process
-			let cutoff = spawn('wine', [path.join(__dirname, 'CutOff2050.exe')], { cwd: dir })
+			let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], { cwd: dir })
 			let instance = instances[id] = {
 				status: 'processing',
 				spawnedAt: new Date(),
@@ -221,7 +221,7 @@ app.get('/:uuid/:trace', (req, res) => {
 				if(!tracefile)
 					res.status(400).send('Invalid trace');
 				else
-				fs.readFile(path.join(settings.instancesDir, id, tracefile), 
+				fs.readFile(path.join(settings.instancesDir, id, tracefile),
 				(err, data) => {
 					if (err) {
 						res.status(500).send({ err })
