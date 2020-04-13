@@ -217,8 +217,11 @@ app.get('/:uuid/:trace', (req, res) => {
 			if (err) {
 				res.status(500).send({ err })
 			} else {
-				fs.readFile(path.join(settings.instancesDir, id,
-					files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace]), //-1]),
+				const tracefile = files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace];//-1]),
+				if(!tracefile)
+					res.status(400).send('Invalid trace');
+				else
+				fs.readFile(path.join(settings.instancesDir, id, tracefile), 
 				(err, data) => {
 					if (err) {
 						res.status(500).send({ err })
