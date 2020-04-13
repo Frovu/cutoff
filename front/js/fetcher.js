@@ -82,3 +82,16 @@ function fetch_trace (index) {
         show_error(error);
     }
 }
+
+function fetch_cancel () {
+    try {
+        fetch(url + uid + '/kill', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" }
+        }).then(res => res.text()).then(res_uid => {
+            console.log("trace cancelled");
+        }).catch(error => show_error(error));
+    } catch (error) {
+        show_error(error);
+    }
+}

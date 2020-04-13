@@ -37,6 +37,7 @@ function complete_process () {
 
 function cancel () {
     processing = false;
+    fetch_cancel();
     clearInterval(status_updater);
     reset_process();
 }
