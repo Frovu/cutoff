@@ -1,8 +1,8 @@
 const max_traces = 5;
-let current_trace = -1;
+let current_trace = -1;	//rename to drawing_trace_id, probably
 let traces = [];
 const colors = ['#ffffff', '#ffd319', '#e3424d', '#22ff22', '#46f0f0', '#8f7fff'];
-let painter;
+let timeouts = [];
 
 function Trace (settings, color, mesh, time) {
     this.settings = settings;
@@ -29,28 +29,31 @@ function get_free_color () {
 }
 
 function start_trace (trace_data) {
-	if (current_trace >= max_traces-1) return;
-	current_trace ++;
+	if (traces.length >= max_traces-1) return;
+	console.log("drawing trace " + current_trace);
 	const color = get_free_color();
-	const step = 1;	// step in trace segments (less = more data, more lag)
-	let current_segment = step;
-	//const interval_ms = 10;
-	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length;	// = total segments / real flight time in ms
-	console.log(interval_ms)
-	for (let i = 0; i < trace_data.length-1; i++) {
+	stop_timeouts();
+	current_trace ++;
 
-		painter = setTimeout(function(){
-			draw_trace_frame(trace_data, current_segment, step, color);
-	
-			if (current_segment < trace_data.length) current_segment += step;
-			
-		}, interval_ms * (i+1));
+	let step = 1;
+	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;	// = real flight time in ms / total segments
+
+	for (let i = step; i < trace_data.length; i++) {
+		timeouts[i] = setTimeout(function draw() {
+  			draw_trace_frame(trace_data, step, i, color);	// trace_id?
+  		}, (i+1)*interval_ms);
 	}
-
-	painter = 0;
 }
 
-function draw_trace_frame (trace_data, i, step, color) {
+function stop_timeouts () {
+	// removing from the end of array with pop() for performance
+	for (let i = timeouts.length-1; i >= 0; i--) {
+		clearTimeout(timeouts[i]);
+		timeouts.pop();
+	}
+}
+
+function draw_trace_frame (trace_data, step, i, color) {
 	const line = get_line_mesh(
 		-trace_data[i-step][1], trace_data[i-step][3], trace_data[i-step][2],
 		-trace_data[i][1], trace_data[i][3], trace_data[i][2], color
@@ -66,11 +69,10 @@ function draw_trace_frame (trace_data, i, step, color) {
 		traces.push(trace);
 		updateInfo();
 	} else {
-		const mesh = merged(traces[current_trace].mesh, line, color);
 		scene.remove(traces[current_trace].mesh);	// remove old trace from scene
-		//traces[current_trace] = new Trace(traces[current_trace].settings, colors[current_trace], mesh);
+		const mesh = merged(traces[current_trace].mesh, line, color);
 		traces[current_trace].mesh = mesh;
-		scene.add(traces[current_trace].mesh);	// add new trace to scene
+		scene.add(mesh);	// add new trace to scene
 	}
 }
 
@@ -97,6 +99,7 @@ function delete_all_traces () {
 }
 
 function delete_trace (index) {
+	console.log("deleting trace " + index)
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	if (index == current_trace && painter != undefined) {
