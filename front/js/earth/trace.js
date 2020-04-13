@@ -24,12 +24,13 @@ function get_free_color () {
 		}
 		if (free) return colors[j];
 	}
-
 	return "#ffffff";
 }
 
 function start_trace (trace_data) {
 	if (traces.length > max_traces-1) return;
+	//const synth = new Tone.Synth().toMaster();
+
 	const color = get_free_color();
 	stop_timeouts();
 
@@ -48,6 +49,14 @@ function start_trace (trace_data) {
 	current_trace = trace;
 
 	update_info();
+
+	let filter = new Tone.Filter(300, "lowpass");
+
+	let divide = parseFloat(time)*1.3 < 0.5 ? 0.5 : parseFloat(time)*1.3; 
+  	let tone = new Tone.Oscillator(330.0 / divide, "sine").toMaster().start();
+  	setTimeout(function () {
+  		tone.stop();
+  	}, trace_data[trace_data.length-1][0] * 1000.0);
 
 	for (let i = step; i < trace_data.length; i++) {
 		timeouts[i] = setTimeout(function draw() {

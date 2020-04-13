@@ -31,7 +31,6 @@ function submit () {
         return;
     }
     if (is_bad_input()) return;
-    update_settings ();
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
         " calculate it properly.\nMaximum amount of traces is " + particles_limit+
@@ -39,6 +38,7 @@ function submit () {
         return;
     }
     if (!first_start_occured) first_start_occured = true;
+    update_settings ();
     limit_energy ();
     start_process ();
     fetch_uid(json());
@@ -54,7 +54,7 @@ function update_settings () {
 	//settings.station = isStation(); // document.getElementById('station').innerHTML;
     settings.longitude = document.getElementById('lon').value;
     settings.latitude = document.getElementById('lat').value;
-	settings.station = isStation(settings.latitude, settings.longitude);
+	settings.station = isStation(settings.latitude, settings.longitude);   // it changes stations as objects
     settings.altitude = document.getElementById('alt').value;
 }
 
