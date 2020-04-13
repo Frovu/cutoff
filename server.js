@@ -130,7 +130,12 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				instances.running--;
 				//log('running = '+instances.running)
 				log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
-				if (code === 0) {
+				if(code === null) {
+					// process killed by signal
+					delete instances[id];
+					try{fs.removeSync(path.join(settings.instancesDir, id));}
+					catch(e){log(e);}
+				} else if(code === 0) {
 					instance.status = 'complete';
 					instance.completeAt = Date.now();
 				} else {
@@ -244,10 +249,6 @@ app.post('/:uuid/kill', (req, res) => {
 	else if (instances[id].status === 'processing') {
 		// kill process
 		instances[id].process.kill('SIGHUP');
-		// remove file and stuff
-		delete instances[id]
-		try{fs.removeSync(path.join(settings.instancesDir, id))}
-		catch(e){log(e)}
 		log(`Process killed from front.`)
 		res.status(200).send(id)
 	}
