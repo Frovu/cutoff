@@ -50,10 +50,17 @@ function start_trace (trace_data) {
 
 	update_info();
 
-	let filter = new Tone.Filter(300, "lowpass");
-
 	let divide = parseFloat(time)*1.3 < 0.5 ? 0.5 : parseFloat(time)*1.3; 
-  	let tone = new Tone.Oscillator(330.0 / divide, "sine").toMaster().start();
+	//let reverb = new Tone.Reverb().start();
+	var tremolo = new Tone.Tremolo(10, 1).start().toMaster();
+	tremolo.wet.value = 1.0;
+  	let tone = new Tone.Oscillator(330.0 / divide, "sine").connect(tremolo);
+
+  	tone.start();
+
+
+
+
   	setTimeout(function () {
   		tone.stop();
   	}, trace_data[trace_data.length-1][0] * 1000.0);
