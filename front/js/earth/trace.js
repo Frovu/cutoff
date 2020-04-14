@@ -29,7 +29,6 @@ function get_free_color () {
 
 function start_trace (trace_data) {
 	if (traces.length > max_traces-1) return;
-	//const synth = new Tone.Synth().toMaster();
 
 	const color = get_free_color();
 	stop_timeouts();
@@ -49,21 +48,6 @@ function start_trace (trace_data) {
 	current_trace = trace;
 
 	update_info();
-
-	let divide = parseFloat(time)*1.3 < 0.5 ? 0.5 : parseFloat(time)*1.3; 
-	//let reverb = new Tone.Reverb().start();
-	var tremolo = new Tone.Tremolo(10, 1).start().toMaster();
-	tremolo.wet.value = 1.0;
-  	let tone = new Tone.Oscillator(330.0 / divide, "sine").connect(tremolo);
-
-  	tone.start();
-
-
-
-
-  	setTimeout(function () {
-  		tone.stop();
-  	}, trace_data[trace_data.length-1][0] * 1000.0);
 
 	for (let i = step; i < trace_data.length; i++) {
 		timeouts[i] = setTimeout(function draw() {

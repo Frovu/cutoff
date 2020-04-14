@@ -244,7 +244,7 @@ app.post('/:uuid/kill', (req, res) => {
 		res.sendStatus(404)
 	else if (instances[id].status === 'processing') {
 		// kill process
-		instances[id].process.kill('SIGHUP');
+		instances[id].process.kill();
 		// remove file and stuff
 		delete instances[id]
 		try{fs.removeSync(path.join(settings.instancesDir, id))}
