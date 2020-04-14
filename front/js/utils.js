@@ -1,6 +1,6 @@
 function decimalPlaces(float) {
     if(Math.floor(float) === float) return 0;
-    return float.toString().split(".")[1].length || 0;
+    return float.toString().split(".")[1].length || 0;  //some bug with , ?
 }
 
 function float_to_step_precision (float) {
@@ -120,6 +120,11 @@ function front_to_back_date (dateString) {
     const month = parts[1].padStart(2, "0");
     const year = parts[0].padStart(2, "0");
     return day + "." + month + "." + year;
+}
+
+function parse_sentence_for_number(sentence){
+    var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/);
+    return matches && matches[0] || null;
 }
 
 // generates distinct random colors

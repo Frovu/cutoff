@@ -57,7 +57,7 @@ function update_settings () {
     settings = {};
     settings.lower = document.getElementById('lower').value;
     settings.upper = document.getElementById('upper').value;
-    settings.step = parseFloat(document.getElementById('step').innerHTML) + "";
+    settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML)) + "";
     settings.energy = settings.lower;
 
     settings.longitude = document.getElementById('lon').value;
@@ -138,6 +138,10 @@ function is_bad_input() {
             el.classList.remove('is-invalid');
         }
         if (is_bad_value (param, value)) {
+            const feedback = document.createElement('div');
+            feedback.className = "invalid-feedback";
+            feedback.innerHTML = "Correct range: " + valueranges[param].min + " to " + valueranges[param].max;
+            el.parentNode.appendChild(feedback);
             el.classList.add('is-invalid');
             bad = true;
         }
@@ -146,7 +150,7 @@ function is_bad_input() {
 }
 
 function change_step (value) {
-	document.getElementById("step").innerHTML = value;
+	document.getElementById("step").innerHTML = "Step: " + value;
     settings_changed ();
 }
 
@@ -155,9 +159,8 @@ function json () {
     params.forEach (function (param) {
         const el = document.getElementById(param);
 		if (param == "step") {
-			object[param] = parseFloat(el.innerHTML);
-		}
-		else if (param == "model") {
+			object[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
+		} else if (param == "model") {
 			object[param] = get_model_by_name(el.innerHTML).id;
 		} else if (param == "date") {
             object[param] = front_to_back_date(el.value);
