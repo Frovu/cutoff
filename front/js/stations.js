@@ -135,6 +135,7 @@ function Station (latitude, longitude, name) {
 }
 
 function change_station (station) {
+	// if (station == settings.station) return; // later
     $('#lat').val(station.latitude);
     $('#lon').val(station.longitude);
     settings_changed();

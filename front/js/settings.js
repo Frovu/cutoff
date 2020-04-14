@@ -1,10 +1,17 @@
 const particles_limit = 10000;
 let settings = {};
 let first_start_occured = false;
-
+let valueranges;
 const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
 'step', 'flightTime'];
+
+
+
+loadJSON(function(response) {
+  // Parse JSON string into object
+    valueranges = JSON.parse(response);
+ }, "valueranges.json");
 
 init_input_events();
 
@@ -30,7 +37,9 @@ function submit () {
         cancel();
         return;
     }
-    if (is_bad_input()) return;
+    if (is_bad_input()) {
+        return;
+    }
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
         " calculate it properly.\nMaximum amount of traces is " + particles_limit+
@@ -80,6 +89,40 @@ function limit_energy () {
     energy_el.setAttribute("step", settings.step);
 }
 
+
+function is_bad_value (param, value) {
+    const el = document.getElementById(param);
+
+    value = value.replace(/\s/g, ''); // removing spaces
+    if (value == "") {
+        return true;
+    }
+
+    if (param == "date") {
+        return !is_valid_date(value);
+    }
+
+    if (param == "time") {
+        return !is_valid_time(value);
+    } 
+
+    if (param != "model" && param != "step") {
+        // if param is numeric, then we check it for having any letters
+        if (!/^-?\d*\.?\d*$/.test(value)) {
+            console.log("numerical test fail");
+            return true;
+        }
+
+        // and then we check it's range
+        value = parseFloat(value);
+        if (value < valueranges[param].min || value > valueranges[param].max) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function is_bad_input() {
     let bad = false;
     //TODO
@@ -94,8 +137,7 @@ function is_bad_input() {
         if (el.classList.contains('is-invalid')) {
             el.classList.remove('is-invalid');
         }
-        if (value == "") {
-            console.error(el)
+        if (is_bad_value (param, value)) {
             el.classList.add('is-invalid');
             bad = true;
         }
@@ -117,7 +159,12 @@ function json () {
 		}
 		else if (param == "model") {
 			object[param] = get_model_by_name(el.innerHTML).id;
-		}
+		} else if (param == "date") {
+            object[param] = front_to_back_date(el.value);
+        } else if (param == "time") {
+            // handle . and :
+            object[param] = front_to_back_time(el.value);
+        }
 		else {
 			object[param] = el.value;
 		}
