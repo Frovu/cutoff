@@ -127,6 +127,13 @@ function parse_sentence_for_number(sentence){
     return matches && matches[0] || null;
 }
 
+function remove_elements_by_class(className) {
+    let elements = document.getElementsByClassName(className);
+    while (elements.length > 0) {
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
+
 // generates distinct random colors
 // by stackoverflow
 // [FIXME] NOT USED ANYMORE, USELESS

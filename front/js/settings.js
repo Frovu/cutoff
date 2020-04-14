@@ -66,8 +66,8 @@ function update_settings () {
     settings.altitude = document.getElementById('alt').value;
 }
 
-function clone_settings () { //test
-    console.log("settings cloned");
+// js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
+function clone_settings () {
     settings_clone = {};
     settings_clone.lower = settings.lower;
     settings_clone.upper = settings.upper;
@@ -88,7 +88,6 @@ function limit_energy () {
     energy_el.setAttribute("max", settings.upper);
     energy_el.setAttribute("step", settings.step);
 }
-
 
 function is_bad_value (param, value) {
     const el = document.getElementById(param);
@@ -125,17 +124,15 @@ function is_bad_value (param, value) {
 
 function is_bad_input() {
     let bad = false;
-    //TODO
-    /*
-    if (parseFloat(document.getElementById('upper')) - parseFloat(document.getElementById('lower')) <= 0) {
-        alert("Highest rigidity (GV) can't be less or equal than Lowest rigidity (GV).");
-        bad = true;
-    }*/
+
+    remove_elements_by_class("invalid-feedback");
+
     params.forEach (function (param) {
         const el = document.getElementById(param);
         const value = el.innerHTML != '' ? el.innerHTML : el.value;
         if (el.classList.contains('is-invalid')) {
             el.classList.remove('is-invalid');
+
         }
         if (is_bad_value (param, value)) {
             const feedback = document.createElement('div');
@@ -146,6 +143,15 @@ function is_bad_input() {
             bad = true;
         }
     });
+
+    if (parseFloat(document.getElementById('upper').value) - parseFloat(document.getElementById('lower').value) <= 0) {
+        document.getElementById('upper').classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = "invalid-feedback";
+        feedback.innerHTML = "Highest rigidity can't be less than or equal to lowest rigidity";
+        document.getElementById('upper').parentNode.appendChild(feedback);
+        bad = true;
+    }
     return bad;
 }
 
