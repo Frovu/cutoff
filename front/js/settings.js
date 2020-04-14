@@ -91,6 +91,7 @@ function is_bad_input() {
 
 function change_step (value) {
 	document.getElementById("step").innerHTML = value;
+    settings_changed ();
 }
 
 function json () {
