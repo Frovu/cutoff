@@ -11,7 +11,7 @@ let active = false;
 let energy_per_line;
 
 function change_energy (value) {
-    //if (painter > 0) return;
+    console.log(settings.step + " - settings.step")
     value = parseFloat(float_to_step_precision(parseFloat(value))); // fixing floating number issues, check without parsefloat's later
 	value = settings.step*Math.round(value/settings.step);
 	value = float_to_step_precision(value);
@@ -20,7 +20,6 @@ function change_energy (value) {
         console.log("error")
         return;
     }
-    update_settings ();
     settings.energy = value;
     document.getElementById('energy').value = settings.energy;
     drawPenumbra ();

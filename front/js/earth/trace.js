@@ -41,8 +41,11 @@ function start_trace (trace_data) {
 		-trace_data[1][1], trace_data[1][3], trace_data[1][2], color
 	);
 
+	const settings_clone = clone_settings ();
+
+
 	const time = trace_data[trace_data.length-1][0];
-	const trace = new Trace(settings, color, line, time);
+	const trace = new Trace(settings_clone, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
 	current_trace = trace;

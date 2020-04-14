@@ -51,11 +51,25 @@ function update_settings () {
     settings.step = parseFloat(document.getElementById('step').innerHTML) + "";
     settings.energy = settings.lower;
 
-	//settings.station = isStation(); // document.getElementById('station').innerHTML;
     settings.longitude = document.getElementById('lon').value;
     settings.latitude = document.getElementById('lat').value;
-	settings.station = isStation(settings.latitude, settings.longitude);   // it changes stations as objects
+	settings.station = isStation(settings.latitude, settings.longitude); 
     settings.altitude = document.getElementById('alt').value;
+}
+
+function clone_settings () { //test
+    console.log("settings cloned");
+    settings_clone = {};
+    settings_clone.lower = settings.lower;
+    settings_clone.upper = settings.upper;
+    settings_clone.step = settings.step;
+    settings_clone.energy = settings.energy;
+
+    settings_clone.longitude = settings.longitude;
+    settings_clone.latitude = settings.latitude;
+    settings_clone.station = settings.station; 
+    settings_clone.altitude = settings.altitude;
+    return settings_clone;
 }
 
 function limit_energy () {
