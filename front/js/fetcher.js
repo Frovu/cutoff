@@ -60,7 +60,8 @@ function fetch_data () {
         }).then(res => {
 		res.json().then(received => {
             	data = received;
-                drawPenumbra();
+                update_settings ();
+                draw_penumbra();
          	});
 	}).catch(error => show_error(error));
     } catch (error) {

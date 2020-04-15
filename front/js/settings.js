@@ -41,8 +41,6 @@ function submit () {
         return;
     }
     if (!first_start_occured) first_start_occured = true;
-    update_settings ();
-    limit_energy ();
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
         " calculate it properly.\nMaximum amount of traces is " + particles_limit+
@@ -55,15 +53,16 @@ function submit () {
 
 function update_settings () {
     settings = {};
-    settings.lower = document.getElementById('lower').value;
-    settings.upper = document.getElementById('upper').value;
+    settings.lower = parseFloat(document.getElementById('lower').value);
+    settings.upper = parseFloat(document.getElementById('upper').value);
     settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML)) + "";
-    settings.energy = settings.lower;
+    settings.energy = parseFloat(settings.lower);
 
-    settings.longitude = document.getElementById('lon').value;
-    settings.latitude = document.getElementById('lat').value;
+    settings.longitude = parseFloat(document.getElementById('lon').value);
+    settings.latitude = parseFloat(document.getElementById('lat').value);
 	settings.station = isStation(settings.latitude, settings.longitude); 
-    settings.altitude = document.getElementById('alt').value;
+    settings.altitude = parseFloat(document.getElementById('alt').value);
+    limit_energy ();    // maybe not neccesary?
 }
 
 // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
@@ -162,9 +161,19 @@ function is_bad_input() {
     return bad;
 }
 
-function change_step (value) {
+function change_step (value) {  // rename to change_step_unput
 	document.getElementById("step").innerHTML = "Step: " + value;
     settings_changed ();
+}
+
+function change_energy (value) {
+    if (value < settings.lower || value >= settings.upper || isNaN(value)) {
+        console.log("invalid energy")
+        return;
+    }
+    settings.energy = value;
+    document.getElementById('energy').value = settings.energy;
+    fetch_trace(data.particles.findIndex(el => el[0] == settings.energy));  // bad way of doing this, just use step multiplication
 }
 
 function json () {

@@ -4,7 +4,7 @@ function decimalPlaces(float) {
 }
 
 function float_to_step_precision (float) {
-    return parseFloat(float).toFixed(decimalPlaces(settings.step));
+    return float.toFixed(decimalPlaces(settings.step));
 }
 
 function on_map (lat, lon) {
