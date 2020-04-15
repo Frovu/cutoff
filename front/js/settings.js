@@ -6,14 +6,14 @@ const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
 'step', 'flightTime'];
 
-
-
 loadJSON(function(response) {
   // Parse JSON string into object
     valueranges = JSON.parse(response);
  }, "valueranges.json");
 
 init_input_events();
+
+change_step ("0.1 GV");
 
 function init_input_events () {
      params.forEach (function (param) {
@@ -40,15 +40,15 @@ function submit () {
     if (is_bad_input()) {
         return;
     }
+    if (!first_start_occured) first_start_occured = true;
+    update_settings ();
+    limit_energy ();
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
         " calculate it properly.\nMaximum amount of traces is " + particles_limit+
         "\nEntered amount is " + (settings.upper - settings.lower)/settings.step + ".");
         return;
     }
-    if (!first_start_occured) first_start_occured = true;
-    update_settings ();
-    limit_energy ();
     start_process ();
     fetch_uid(json());
 }
@@ -137,7 +137,14 @@ function is_bad_input() {
         if (is_bad_value (param, value)) {
             const feedback = document.createElement('div');
             feedback.className = "invalid-feedback";
-            feedback.innerHTML = "Correct range: " + valueranges[param].min + " to " + valueranges[param].max;
+            if (param == "time") {
+                feedback.innerHTML = "Correct format: HH:MM:SS";
+            } else if (param == "date") {
+                feedback.innerHTML = "Correct format: YYYY.MM.DD";
+            } else {
+                feedback.innerHTML = "Correct range: " + valueranges[param].min + " to " + valueranges[param].max;
+            }
+            
             el.parentNode.appendChild(feedback);
             el.classList.add('is-invalid');
             bad = true;
