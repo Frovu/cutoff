@@ -97,8 +97,8 @@ function merged (a, b, color) {
 }
 
 function delete_all_traces () {
-	for (let i = 0; i < traces.length; i++) {
-		delete_trace(traces[i]);
+	for (let i = traces.length-1; i >= 0; i--) {
+		delete_trace(i);
 	}
 }
 
@@ -110,6 +110,7 @@ function delete_trace (index) {
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	update_info();
+	draw_penumbra();
 }
 
 function update_info () {
@@ -124,4 +125,5 @@ function update_info () {
 		info.innerHTML += "<a onclick='delete_trace("+i+")'>[ X ]</a>  <span style='color: "+trace.color+"'> " + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
 		info.innerHTML += '<br><br>';
 	}
+	if (traces.length > 1) info.innerHTML += "<a onclick='delete_all_traces()'>[ Clear ]";
 }

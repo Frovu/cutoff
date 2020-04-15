@@ -1,6 +1,4 @@
 const canvas = $('#penumbra')[0];
-const forbiddenColor = 'black';
-const allowedColor = 'gray';
 const ctx = canvas.getContext("2d");
 
 let active = false;
@@ -63,22 +61,30 @@ function draw_penumbra () {
     // temporary lack of support of big data
     //energy_per_line = data.particles.length / canvas.width;
     
+    ctx.font = "16px Times New Roman";
+
     for (let i = 0; i < data.particles.length; i++) {
-        const particle = data.particles[i];   // -1 offset. why? i don't know
+        const particle = data.particles[i];
         let height = 30;
+        let color = data.particles[i == 0 ? 0 : i-1][1] == 0 ? "gray" : "black"; 
         if (particle[0] == peek_energy && cursor_present) height = 30 + 55;
-        if (particle[0] == settings.energy) height = 30 + 55;
+        //if (particle[0] == settings.energy) height = 30 + 55;
+        const drawn_trace = get_trace_at(particle[0]);
+        if (drawn_trace != null) {
+            height = 30 + 55;
+            ctx.fillStyle = drawn_trace.color;
+            draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 40);
+            color = drawn_trace.color == "#ffffff" ? "black" : drawn_trace.color;   // invert white color before drawing a stick
+        }
         ctx.beginPath();
         ctx.moveTo(i * ctx.lineWidth+2.5, 50);          //50
         ctx.lineTo(i * ctx.lineWidth+2.5, 50+height);      //50+height
         //ctx.strokeStyle = (data.particles[particle_id][1] == 0 ? allowedColor : forbiddenColor);
-        ctx.strokeStyle = (data.particles[i == 0 ? 0 : i-1][1] == 0 ? allowedColor : forbiddenColor);
+        ctx.strokeStyle = color;
         ctx.stroke();
     }
 
-    ctx.font = "16px Times New Roman";
     // why is it so long? \/
-    draw_text (settings.energy + "GV", Math.ceil(float_to_step_precision (settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 40); 
 
     ctx.fillStyle = 'gray';
     if (cursor_present && peek_energy != settings.energy) {
@@ -87,6 +93,13 @@ function draw_penumbra () {
 
 
     draw_time();
+}
+
+function get_trace_at (energy) {
+    for (let i = 0; i < traces.length; i++) {
+        if (traces[i].settings.energy == energy) return traces[i];
+    }
+    return null;
 }
 
 function draw_time () {
