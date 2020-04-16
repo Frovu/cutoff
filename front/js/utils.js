@@ -58,6 +58,7 @@ function show_error (error) {
     xobj.send(null);  
  }
 
+
  // Validates that the input string is a valid date formatted as "mm/dd/yyyy"
 function is_valid_date(dateString)
 {

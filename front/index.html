@@ -18,12 +18,14 @@
                     <div id="info" style="font-size: 15px"></div>
                     <div>
                         <canvas class="center" width=850 height=520 id="earth"></canvas>
+                        <a><img src="arrow_left.png" class="arrow" id="arrow_left" onclick="penumbra_left()"></a>
+                        <a><img src="arrow_right.png" class="arrow" id="arrow_right" onclick="penumbra_right()"></a>
                         <canvas class="center" width=850 height=170 id="penumbra"></canvas>
-                        <div class="alert alert-danger" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert">
-                            
-                        </div>
+ 
+
+                        <div class="alert alert-danger" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert"></div>
                         <!--fix-->
-                        <small class="mt-4 form-text center" style="color: white; padding-bottom: 10px">
+                        <small class="mt-2 form-text center" style="color: white">
                             Drag mouse on the animation to rotate, scroll to zoom<br>
                             Navigate through penumbra by mouse click or arrow keys
                         </small>

@@ -13,6 +13,21 @@
     color: white;
 }
 
+.arrow { 
+  position:relative;
+  top: 80px;
+}
+
+#arrow_left {
+  float:left;
+  margin-left: 18px;
+}
+
+#arrow_right {
+  float:right;
+  margin-right: 18px;
+}
+
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */

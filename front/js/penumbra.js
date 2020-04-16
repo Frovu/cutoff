@@ -93,6 +93,22 @@ function draw_penumbra () {
     draw_time();
 }
 
+function penumbra_left () {
+    console.log("moving left");
+    const diff = settings.upper - settings.lower;
+    document.getElementById('lower').value = settings.lower - diff;
+    document.getElementById('upper').value = settings.lower;
+    submit();
+}
+
+function penumbra_right () {
+    console.log("moving left");
+    const diff = settings.upper - settings.lower;
+    document.getElementById('lower').value = settings.upper;
+    document.getElementById('upper').value = settings.upper + diff;
+    submit();
+}
+
 function get_trace_at (energy) {
     for (let i = 0; i < traces.length; i++) {
         if (traces[i].settings.energy == energy) return traces[i];
