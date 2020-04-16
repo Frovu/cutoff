@@ -47,7 +47,7 @@ function makeGif() {
   		workers: 2,
   		quality: 20,
 		workerScript: ".\\js\\gl\\gif\\gif.worker.js",
-		debug: true
+		debug: false
 	});
 	recording = true;
 	framesCount = Math.trunc($("#gifTime").val() * fps);

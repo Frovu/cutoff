@@ -98,7 +98,6 @@ function is_valid_time(timeString)
     const minutes = parseInt(parts[1], 10);
     const seconds = parseInt(parts[2], 10);
 
-    console.log("{0}:{1}:{2}", hours, minutes, seconds);
     // Check the ranges
     if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
         return false;

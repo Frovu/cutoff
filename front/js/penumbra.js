@@ -134,9 +134,11 @@ function draw_time () {
     }
 
     let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
+    if (!isNaN(peek_id)) {
+        draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
+        ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);   
+    }
 
-    draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
-    ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);
 
 
     // vertical labels

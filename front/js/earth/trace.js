@@ -33,7 +33,7 @@ function start_trace (trace_data) {
 	const color = get_free_color();
 	stop_timeouts();
 
-	let step = 4;
+	const step = 2;
 	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;	// = real flight time in ms / total segments
 
 	const line = get_line_mesh(
@@ -60,7 +60,6 @@ function start_trace (trace_data) {
 }
 
 function stop_timeouts () {
-	console.log("stopping timeouts...");
 	// removing from the end of array with pop() for performance
 	for (let i = timeouts.length-1; i >= 0; i--) {
 		clearTimeout(timeouts[i]);
@@ -106,7 +105,6 @@ function delete_trace (index) {
 	if (traces[index] == current_trace) {
 		stop_timeouts(traces[index])
 	}
-	console.log("deleting trace " + index)
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	update_info();

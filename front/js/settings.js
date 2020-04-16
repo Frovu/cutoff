@@ -196,6 +196,5 @@ function json () {
 		}
     });
 
-    object.trace = '1';
 	return JSON.stringify(object);
 }
