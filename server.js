@@ -11,7 +11,7 @@ const settings = {
 	instancesDir: './cutoff/',
 	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
-	valueRanges: './valueranges.json'
+	valueRanges: './front/valueranges.json'
 }
 
 // logging

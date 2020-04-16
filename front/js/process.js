@@ -20,6 +20,8 @@ function reset_process () {
     const submit = document.getElementById('submit');
     submit.setAttribute("class", "btn btn-primary btn-block");
     submit.innerHTML = "Calculate";
+    progress.classList.remove("bg-warning");
+    progress.classList.remove("bg-danger");
     progress.setAttribute("style", "width: 0%; font-size: 16;");
     progress.innerHTML = "";
     console.log("reset");
@@ -30,6 +32,8 @@ function complete_process () {
     const submit = document.getElementById('submit');
     submit.setAttribute("class", "btn btn-primary btn-block");
     submit.innerHTML = "Calculate";
+    progress.classList.remove("bg-warning");
+    progress.classList.remove("bg-danger");
     progress.setAttribute("style", "width: 100%; font-size: 16;");
     progress.innerHTML = "Completed";
     console.log("complete");

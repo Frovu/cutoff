@@ -5,10 +5,7 @@ const grid_color = 0x404040;
 const grid_size = 30;
 let camera, scene, renderer;
 let controls;
-
-init();
-drawGrid();
-animate();
+let fps;
 
 window.addEventListener('resize', function(event){
 	resize();
@@ -51,14 +48,22 @@ function init() {
 	controls = new THREE.OrbitControls(camera, renderer.domElement)
 }
 
-function animate() {
+let then = 0;
+function render(now) {
+	now *= 0.001; // convert to seconds
+
 	context.viewport(0, 0, context.canvas.width, context.canvas.height);
-	requestAnimationFrame(animate);
 	if (!isNaN($("#cameraSpeed").val()))
 		controls.autoRotateSpeed = $("#cameraSpeed").val() / 6.0;
     renderer.render(scene, camera);
 	controls.update();
 	record_gif ();
+
+  	const deltaTime = now - then;          // compute time since last frame
+  	then = now;                            // remember time for next frame
+  	fps = 1 / deltaTime;             // compute frames per second
+  	fps.toFixed(1);  // update fps display
+  	requestAnimationFrame(render);
 }
 
 function drawGrid () {
@@ -69,3 +74,7 @@ function drawGrid () {
         drawLine(-grid_size/2, 0, z-grid_size/2, grid_size/2, 0, z-grid_size/2, grid_color);
     }
 }
+
+init();
+drawGrid();
+render();
