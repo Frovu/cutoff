@@ -15,7 +15,8 @@ function record_gif () {
         .css("width", "100%")
         .attr("aria-valuenow", 100)
         .text("Rendering...");
-
+        progress.classList.remove("bg-danger");
+        progress.classList.add("bg-warning");
         frames = [];
         recording = false;
         gif.render();
@@ -24,9 +25,9 @@ function record_gif () {
         frames.push(img);
         let record_percent = Math.trunc((frames.length*1.0) / (framesCount*1.0) * 100.0);
         $("#progress")
-        .css("width", record_percent + "%")
-        .attr("aria-valuenow", record_percent)
+        .css("width", (record_percent) + "%")   // *1.5 - cosmetic workaround 
         .text("Recording... " + record_percent + "%");
+        progress.classList.add("bg-danger");
     }
 }
 
@@ -45,13 +46,16 @@ function makeGif() {
 	gif = new GIF({
   		workers: 2,
   		quality: 20,
-		width: 800,
-		height: 500,
+		width: 850,
+		height: 520,
 		workerScript: ".\\js\\gl\\gif\\gif.worker.js",
 		debug: true
 	});
 	recording = true;
-	framesCount = Math.trunc($("#gifTime").val() * 25);	// 25 frames per second
+    // TODO; more convinient solution will be to count fps in webgl context and then simply record GIF with the same FPS
+    // right now it's just fixed 60
+    const fps = 60;
+	framesCount = Math.trunc($("#gifTime").val() * fps);	
 	gif.on('finished', function(blob) {
 		downloadGif(blob, "cutoff_gif.gif");
 		complete_process();
