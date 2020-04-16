@@ -193,7 +193,7 @@ app.get('/:uuid/dat', (req, res) => {
 		fs.readFile(path.join(settings.instancesDir, id, 'data.dat'), (err, data) => {
 			if (err) {
 				log(err);
-				res.status(500).send({ err });
+				res.status(500).send('Failed to read file.');
 			} else {
 				let response = {};
 				// на первый взгляд спагетти, но если знать формат, то нормально
@@ -205,7 +205,7 @@ app.get('/:uuid/dat', (req, res) => {
 				response.upper = arr[1];
 				response.effective = arr[2];
 				log(`Completed (requested). effective: ${arr[2]}`);
-				res.send(response);
+				res.status(200).send(response);
 			}
 		});
 	}
@@ -221,7 +221,7 @@ app.get('/:uuid/:trace', (req, res) => {
 	else if (instances[id].status === 'complete') {
 		fs.readdir(path.join(settings.instancesDir, id), (err, files) => {
 			if (err) {
-				res.status(500).send({err});
+				res.status(500).send('Can\'t read dir.');
 			} else {
 				const fnpart = parseFloat(req.params.trace).toFixed(3).replace('.', '');
 				const fname = `Trace${'00000'.slice(fnpart.length)}${fnpart}.dat`;
@@ -229,7 +229,7 @@ app.get('/:uuid/:trace', (req, res) => {
 				const send = () => {
 					fs.readFile(fpath, (err, data) => {
 						if (err) {
-							res.status(500).send({err})
+							res.status(500).send('Can\'t read trace file.');
 						} else {
 							res.status(200).send(data.toString().split(/\r?\n/).slice(1, -1)
 									.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))));
@@ -255,7 +255,7 @@ app.get('/:uuid/:trace', (req, res) => {
 								send();
 								fs.removeSync(path.join(settings.instancesDir, id, 'Cutoff.dat'));
 							} else {
-								res.status(500).send('failed');
+								res.status(500).send('Cutoff process failed their mission.');
 							}
 						});
 					}

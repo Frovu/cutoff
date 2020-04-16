@@ -1,26 +1,51 @@
-API REFERENCE
+API REFERENCE:
 
-POST /submit
-    spawn calculations instance
-        body - settings
-    returns
-        200
-        400 - bad settings
-        500 - failed
-        503 - too many instances
+    POST /submit
+        spawn calculations instance
+            body - settings
+        returns
+            200 id
+            400 // bad settings
+            500 'error message'
+            503 'busy' // too many instances
 
-GET /:uuid/dat
-    get
+    GET /:uuid/status
+        get instance status
+            'running'   - calculating things
+            'failed'    - Cutoff process dead
+            'completed' - completed
+        return
+            200 {status: string, percentage: number}
+            404
 
-GET /:uuid/status
-    get instance status
-        'running'   - calculating everything
-        'notraces'  - calculated .dat but without traces
-        'failed'    - Cutoff process dead
-        'completed' - completed
-    returns
-        200 {status: string, percentage: number}
-        404
+    GET /:uuid/dat
+        get instande .dat file contents
+        return
+            102 // instance processing
+            200 {
+                particles: [[energy, status, time], ...],
+                lower: energy,
+                upper: energy,
+                effective: energy
+            }
+            404
+            500 'error message'
 
-SERVER.JS DESCRIPTION
-    Instance status:
+    GET /:uuid/:trace (where :trace is energy)
+        get trace data (calculate if not exist)m can take some seconds
+        return
+            102 // instance processing
+            200 [[t, x, y, z],...]
+            404
+            500 'error message'
+            503 'too many traces'
+
+    GET /:uuid/kill
+        stop processing instance and remove it
+        return
+            200 uuid
+            402 // if instance is not processing
+            404
+
+BEHAVIOR DESCRIPTION:
+    calculates some things and draws cool colored traces
