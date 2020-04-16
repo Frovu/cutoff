@@ -1,129 +1,170 @@
 const canvas = $('#penumbra')[0];
-const forbiddenColor = 'black';
-const allowedColor = 'gray';
 const ctx = canvas.getContext("2d");
 
-let click_x = -1;
-let click_y = -1;
-let cursor_present;
-let peeked_energy;
 let active = false;
-let energy_per_line;
+let peek_energy;
+let cursor_present = false;
 
-function change_energy (value) {
-    //if (painter > 0) return;
-    value = parseFloat(float_to_step_precision(parseFloat(value))); // fixing floating number issues, check without parsefloat's later
-	value = settings.step*Math.round(value/settings.step);
-	value = float_to_step_precision(value);
-
-    if (value < settings.lower || value >= settings.upper || isNaN(value)) {
-        console.log("error")
-        return;
-    }
-    update_settings ();
-    settings.energy = value;
-    document.getElementById('energy').value = settings.energy;
-    drawPenumbra ();
-    fetch_trace(data.particles.findIndex(el => el[0] == settings.energy));
-}
-
-function peek_energy (value) {
-    value = parseFloat(float_to_step_precision(parseFloat(value))); // fixing floating number issues, check without parsefloat's later
-    if (value < settings.lower || value >= settings.upper || isNaN(value)) {
-        return;
-    }
-    peeked_energy = value;
-    drawPenumbra ();
-}
 
 canvas.addEventListener('click', function(event) {
     if (!active) return;
-    const mouse_pos = get_canvas_mouse_pos(canvas);
-    const clicked_energy = Math.floor(mouse_pos[0])/ctx.lineWidth*settings.step*energy_per_line + parseFloat(settings.lower);
-    change_energy(clicked_energy);
+    change_energy(peek_energy);
+    draw_penumbra();
 }, false);
 
 canvas.addEventListener('mousemove', function(event) {
     if (!active) return;
     cursor_present = true;
     const mouse_pos = get_canvas_mouse_pos(canvas);
-    const peeked_energy = Math.floor(mouse_pos[0])/ctx.lineWidth*settings.step*energy_per_line + parseFloat(settings.lower);
-    peek_energy(peeked_energy);
+    peek_energy = Math.floor(mouse_pos[0]-2.5)/5*settings.step + settings.lower;
+    peek_energy = float_to_step_precision(peek_energy); // fixing floating number issues, check without parsefloat's later
+    if (peek_energy < settings.lower || peek_energy > settings.upper) return;
+    draw_penumbra();
 }, false);
 
 canvas.addEventListener('mouseout', function(event) {
     if (!active) return;
     cursor_present = false;
-    drawPenumbra();
+    draw_penumbra();
 }, false);
 
 window.addEventListener('keydown', function(event) {
+    if (document.hasFocus()) return;    // do not listen to arrow or AD keys when user is writing
     if (event.keyCode == 'A' || event.keyCode == 37) {   // left
-        const new_energy = parseFloat(settings.energy)-parseFloat(settings.step);
+        const new_energy = settings.energy-settings.step;
         change_energy(new_energy);
     }
 
     if (event.keyCode == 'D' || event.keyCode == 39) {   // right
-        const new_energy = parseFloat(settings.energy)+parseFloat(settings.step);
+        const new_energy = settings.energy+settings.step;
         change_energy(new_energy)
     }
 }, false);
 
-function energy_equals (a, b) {
-    a = energy_per_line*settings.step*Math.round(a/settings.step/energy_per_line);
-    b = energy_per_line*settings.step*Math.round(b/settings.step/energy_per_line);
-    return a == b;
-}
 
-function drawPenumbra () {
-    active = true;
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+// maybe some function like update() to call draw_penumbra() and draw_time() at once? also handling "active" variable and etc.
 
-    let lineWidth = 1;
-    if (data.particles.length >= 800) lineWidth = 1;
-    if (data.particles.length < 800 && data.particles.length > 200) lineWidth = 2;
-	if (data.particles.length <= 200) lineWidth = 4;
+function draw_penumbra () {
+    if (!active) active = true; // maybe you can use first_start_occured instead? btw rename this variable
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = get_line_width();
+    //canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth + 70; // what?
 
-
-	canvas.width = canvas.style.width = data.particles.length * lineWidth > 800 ? 800 : data.particles.length * lineWidth + 70;
-    ctx.lineWidth = lineWidth;
-
-        /*
-    console.log(data.particles.length + " * " + ctx.lineWidth + " + 70 = " + (data.particles.length * ctx.lineWidth + 70));
-    console.log(data.particles.length > 800 ? 800 : data.particles.length * ctx.lineWidth + 70);*/
-    //canvas.width = data.particles.length * ctx.lineWidth + 60;
+    // temporary lack of support of big data
+    //canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth + 70; // this line sets ctx.lineWidth to 1, idk why
+    canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth;
+    ctx.lineWidth = get_line_width();
 
     ctx.fillStyle = 'white';
-    ctx.rect(0, 37, data.particles.length * ctx.lineWidth, 46);
+    ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
     ctx.fill();
-    energy_per_line = data.particles.length / canvas.width;
-    if (energy_per_line < 1.0) energy_per_line = 1.0;
-	for (let i = 0; energy_per_line > 1.0 ? i < canvas.width : i < data.particles.length; i++) {
-        const particle_id = Math.round(energy_per_line * i);
-        const energy = data.particles[particle_id][0]; // alpha version of energy pick
-		ctx.beginPath();
-		// + 0.5 - фикс странной системы коорднат
-		ctx.moveTo(i * ctx.lineWidth + 1, 80);
+    // temporary lack of support of big data
+    //energy_per_line = data.particles.length / canvas.width;
+
+    ctx.font = "bold 16px Times New Roman";
+
+    for (let i = 0; i < data.particles.length; i++) {
+        const particle = data.particles[i];
         let height = 30;
-        if (energy_equals(energy, data.lower) || energy_equals(energy, data.upper)) height = 40;
-        if (energy_equals(energy, data.effective)) height = 40;
-        //if (energy == settings.energy || energy == peeked_energy) height = 50;
-        if (energy_equals(energy, settings.energy) || (energy_equals(energy, peeked_energy) && cursor_present)) height = 43;
-		ctx.lineTo(i * ctx.lineWidth + 1, 80-height);
+        let color = data.particles[i][1] == 0 ? "gray" : "black";
+        if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
+        const drawn_trace = get_trace_at(particle[0]);
+        if (drawn_trace != null) {
+            height = 30 + 15;
+            ctx.fillStyle = drawn_trace.color;
+            draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
+            color = drawn_trace.color == "#ffffff" ? "black" : drawn_trace.color;   // invert white color before drawing a stick
+        }
+        ctx.beginPath();
+        ctx.moveTo(i * ctx.lineWidth+2.5, 30);
+        ctx.lineTo(i * ctx.lineWidth+2.5, 30+height);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+    }
 
-        ctx.strokeStyle = (data.particles[particle_id][1] == 0 ? allowedColor : forbiddenColor);
-	    ctx.stroke();
-	}
 
-    ctx.font = "16px Times New Roman";
-    ctx.fillText(settings.lower + "GV", 0, 100);
-    ctx.fillText(settings.upper + "GV", data.particles.length * lineWidth-50, 100);
-
-    ctx.fillText("lower: " + data.lower + "GV   " + "upper: " + data.upper + "GV    " + "effective: " + data.effective + "GV", 0, 120);
-    ctx.fillText(settings.energy + "GV", Math.ceil(float_to_step_precision (settings.energy-settings.lower) / settings.step) / energy_per_line * ctx.lineWidth+8, 30);
     ctx.fillStyle = 'gray';
-    if (cursor_present) ctx.fillText(peeked_energy + "GV", Math.ceil(float_to_step_precision (peeked_energy-settings.lower) / settings.step) / energy_per_line * ctx.lineWidth+8, 30);
+    if (cursor_present && peek_energy != settings.energy) {
+        draw_text (peek_energy + "GV", Math.round(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth , 23)
+    }
 
-    //ctx.font = "30px Arial";
-    //ctx.fillText("Hello World", 10, 50);
+    ctx.fillStyle = 'black';
+
+    draw_time();
+}
+
+function get_trace_at (energy) {
+    for (let i = 0; i < traces.length; i++) {
+        if (traces[i].settings.energy == energy) return traces[i];
+    }
+    return null;
+}
+
+function draw_time () {
+    //const text = "Time of the proton motion in the magnetosphere, s";
+    //draw_text (text, ctx.measureText(text).width / 2, 75);
+
+    ctx.lineWidth = 1;
+    const height_multiplier = 8.0; // 5 for now; change it dynamically later (rely on maximum flight time)
+    for (let i = 1; i < data.particles.length; i++) {
+        //const particle_id = Math.round(energy_per_line * i);
+        const height = data.particles[i][2] * height_multiplier;
+        const old_height = data.particles[i-1][2] * height_multiplier;
+        ctx.beginPath();
+        ctx.moveTo(i* 5 - 2.5, 155-height);
+        ctx.lineTo((i-1) * 5 - 2.5, 155-old_height);
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+    }
+
+    let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
+
+    draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
+    ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);
+
+
+    // vertical labels
+    /*
+    ctx.beginPath();
+    ctx.moveTo(10, 90);
+    ctx.lineTo(10, 140);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+
+    // horizontal labels
+    ctx.beginPath();
+    ctx.moveTo(10, 140);
+    ctx.lineTo(canvas.width - 10, 140);
+    ctx.strokeStyle = "black";
+    ctx.stroke();*/
+}
+
+// draws any text in (x, y) and offsets x if it is outside canvas
+function draw_text (text, x, y) {
+    const width = ctx.measureText(text).width;
+    if (x > canvas.width - width) x -= width + 16;
+    ctx.fillText(text, x, y);
+}
+
+function draw_text_non_transparent (text, x, y) {
+    const width = ctx.measureText(text).width;
+    if (x > canvas.width - width) x -= width + 16;
+    ctx.fillStyle = "white";
+    ctx.fillRect(x - 6, y - 15, width + 10, 22);
+    ctx.fillStyle = "black";
+    ctx.fillText(text, x, y);
+}
+
+function get_line_height (value) {
+    // maybe?
+}
+
+function get_line_width () {
+    /*
+    if (data.particles.length >= 800) return 1;
+    if (data.particles.length > 200 && data.particles.length < 800) return 2;
+    if (data.particles.length <= 200) return 4;
+    console.error("incorrect get_line_width() constraints");
+    return 0; */
+    return 5;
 }

@@ -2,7 +2,7 @@ const max_traces = 6;
 let current_trace;
 let traces = [];
 let timeouts = [];
-const colors = ['#ffffff', '#ffd319', '#e3424d', '#22ff22', '#46f0f0', '#8f7fff'];
+const colors = ['#ffffff', '#ffd966', '#ff4d67', '#8efc69', '#71f4f4', '#8f7fff'];
 
 function Trace (settings, color, mesh, time) {
     this.settings = settings;
@@ -24,16 +24,16 @@ function get_free_color () {
 		}
 		if (free) return colors[j];
 	}
-
 	return "#ffffff";
 }
 
 function start_trace (trace_data) {
 	if (traces.length > max_traces-1) return;
+
 	const color = get_free_color();
 	stop_timeouts();
 
-	let step = 1;
+	let step = 4;
 	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;	// = real flight time in ms / total segments
 
 	const line = get_line_mesh(
@@ -41,18 +41,21 @@ function start_trace (trace_data) {
 		-trace_data[1][1], trace_data[1][3], trace_data[1][2], color
 	);
 
+	const settings_clone = clone_settings ();
+
+
 	const time = trace_data[trace_data.length-1][0];
-	const trace = new Trace(settings, color, line, time);
+	const trace = new Trace(settings_clone, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
 	current_trace = trace;
 
 	update_info();
 
-	for (let i = step; i < trace_data.length; i++) {
+	for (let i = step; i < trace_data.length; i+=step) {
 		timeouts[i] = setTimeout(function draw() {
   			draw_trace_frame(trace_data, step, i, color);	// trace_id?
-  		}, (i+1)*interval_ms);
+  		}, (i/step+1)*interval_ms);
 	}
 }
 
@@ -94,8 +97,8 @@ function merged (a, b, color) {
 }
 
 function delete_all_traces () {
-	for (let i = 0; i < traces.length; i++) {
-		delete_trace(traces[i]);
+	for (let i = traces.length-1; i >= 0; i--) {
+		delete_trace(i);
 	}
 }
 
@@ -107,6 +110,7 @@ function delete_trace (index) {
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	update_info();
+	draw_penumbra();
 }
 
 function update_info () {
@@ -114,11 +118,12 @@ function update_info () {
 	info.innerHTML = '';
 	for (let i = 0; i < traces.length; i++) {
 		let trace = traces[i];
-		const location = trace.settings.station ? trace.settings.station : trace.settings.latitude + ", " + trace.settings.longitude;
+		const location = trace.settings.station ? trace.settings.station : "LAT: " + trace.settings.latitude + "; LON: " + trace.settings.longitude;
 		const altitude = trace.settings.altitude + " km";
 		const energy = trace.settings.energy + " GV";
 		const time = trace.time + " sec";
 		info.innerHTML += "<a onclick='delete_trace("+i+")'>[ X ]</a>  <span style='color: "+trace.color+"'> " + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
 		info.innerHTML += '<br><br>';
 	}
+	if (traces.length > 1) info.innerHTML += "<a onclick='delete_all_traces()'>[ Clear ]";
 }

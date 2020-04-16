@@ -13,19 +13,19 @@
                 <button type="button" class="btn btn-secondary">Save as..</button>
             </div>-->
             <div class="row">
-                <div class="col-md-2" style="max-height: 800px; min-width: 940px; background-color: black; padding-right: 0px;">
+                <div class="col-md-2" style="max-height: 820px; min-width: 940px; background-color: black; padding-right: 0px;">
                     <h3 style='margin-top: 15px; height: 30px' class='bg-dark text-white'>Cutoff Rigidity Visualiser</h3>
                     <div id="info" style="font-size: 15px"></div>
                     <div>
-                        <canvas class="center" width=900 height=550 id="earth"></canvas>
-                        <canvas class="center" width=800 height=130 id="penumbra"></canvas>
+                        <canvas class="center" width=850 height=520 id="earth"></canvas>
+                        <canvas class="center" width=850 height=170 id="penumbra"></canvas>
                         <div class="alert alert-danger" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert">
-                            
+
                         </div>
                         <!--fix-->
                         <small class="mt-4 form-text center" style="color: white; padding-bottom: 10px">
-                            Navigate through penumbra by mouse click or arrow keys<br>
-                            Drag mouse on the earth to rotate, scroll to zoom
+                            Drag mouse on the animation to rotate, scroll to zoom<br>
+                            Navigate through penumbra by mouse click or arrow keys
                         </small>
                     </div>
                 </div>
@@ -47,20 +47,20 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <label class="col-form-label" for="date">Date</label>
-                            <input class="form-control rounded" type="text" id="date" value="01.07.2017">
-                            <small id="dateHelp" class="form-text text-muted">Format: dd.mm.yyyy</small>
+                            <label class="col-form-label" for="date">Launch Date</label>
+                            <input class="form-control rounded" type="text" id="date" value="2020.06.30">
+                            <small id="dateHelp" class="form-text text-muted">Format: yyyy.mm.dd</small>
                         </div>
                         <div class="col-md-3">
-                            <label class="col-form-label" for="time">Time</label>
-                            <input class="form-control rounded" type="text" id="time" value="00:00:00">
+                            <label class="col-form-label" for="time">Launch Time</label>
+                            <input class="form-control rounded" type="text" id="time" value="12:00:00">
                         </div>
                     </div>
 
                     <div class="row ml-1">
                         <div class="col-md-3">
                             <label id="kp-label" class="col-form-label" for="kp">Kp-index</label>
-                            <input class="form-control rounded" type="text" id="kp" value="1.99">
+                            <input class="form-control rounded" type="text" id="kp" value="2">
                         </div>
                         <div class="col-md-3">
                             <label id="swdp-label" class="col-form-label" for="swdp">SWDP</label>
@@ -98,17 +98,16 @@
                             <small class="form-text text-muted">Height above sea level in kilometers</small>
                         </div>
                         <div class="col-md-3">
-                            <label class="col-form-label" for="vertical">Vertical Angle</label>
+                            <label class="col-form-label" for="vertical">Vertical angle (deg)</label>
                             <input class="form-control rounded" type="text" id="vertical" value="0.00">
                         </div>
                         <div class="col-md-3">
-                            <label class="col-form-label" for="azimutal">Azimutal Angle</label>
+                            <label class="col-form-label" for="azimutal">Azimutal angle (deg)</label>
                             <input class="form-control rounded" type="text" id="azimutal" value="0.00">
                         </div>
                         <div class="col-md-3">
-                            <label class="col-form-label" for="flightTime">Particle flight time (s)</label>
-                            <input class="form-control" type="text" id="flightTime" value="5.0">
-                            <small class="form-text text-muted rounded">From 1.0 to 100.0 seconds</small>
+                            <label class="col-form-label" for="flightTime">Particle flight time (seconds)</label>
+                            <input class="form-control" type="text" id="flightTime" value="8.0">
                         </div>
                     </div>
 
@@ -153,10 +152,10 @@
                             <input class="form-control rounded" type="number" id="step" value="0.01" min="0.001" max="0.1" step="0.01">
                             <small class="form-text text-muted">From 0.1 to 0.001 GV</small>
 							-->
-						
+
 							<span class="dropdown">
 								<button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="step" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rigidity step (GV)</button>
-								
+
 								<span class="dropdown-menu" aria-labelledby="step">
 									<a onclick="change_step(this.innerHTML)" class="dropdown-item">0.1 GV</a>
 									<a onclick="change_step(this.innerHTML)" class="dropdown-item">0.01 GV</a>
@@ -182,7 +181,7 @@
                         </div>
                         <div class="col-md-3">
                             <label class="col-form-label" for="energy">Energy</label>
-                            <input class="form-control rounded" type="number" id="energy" value="0" oninput="change_energy(this.value)">
+                            <input class="form-control rounded" type="number" id="energy" value="0" onchange="change_energy(this.value)">
                         </div>
                         <div class="col-md-3">
                             <label class="col-form-label" for="gifTime">Record for (seconds)</label>
