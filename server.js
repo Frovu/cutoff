@@ -92,7 +92,7 @@ function assertIni(ini) {
 function spawnCutoff(id, ini, t=false, trace) {
 	const initxt = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${t?trace:(ini.lower||ini.step)}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+${ini.azimutal}\n${t?trace:(ini.lower!=='0'?ini.lower:ini.step)}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
 	fs.writeFileSync(path.join(settings.instancesDir, id, settings.iniFilename), initxt);
 	return spawn('wine', [path.join(__dirname, settings.execName)], {cwd: path.join(settings.instancesDir, id)});
 }
