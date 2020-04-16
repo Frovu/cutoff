@@ -46,15 +46,10 @@ function makeGif() {
 	gif = new GIF({
   		workers: 2,
   		quality: 20,
-		width: 850,
-		height: 520,
 		workerScript: ".\\js\\gl\\gif\\gif.worker.js",
 		debug: true
 	});
 	recording = true;
-    // TODO; more convinient solution will be to count fps in webgl context and then simply record GIF with the same FPS
-    // right now it's just fixed 60
-    const fps = 60;
 	framesCount = Math.trunc($("#gifTime").val() * fps);	
 	gif.on('finished', function(blob) {
 		downloadGif(blob, "cutoff_gif.gif");
