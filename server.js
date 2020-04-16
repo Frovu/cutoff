@@ -89,10 +89,12 @@ function assertIni(ini) {
 	return true;
 }
 
-function getIni(ini, t=false, trace) {
-	return `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
+function spawnCutoff(id, ini, t=false, trace) {
+	const initxt = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${t?trace:(ini.lower||ini.step)}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+${ini.azimutal}\n${t?trace:(ini.lower!=='0'?ini.lower:ini.step)}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+	fs.writeFileSync(path.join(settings.instancesDir, id, settings.iniFilename), initxt);
+	return spawn('wine', [path.join(__dirname, settings.execName)], {cwd: path.join(settings.instancesDir, id)});
 }
 
 function createInstance(ini, id, callback) {
@@ -103,56 +105,50 @@ function createInstance(ini, id, callback) {
 			log(err);
 			callback(false);
 		}
-		fs.writeFile(path.join(dir, settings.iniFilename), getIni(ini), (err) => {
-			if(err) {
-				log(err);
-				callback(false);
-			}
-			// spawn process
-			let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], { cwd: dir })
-			let instance = instances[id] = {
-				status: 'processing',
-				spawnedAt: new Date(),
-				linesPredict: (ini.upper-ini.lower)/ini.step*2, // for percentage count
-				linesGot: 0,
-				tracesCalculating: 0,
-				process: cutoff,
-				ini: ini
-			};
-			log('instance spawned:'+id);
-			instances.running++;
-			//log('running = '+instances.running)
+		// spawn process
+		const cutoff = spawnCutoff(id, ini);
+		let instance = instances[id] = {
+			status: 'processing',
+			spawnedAt: new Date(),
+			linesPredict: (ini.upper-ini.lower)/ini.step*2, // for percentage count
+			linesGot: 0,
+			tracesCalculating: 0,
+			process: cutoff,
+			ini: ini
+		};
+		log('instance spawned:'+id);
+		instances.running++;
+		//log('running = '+instances.running)
 
-			cutoff.on('error', e => {
-				log(e);
-			});
-
-			cutoff.stdout.on('data', data => {
-				//console.log(data.toString())
-				instance.linesGot++;
-			});
-
-			cutoff.on('exit', (code, signal) => {
-				instances.running--;
-				//log('running = '+instances.running)
-				log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
-				if(code === null) {
-					// process killed by signal
-					delete instances[id];
-					try{fs.removeSync(path.join(settings.instancesDir, id));}
-					catch(e){log(e);}
-				} else if(code === 0) {
-					instance.status = 'complete';
-					instance.completeAt = Date.now();
-					// save .dat file
-					fs.renameSync(path.join(dir, 'Cutoff.dat'), path.join(dir, 'data.dat'));
-				} else {
-					instance.status = 'failed';
-					instance.completeAt = Date.now();
-				}
-			});
-			callback(true);
+		cutoff.on('error', e => {
+			log(e);
 		});
+
+		cutoff.stdout.on('data', data => {
+			//console.log(data.toString())
+			instance.linesGot++;
+		});
+
+		cutoff.on('exit', (code, signal) => {
+			instances.running--;
+			//log('running = '+instances.running)
+			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
+			if(code === null) {
+				// process killed by signal
+				delete instances[id];
+				try{fs.removeSync(path.join(settings.instancesDir, id));}
+				catch(e){log(e);}
+			} else if(code === 0) {
+				instance.status = 'complete';
+				instance.completeAt = Date.now();
+				// save .dat file
+				fs.renameSync(path.join(dir, 'Cutoff.dat'), path.join(dir, 'data.dat'));
+			} else {
+				instance.status = 'failed';
+				instance.completeAt = Date.now();
+			}
+		});
+		callback(true);
 	});
 };
 
@@ -245,8 +241,7 @@ app.get('/:uuid/:trace', (req, res) => {
 						res.status(503).send('too many traces');
 					else {
 						const start = new Date();
-						fs.writeFileSync(path.join(settings.instancesDir, id, settings.iniFilename), getIni(instances[id].ini, true, req.params.trace));
-						let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], {cwd: path.join(settings.instancesDir, id)});
+						const cutoff = spawnCutoff(id, instances[id].ini, true, req.params.trace);
 						instances[id].tracesCalculating++;
 						cutoff.on('exit', (code, signal) => {
 							instances[id].tracesCalculating--;
