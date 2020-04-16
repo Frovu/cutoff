@@ -1,0 +1,26 @@
+API REFERENCE
+
+POST /submit
+    spawn calculations instance
+        body - settings
+    returns
+        200
+        400 - bad settings
+        500 - failed
+        503 - too many instances
+
+GET /:uuid/dat
+    get
+
+GET /:uuid/status
+    get instance status
+        'running'   - calculating everything
+        'notraces'  - calculated .dat but without traces
+        'failed'    - Cutoff process dead
+        'completed' - completed
+    returns
+        200 {status: string, percentage: number}
+        404
+
+SERVER.JS DESCRIPTION
+    Instance status:
