@@ -128,7 +128,7 @@ function createInstance(ini, id, callback) {
 			});
 
 			cutoff.stdout.on('data', data => {
-				console.log(data.toString())
+				//console.log(data.toString())
 				instance.linesGot++;
 			});
 
@@ -234,7 +234,7 @@ app.get('/:uuid/:trace', (req, res) => {
 						if (err) {
 							res.status(500).send({err})
 						} else {
-							res.status(200).send(data.toString().split(/\r?\n/).slice(1)
+							res.status(200).send(data.toString().split(/\r?\n/).slice(1, -1)
 									.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))));
 						}
 					});
