@@ -8,6 +8,7 @@ const settings = {
 	port: 3050,
 	timeToLive: 3600000,
 	maxRunningInstances: 3,
+	maxRunningTraces: 3,
 	instancesDir: './cutoff/',
 	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
@@ -88,19 +89,21 @@ function assertIni(ini) {
 	return true;
 }
 
-function createInstance(ini, id, callback) {
-	let dir = path.join(settings.instancesDir, id);
-	let iniString = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
+function getIni(ini, t=false, trace) {
+	return `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n1`; //${ini.trace}`; // )))0)
+${ini.azimutal}\n${t?trace:ini.lower}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+}
 
+function createInstance(ini, id, callback) {
+	const dir = path.join(settings.instancesDir, id);
 	// create instance directory
 	fs.mkdir(dir, (err) => {
 		if(err) {
 			log(err);
 			callback(false);
 		}
-		fs.writeFile(path.join(dir, settings.iniFilename), iniString, (err) => {
+		fs.writeFile(path.join(dir, settings.iniFilename), getIni(ini), (err) => {
 			if(err) {
 				log(err);
 				callback(false);
@@ -110,9 +113,11 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n1`;
 			let instance = instances[id] = {
 				status: 'processing',
 				spawnedAt: new Date(),
-				linesPredict: (ini["upper"]-ini["lower"])/ini["step"]*2, // for percentage count
+				linesPredict: (ini.upper-ini.lower)/ini.step*2, // for percentage count
 				linesGot: 0,
-				process: cutoff
+				tracesCalculating: 0,
+				process: cutoff,
+				ini: ini
 			};
 			log('instance spawned:'+id);
 			instances.running++;
@@ -139,15 +144,13 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n1`;
 				} else if(code === 0) {
 					instance.status = 'complete';
 					instance.completeAt = Date.now();
+					// save .dat file
+					fs.renameSync(path.join(dir, 'Cutoff.dat'), path.join(dir, 'data.dat'));
 				} else {
-					//
-					// FIXME: remove instance ()
-					//
 					instance.status = 'failed';
 					instance.completeAt = Date.now();
 				}
 			});
-
 			callback(true);
 		});
 	});
@@ -223,8 +226,44 @@ app.get('/:uuid/:trace', (req, res) => {
 			if (err) {
 				res.status(500).send({err});
 			} else {
-				const filename = ``
-				const tracefile = files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace];//-1]),
+				const fnpart = parseFloat(req.params.trace).toFixed(3).replace('.', '');
+				const fname = `Trace${'00000'.slice(fnpart.length)}${fnpart}.dat`;
+				const fpath = path.join(settings.instancesDir, id, fname);
+				const send = () => {
+					fs.readFile(fpath, (err, data) => {
+						if (err) {
+							res.status(500).send({err})
+						} else {
+							res.status(200).send(data.toString().split(/\r?\n/).slice(1)
+									.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))));
+						}
+					});
+				};
+				if(fs.existsSync(fpath)) {
+					// send already calculated trace data
+					send();
+				} else {
+					// spawn new Cutoff.exe to calculate this specific trace
+					if(instances[id].tracesCalculating >= settings.maxRunningTraces)
+						res.status(503).send('too many traces');
+					else {
+						const start = new Date();
+						fs.writeFileSync(path.join(settings.instancesDir, id, settings.iniFilename), getIni(instances[id].ini, true, req.params.trace));
+						let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], {cwd: path.join(settings.instancesDir, id)});
+						instances[id].tracesCalculating++;
+						cutoff.on('exit', (code, signal) => {
+							instances[id].tracesCalculating--;
+							log(`cutoff(trace) code=${code} sg=${signal} took ${(Date.now()-start)/1000} seconds`);
+							if(code === 0) {
+								send();
+								fs.removeSync(path.join(settings.instancesDir, id, 'Cutoff.dat'));
+							} else {
+								res.status(500).send('failed');
+							}
+						});
+					}
+				}
+				/*const tracefile = files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace];//-1]),
 				if(!tracefile)
 					res.status(400).send('Invalid trace');
 				else
@@ -236,7 +275,7 @@ app.get('/:uuid/:trace', (req, res) => {
 						res.send(data.toString().split(/\r?\n/).slice(1)
 								.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))))
 					}
-				})
+				})*/
 			}
 		})
 	} else

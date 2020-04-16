@@ -69,14 +69,14 @@ function fetch_data () {
     }
 }
 
-function fetch_trace (index) {
+function fetch_trace (energy) {
     try {
-        fetch(url + uid + '/' + index, {
+        fetch(url + uid + '/' + energy, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
         }).then(res => res.json()).then(function (data) {
             let trace = data;
-            trace.pop();    // useless last value from nowhere, so we just pop it
+            //trace.pop();    // useless last value from nowhere, so we just pop it
             start_trace(trace);
         }).catch(error => show_error(error));
     } catch (error) {
