@@ -73,7 +73,7 @@ function draw_penumbra () {
             height = 30 + 15;
             ctx.fillStyle = drawn_trace.color;
             draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
-            color = drawn_trace.color == "#ffffff" ? "black" : drawn_trace.color;   // invert white color before drawing a stick
+            if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
         ctx.beginPath();
         ctx.moveTo(i * ctx.lineWidth+2.5, 30);
