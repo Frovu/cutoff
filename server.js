@@ -92,7 +92,7 @@ function createInstance(ini, id, callback) {
 	let dir = path.join(settings.instancesDir, id);
 	let iniString = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${ini.trace}`; // )))0)
+${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n0`; //${ini.trace}`; // )))0)
 
 	// create instance directory
 	fs.mkdir(dir, (err) => {
@@ -123,6 +123,7 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 			});
 
 			cutoff.stdout.on('data', data => {
+				console.log(data.toString())
 				instance.linesGot++;
 			});
 
@@ -182,10 +183,10 @@ app.get('/:uuid/status', (req, res) => {
 
 // request calculation result
 app.get('/:uuid/dat', (req, res) => {
-	const id = req.params.uuid
-	if (typeof instances[id] === 'undefined')
-		res.sendStatus(404)
-	else if (instances[id].status === 'complete'){
+	const id = req.params.uuid;
+	if(!instances[id])
+		res.sendStatus(404); // not found
+	else if(instances[id].status === 'complete'){
 		fs.readFile(path.join(settings.instancesDir, id, 'Cutoff.dat'), (err, data) => {
 			if (err) {
 				log(err)
