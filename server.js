@@ -92,7 +92,7 @@ function assertIni(ini) {
 function getIni(ini, t=false, trace) {
 	return `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${t?trace:ini.lower}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+${ini.azimutal}\n${t?trace:(ini.lower||ini.step)}\n${t?trace:ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
 }
 
 function createInstance(ini, id, callback) {
@@ -192,28 +192,25 @@ app.get('/:uuid/dat', (req, res) => {
 	else if(instances[id].status === 'complete'){
 		fs.readFile(path.join(settings.instancesDir, id, 'data.dat'), (err, data) => {
 			if (err) {
-				log(err)
-				res.status(500).send({ err })
+				log(err);
+				res.status(500).send({ err });
 			} else {
-				let response = {}
-
+				let response = {};
 				// на первый взгляд спагетти, но если знать формат, то нормально
-				let arr = data.toString().split(/\r?\n/)
-				let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'))
-				response.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)))
-				arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]))
-				response.lower = arr[0]
-				response.upper = arr[1]
-				response.effective = arr[2]
-
-				log(`Completed (requested). effective: ${arr[2]}`) //
-
-				res.send(response)
+				let arr = data.toString().split(/\r?\n/);
+				let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
+				response.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
+				arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
+				response.lower = arr[0];
+				response.upper = arr[1];
+				response.effective = arr[2];
+				log(`Completed (requested). effective: ${arr[2]}`);
+				res.send(response);
 			}
-		})
+		});
 	}
 	else // processing
-		res.sendStatus(102)
+		res.sendStatus(102);
 });
 
 // request trace data
@@ -263,37 +260,24 @@ app.get('/:uuid/:trace', (req, res) => {
 						});
 					}
 				}
-				/*const tracefile = files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace];//-1]),
-				if(!tracefile)
-					res.status(400).send('Invalid trace');
-				else
-				fs.readFile(path.join(settings.instancesDir, id, tracefile),
-				(err, data) => {
-					if (err) {
-						res.status(500).send({err})
-					} else {
-						res.send(data.toString().split(/\r?\n/).slice(1)
-								.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))))
-					}
-				})*/
 			}
 		})
 	} else
-		res.sendStatus(102)
+		res.sendStatus(102);
 });
 
 // kill running process
 app.post('/:uuid/kill', (req, res) => {
-	const id = req.params.uuid
+	const id = req.params.uuid;
 	if (typeof instances[id] === 'undefined')
-		res.sendStatus(404)
+		res.sendStatus(404);
 	else if (instances[id].status === 'processing') {
 		// kill process
 		instances[id].process.kill('SIGHUP');
-		log(`Process killed from front.`)
-		res.status(200).send(id)
+		log(`Process killed from front.`);
+		res.status(200).send(id);
 	}
-	else res.sendStatus(402)
+	else res.sendStatus(402);
 });
 
 // start server
