@@ -118,7 +118,7 @@ function update_info () {
 	info.innerHTML = '';
 	for (let i = 0; i < traces.length; i++) {
 		let trace = traces[i];
-		const location = trace.settings.station ? trace.settings.station : trace.settings.latitude + ", " + trace.settings.longitude;
+		const location = trace.settings.station ? trace.settings.station : "LAT: " + trace.settings.latitude + "; LON: " + trace.settings.longitude;
 		const altitude = trace.settings.altitude + " km";
 		const energy = trace.settings.energy + " GV";
 		const time = trace.time + " sec";

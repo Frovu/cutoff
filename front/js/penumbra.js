@@ -17,7 +17,7 @@ canvas.addEventListener('mousemove', function(event) {
     cursor_present = true;
     const mouse_pos = get_canvas_mouse_pos(canvas);
     peek_energy = Math.floor(mouse_pos[0]-2.5)/5*settings.step + settings.lower;
-    peek_energy = parseFloat(float_to_step_precision(parseFloat(peek_energy))); // fixing floating number issues, check without parsefloat's later
+    peek_energy = float_to_step_precision(peek_energy); // fixing floating number issues, check without parsefloat's later
     if (peek_energy < settings.lower || peek_energy > settings.upper) return;
     draw_penumbra();
 }, false);
@@ -56,41 +56,39 @@ function draw_penumbra () {
     ctx.lineWidth = get_line_width();
 
     ctx.fillStyle = 'white';
-    ctx.rect(0, 47, data.particles.length * ctx.lineWidth, 140);
+    ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
     ctx.fill();
     // temporary lack of support of big data
     //energy_per_line = data.particles.length / canvas.width;
     
-    ctx.font = "16px Times New Roman";
+    ctx.font = "bold 16px Times New Roman";
 
     for (let i = 0; i < data.particles.length; i++) {
         const particle = data.particles[i];
         let height = 30;
-        let color = data.particles[i == 0 ? 0 : i-1][1] == 0 ? "gray" : "black"; 
-        if (particle[0] == peek_energy && cursor_present) height = 30 + 55;
-        //if (particle[0] == settings.energy) height = 30 + 55;
+        let color = data.particles[i][1] == 0 ? "gray" : "black"; 
+        if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
-            height = 30 + 55;
+            height = 30 + 15;
             ctx.fillStyle = drawn_trace.color;
-            draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 40);
+            draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
             color = drawn_trace.color == "#ffffff" ? "black" : drawn_trace.color;   // invert white color before drawing a stick
         }
         ctx.beginPath();
-        ctx.moveTo(i * ctx.lineWidth+2.5, 50);          //50
-        ctx.lineTo(i * ctx.lineWidth+2.5, 50+height);      //50+height
-        //ctx.strokeStyle = (data.particles[particle_id][1] == 0 ? allowedColor : forbiddenColor);
+        ctx.moveTo(i * ctx.lineWidth+2.5, 30);
+        ctx.lineTo(i * ctx.lineWidth+2.5, 30+height);
         ctx.strokeStyle = color;
         ctx.stroke();
     }
 
-    // why is it so long? \/
 
     ctx.fillStyle = 'gray';
     if (cursor_present && peek_energy != settings.energy) {
-        draw_text (peek_energy + "GV", Math.ceil(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth , 40)
+        draw_text (peek_energy + "GV", Math.round(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth , 23)
     }
 
+    ctx.fillStyle = 'black';
 
     draw_time();
 }
@@ -103,23 +101,57 @@ function get_trace_at (energy) {
 }
 
 function draw_time () {
+    //const text = "Time of the proton motion in the magnetosphere, s";
+    //draw_text (text, ctx.measureText(text).width / 2, 75);
+
     ctx.lineWidth = 1;
-    const height_multiplier = 5.0; // 5 for now; change it dynamically later (rely on maximum flight time)
+    const height_multiplier = 8.0; // 5 for now; change it dynamically later (rely on maximum flight time)
     for (let i = 1; i < data.particles.length; i++) {
         //const particle_id = Math.round(energy_per_line * i);
         const height = data.particles[i][2] * height_multiplier;
         const old_height = data.particles[i-1][2] * height_multiplier;
         ctx.beginPath();
-        ctx.moveTo(i * ctx.lineWidth * 5 - 2.5, 130-height);
-        ctx.lineTo((i-1) * ctx.lineWidth * 5 - 2.5, 130-old_height);
+        ctx.moveTo(i* 5 - 2.5, 155-height);
+        ctx.lineTo((i-1) * 5 - 2.5, 155-old_height);
         ctx.strokeStyle = "black";
         ctx.stroke();
     }
+
+    let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
+    
+    draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
+    ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);
+
+
+    // vertical labels
+    /*
+    ctx.beginPath();
+    ctx.moveTo(10, 90);
+    ctx.lineTo(10, 140);
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+
+    // horizontal labels
+    ctx.beginPath();
+    ctx.moveTo(10, 140);
+    ctx.lineTo(canvas.width - 10, 140);
+    ctx.strokeStyle = "black";
+    ctx.stroke();*/
 }
 
 // draws any text in (x, y) and offsets x if it is outside canvas
 function draw_text (text, x, y) {
-    if (x > canvas.width - ctx.measureText(text).width) x -= ctx.measureText(text).width - 4;
+    const width = ctx.measureText(text).width;
+    if (x > canvas.width - width) x -= width + 16;
+    ctx.fillText(text, x, y);
+}
+
+function draw_text_non_transparent (text, x, y) {
+    const width = ctx.measureText(text).width;
+    if (x > canvas.width - width) x -= width + 16;
+    ctx.fillStyle = "white";
+    ctx.fillRect(x - 6, y - 15, width + 10, 22);
+    ctx.fillStyle = "black";
     ctx.fillText(text, x, y);
 }
 

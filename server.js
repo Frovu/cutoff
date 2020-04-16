@@ -9,7 +9,7 @@ const settings = {
 	timeToLive: 3600000,
 	maxRunningInstances: 3,
 	instancesDir: './cutoff/',
-	execPath: './Cutoff2050.exe',
+	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
 	valueRanges: './valueranges.json'
 }
@@ -106,11 +106,9 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				callback(false);
 			}
 			// spawn process
-			// UNCOMMENT IF LINUX
+			//let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], { cwd: dir })
 			const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
 			let cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
-
-			
 			let instance = instances[id] = {
 				status: 'processing',
 				spawnedAt: new Date(),
@@ -134,7 +132,12 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				instances.running--;
 				//log('running = '+instances.running)
 				log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instances[id].spawnedAt)/1000} seconds`)
-				if (code === 0) {
+				if(code === null) {
+					// process killed by signal
+					delete instances[id];
+					try{fs.removeSync(path.join(settings.instancesDir, id));}
+					catch(e){log(e);}
+				} else if(code === 0) {
 					instance.status = 'complete';
 					instance.completeAt = Date.now();
 				} else {
@@ -221,8 +224,11 @@ app.get('/:uuid/:trace', (req, res) => {
 			if (err) {
 				res.status(500).send({ err })
 			} else {
-				fs.readFile(path.join(settings.instancesDir, id,
-					files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace]), //-1]),
+				const tracefile = files.filter(el => /^Trace\d{5}\.dat$/.test(el)).sort()[req.params.trace];//-1]),
+				if(!tracefile)
+					res.status(400).send('Invalid trace');
+				else
+				fs.readFile(path.join(settings.instancesDir, id, tracefile),
 				(err, data) => {
 					if (err) {
 						res.status(500).send({ err })
@@ -245,10 +251,6 @@ app.post('/:uuid/kill', (req, res) => {
 	else if (instances[id].status === 'processing') {
 		// kill process
 		instances[id].process.kill();
-		// remove file and stuff
-		delete instances[id]
-		try{fs.removeSync(path.join(settings.instancesDir, id))}
-		catch(e){log(e)}
 		log(`Process killed from front.`)
 		res.status(200).send(id)
 	}
