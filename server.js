@@ -11,7 +11,7 @@ const settings = {
 	instancesDir: './cutoff/',
 	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
-	valueRanges: './valueranges.json'
+	valueRanges: './front/valueranges.json'
 }
 
 // logging
@@ -106,9 +106,7 @@ ${ini.azimutal}\n${ini.lower}\n${ini.upper}\n${ini.step}\n${ini.flightTime}\n${i
 				callback(false);
 			}
 			// spawn process
-			//let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], { cwd: dir })
-			const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
-			let cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+			let cutoff = spawn('wine', [path.join(__dirname, settings.execName)], { cwd: dir })
 			let instance = instances[id] = {
 				status: 'processing',
 				spawnedAt: new Date(),
@@ -250,7 +248,7 @@ app.post('/:uuid/kill', (req, res) => {
 		res.sendStatus(404)
 	else if (instances[id].status === 'processing') {
 		// kill process
-		instances[id].process.kill();
+		instances[id].process.kill('SIGHUP');
 		log(`Process killed from front.`)
 		res.status(200).send(id)
 	}

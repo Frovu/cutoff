@@ -60,7 +60,7 @@ function update_settings () {
 
     settings.longitude = parseFloat(document.getElementById('lon').value);
     settings.latitude = parseFloat(document.getElementById('lat').value);
-	settings.station = isStation(settings.latitude, settings.longitude); 
+	settings.station = isStation(settings.latitude, settings.longitude);
     settings.altitude = parseFloat(document.getElementById('alt').value);
     limit_energy ();    // maybe not neccesary?
 }
@@ -75,7 +75,7 @@ function clone_settings () {
 
     settings_clone.longitude = settings.longitude;
     settings_clone.latitude = settings.latitude;
-    settings_clone.station = settings.station; 
+    settings_clone.station = settings.station;
     settings_clone.altitude = settings.altitude;
     return settings_clone;
 }
@@ -102,7 +102,7 @@ function is_bad_value (param, value) {
 
     if (param == "time") {
         return !is_valid_time(value);
-    } 
+    }
 
     if (param != "model" && param != "step") {
         // if param is numeric, then we check it for having any letters
@@ -143,7 +143,7 @@ function is_bad_input() {
             } else {
                 feedback.innerHTML = "Correct range: " + valueranges[param].min + " to " + valueranges[param].max;
             }
-            
+
             el.parentNode.appendChild(feedback);
             el.classList.add('is-invalid');
             bad = true;

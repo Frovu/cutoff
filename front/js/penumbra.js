@@ -52,7 +52,7 @@ function draw_penumbra () {
 
     // temporary lack of support of big data
     //canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth + 70; // this line sets ctx.lineWidth to 1, idk why
-    canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth; 
+    canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth;
     ctx.lineWidth = get_line_width();
 
     ctx.fillStyle = 'white';
@@ -60,13 +60,13 @@ function draw_penumbra () {
     ctx.fill();
     // temporary lack of support of big data
     //energy_per_line = data.particles.length / canvas.width;
-    
+
     ctx.font = "bold 16px Times New Roman";
 
     for (let i = 0; i < data.particles.length; i++) {
         const particle = data.particles[i];
         let height = 30;
-        let color = data.particles[i][1] == 0 ? "gray" : "black"; 
+        let color = data.particles[i][1] == 0 ? "gray" : "black";
         if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
@@ -134,7 +134,7 @@ function draw_time () {
     }
 
     let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
-    
+
     draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
     ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);
 

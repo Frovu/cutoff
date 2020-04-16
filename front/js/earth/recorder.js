@@ -25,7 +25,7 @@ function record_gif () {
         frames.push(img);
         let record_percent = Math.trunc((frames.length*1.0) / (framesCount*1.0) * 100.0);
         $("#progress")
-        .css("width", (record_percent) + "%")   // *1.5 - cosmetic workaround 
+        .css("width", (record_percent) + "%")   // *1.5 - cosmetic workaround
         .text("Recording... " + record_percent + "%");
         progress.classList.add("bg-danger");
     }
@@ -50,7 +50,7 @@ function makeGif() {
 		debug: true
 	});
 	recording = true;
-	framesCount = Math.trunc($("#gifTime").val() * fps);	
+	framesCount = Math.trunc($("#gifTime").val() * fps);
 	gif.on('finished', function(blob) {
 		downloadGif(blob, "cutoff_gif.gif");
 		complete_process();
