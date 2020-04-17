@@ -227,8 +227,25 @@ app.get('/:uuid/:trace', (req, res) => {
 						if (err) {
 							res.status(500).send('Can\'t read trace file.');
 						} else {
-							res.status(200).send(data.toString().split(/\r?\n/).slice(1, -1)
-									.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e))));
+							const trace = data.toString().split(/\r?\n/).slice(1, -1)
+									.map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e)));
+							let optimized = [trace[0]]; let oi = 0;
+							const threshold = trace.length<300?0:(trace.length<4000?0.015:0.07);
+							console.log(`Total points: ${trace.length}`)
+							console.log(`Threshold set to: ${threshold}`)
+							if(threshold)
+								for(let i=1; i<trace.length; ++i) {
+									const dx = trace[i][1] - optimized[oi][1];
+									const dy = trace[i][2] - optimized[oi][2];
+									const dz = trace[i][3] - optimized[oi][3];
+									const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+									if(d > threshold) {
+										optimized.push(trace[i]);
+										oi++;
+									}
+							}
+							console.log(`Optimized: ${optimized.length}`)
+							res.status(200).send(threshold?optimized:trace);
 						}
 					});
 				};
