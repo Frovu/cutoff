@@ -8,8 +8,9 @@ let cursor_present = false;
 let lower_edge = 0;
 let upper_edge = 0;
 let viewport_position = 1;
+const move_value = 0.33;    // 1.0 - moving every trace off screen
 
-const line_width = 5;
+const line_width = 4;
 const max_lines_onscreen = Math.floor(800.0 / line_width);
 
 
@@ -52,25 +53,32 @@ window.addEventListener('keydown', function(event) {
 // maybe some function like update() to call draw_penumbra() and draw_time() at once? also handling "active" variable and etc.
 
 function set_penumbra_edges() {
-    // max_lines_onscreen*multiplier
-    //if (max_lines_onscreen*multiplier) 
-    console.log("setting edges");
     lower_edge = Math.floor(max_lines_onscreen*(viewport_position-1));
     upper_edge = Math.floor(max_lines_onscreen*viewport_position);
-    console.log("upper_edge = " + upper_edge);
-    console.log("lower_edge = " + lower_edge);
+
+    if (lower_edge < 0) {
+        //viewport_position += move_value;
+        lower_edge = 0;
+    }
+    if (upper_edge > data.particles.length) {
+        //viewport_position -= move_value;
+        upper_edge = data.particles.length
+    } 
+
+
+
+    console.log(lower_edge + " le")
+    console.log(upper_edge + " ue")
 }
 
 function penumbra_left () {
-    //const diff = settings.upper - settings.lower / 3.0;
-    viewport_position -= 0.33; // change to .33
+    viewport_position -= move_value;
     set_penumbra_edges()
     draw_penumbra();
 }
 
 function penumbra_right () {
-    //const diff = settings.upper - settings.lower / 3.0;
-    viewport_position += 0.33; // change to .33
+    viewport_position += move_value;
     set_penumbra_edges()
     draw_penumbra();
 }
@@ -79,22 +87,22 @@ function energy_to_x (energy) {
     return Math.round(float_to_step_precision (parseFloat(energy)) / settings.step) * line_width - lower_edge * line_width;
 }
 
-function draw_penumbra () {
-    if (!active) active = true; // maybe you can use first_start_occured instead? btw rename this variable
-    if (lower_edge == 0) {
-        //set_penumbra_edges()
-    }
+function init_penumbra () {
+    active = true; // maybe you can use first_start_occured instead? btw rename this variable
+    viewport_position = 1;
+    set_penumbra_edges();
+    draw_penumbra();
+}
 
+function draw_penumbra () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    //canvas.width = canvas.style.width = data.particles.length * line_width > 850 ? 850 : data.particles.length * line_width;
+    canvas.width = canvas.style.width = (upper_edge - lower_edge) * line_width;
     ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
     ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
     ctx.fill();
-    // temporary lack of support of big data
-    //energy_per_line = data.particles.length / canvas.width;
 
     ctx.font = "bold 16px Times New Roman";
 
@@ -126,8 +134,6 @@ function draw_penumbra () {
     if (cursor_present) {
         draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 10 , 75)
     }
-
-    
 
     draw_time();
 }
@@ -207,14 +213,4 @@ function draw_time_text (text, x, y) {
 
 function get_line_height (value) {
     // maybe?
-}
-
-function get_line_width () {
-    /*
-    if (data.particles.length >= 800) return 1;
-    if (data.particles.length > 200 && data.particles.length < 800) return 2;
-    if (data.particles.length <= 200) return 4;
-    console.error("incorrect get_line_width() constraints");
-    return 0; */
-    return 5;
 }

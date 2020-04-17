@@ -61,7 +61,7 @@ function fetch_data () {
             	data = received;
                 //data.particles.shift();
                 update_settings ();
-                set_penumbra_edges();
+                init_penumbra();
                 draw_penumbra();
          	});
 	}).catch(error => show_error(error));
