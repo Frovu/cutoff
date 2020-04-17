@@ -5,6 +5,13 @@ let active = false;
 let peek_energy;
 let cursor_present = false;
 
+let lower_edge = 0;
+let upper_edge = 0;
+let viewport_position = 1;
+
+const line_width = 5;
+const max_lines_onscreen = Math.floor(800.0 / line_width);
+
 
 canvas.addEventListener('click', function(event) {
     if (!active) return;
@@ -16,7 +23,7 @@ canvas.addEventListener('mousemove', function(event) {
     if (!active) return;
     cursor_present = true;
     const mouse_pos = get_canvas_mouse_pos(canvas);
-    peek_energy = Math.floor(mouse_pos[0]-2.5)/5*settings.step + settings.lower;
+    peek_energy = Math.floor(mouse_pos[0]-line_width/2.0)/line_width*settings.step + parseFloat(float_to_step_precision(lower_edge*settings.step));
     peek_energy = float_to_step_precision(peek_energy); // fixing floating number issues, check without parsefloat's later
     if (peek_energy < settings.lower || peek_energy > settings.upper) return;
     draw_penumbra();
@@ -44,16 +51,44 @@ window.addEventListener('keydown', function(event) {
 
 // maybe some function like update() to call draw_penumbra() and draw_time() at once? also handling "active" variable and etc.
 
+function set_penumbra_edges() {
+    // max_lines_onscreen*multiplier
+    //if (max_lines_onscreen*multiplier) 
+    console.log("setting edges");
+    lower_edge = Math.floor(max_lines_onscreen*(viewport_position-1));
+    upper_edge = Math.floor(max_lines_onscreen*viewport_position);
+    console.log("upper_edge = " + upper_edge);
+    console.log("lower_edge = " + lower_edge);
+}
+
+function penumbra_left () {
+    //const diff = settings.upper - settings.lower / 3.0;
+    viewport_position -= 0.33; // change to .33
+    set_penumbra_edges()
+    draw_penumbra();
+}
+
+function penumbra_right () {
+    //const diff = settings.upper - settings.lower / 3.0;
+    viewport_position += 0.33; // change to .33
+    set_penumbra_edges()
+    draw_penumbra();
+}
+
+function energy_to_x (energy) {
+    return Math.round(float_to_step_precision (parseFloat(energy)) / settings.step) * line_width - lower_edge * line_width;
+}
+
 function draw_penumbra () {
     if (!active) active = true; // maybe you can use first_start_occured instead? btw rename this variable
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineWidth = get_line_width();
-    //canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth + 70; // what?
+    if (lower_edge == 0) {
+        //set_penumbra_edges()
+    }
 
-    // temporary lack of support of big data
-    //canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth + 70; // this line sets ctx.lineWidth to 1, idk why
-    canvas.width = canvas.style.width = data.particles.length * ctx.lineWidth > 800 ? 800 : data.particles.length * ctx.lineWidth;
-    ctx.lineWidth = get_line_width();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    //canvas.width = canvas.style.width = data.particles.length * line_width > 850 ? 850 : data.particles.length * line_width;
+    ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
     ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
@@ -63,50 +98,38 @@ function draw_penumbra () {
 
     ctx.font = "bold 16px Times New Roman";
 
-    for (let i = 0; i < data.particles.length; i++) {
-        const particle = data.particles[i];
+    for (let i = 0; i < upper_edge - lower_edge; i++) {
+        if (lower_edge + i >= data.particles.length) {
+            break;
+        }
+        const particle = data.particles[lower_edge + i];
         let height = 30;
         if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
         let color = particle[1] == 0 ? "gray" : "black";
+        
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
             height = 30 + 15;
             ctx.fillStyle = drawn_trace.color;
-            draw_energy_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
+            draw_energy_text (drawn_trace.settings.energy + "GV", energy_to_x(drawn_trace.settings.energy), 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
         ctx.beginPath();
-        ctx.moveTo(i * ctx.lineWidth+2.5, 30);
-        ctx.lineTo(i * ctx.lineWidth+2.5, 30+height);
+        ctx.moveTo(i * ctx.lineWidth+line_width/2.0, 30);
+        ctx.lineTo(i * ctx.lineWidth+line_width/2.0, 30+height);
         ctx.strokeStyle = color;
         ctx.stroke();
     }
 
-
     ctx.fillStyle = 'black';
+
     if (cursor_present) {
-        draw_peek_energy_text (peek_energy + "GV", Math.round(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth + 10, 75)
+        draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 10 , 75)
     }
 
-    ctx.fillStyle = 'black';
+    
 
     draw_time();
-}
-
-function penumbra_left () {
-    console.log("moving left");
-    const diff = settings.upper - settings.lower;
-    document.getElementById('lower').value = settings.lower - diff;
-    document.getElementById('upper').value = settings.lower;
-    submit();
-}
-
-function penumbra_right () {
-    console.log("moving left");
-    const diff = settings.upper - settings.lower;
-    document.getElementById('lower').value = settings.upper;
-    document.getElementById('upper').value = settings.upper + diff;
-    submit();
 }
 
 function get_trace_at (energy) {
@@ -122,21 +145,24 @@ function draw_time () {
 
     ctx.lineWidth = 1;
     const height_multiplier = 8.0; // 5 for now; change it dynamically later (rely on maximum flight time)
-    for (let i = 1; i < data.particles.length; i++) {
+    for (let i = 1; i < upper_edge - lower_edge; i++) {
+        if (lower_edge + i >= data.particles.length) {
+            break;
+        }
         //const particle_id = Math.round(energy_per_line * i);
-        const height = data.particles[i][2] * height_multiplier;
-        const old_height = data.particles[i-1][2] * height_multiplier;
+        const height = data.particles[lower_edge + i][2] * height_multiplier;
+        const old_height = data.particles[lower_edge + i-1][2] * height_multiplier;
         ctx.beginPath();
-        ctx.moveTo(i* 5 - 2.5, 155-height);
-        ctx.lineTo((i-1) * 5 - 2.5, 155-old_height);
+        ctx.moveTo(i* line_width + line_width/2.0, 155-height);
+        ctx.lineTo((i-1) * line_width + line_width/2.0, 155-old_height);
         ctx.strokeStyle = "black";
         ctx.stroke();
     }
 
-    let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
-    if (!isNaN(peek_id) && cursor_present) {
-        draw_time_text(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
-        ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);   
+    let peek_id = Math.round(peek_energy / settings.step) - lower_edge;
+    if (!isNaN(peek_id) && cursor_present && lower_edge + peek_id < data.particles.length) {
+        draw_time_text(data.particles[lower_edge + peek_id][2] + "s", energy_to_x(peek_energy) + 10, 155-data.particles[lower_edge + peek_id][2]*height_multiplier + 5)
+        ctx.fillRect(peek_id * line_width, 155-data.particles[lower_edge + peek_id][2]*height_multiplier - 2.5, 5, 5);   
     }
 
 
