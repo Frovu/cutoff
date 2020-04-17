@@ -107,7 +107,6 @@ function is_bad_value (param, value) {
     if (param != "model" && param != "step") {
         // if param is numeric, then we check it for having any letters
         if (!/^-?\d*\.?\d*$/.test(value)) {
-            console.log("numerical test fail");
             return true;
         }
 

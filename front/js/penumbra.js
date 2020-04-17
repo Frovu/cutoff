@@ -66,13 +66,13 @@ function draw_penumbra () {
     for (let i = 0; i < data.particles.length; i++) {
         const particle = data.particles[i];
         let height = 30;
-        let color = data.particles[i][1] == 0 ? "gray" : "black";
         if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
+        let color = particle[1] == 0 ? "gray" : "black";
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
             height = 30 + 15;
             ctx.fillStyle = drawn_trace.color;
-            draw_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
+            draw_energy_text (drawn_trace.settings.energy + "GV", Math.ceil(float_to_step_precision (drawn_trace.settings.energy-settings.lower) / settings.step) * ctx.lineWidth, 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
         ctx.beginPath();
@@ -83,9 +83,9 @@ function draw_penumbra () {
     }
 
 
-    ctx.fillStyle = 'gray';
-    if (cursor_present && peek_energy != settings.energy) {
-        draw_text (peek_energy + "GV", Math.round(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth , 23)
+    ctx.fillStyle = 'black';
+    if (cursor_present) {
+        draw_peek_energy_text (peek_energy + "GV", Math.round(float_to_step_precision (peek_energy-settings.lower) / settings.step) * ctx.lineWidth + 10, 75)
     }
 
     ctx.fillStyle = 'black';
@@ -134,8 +134,8 @@ function draw_time () {
     }
 
     let peek_id = Math.round((peek_energy-settings.lower) / settings.step);
-    if (!isNaN(peek_id)) {
-        draw_text_non_transparent(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
+    if (!isNaN(peek_id) && cursor_present) {
+        draw_time_text(data.particles[peek_id][2] + "s", peek_id * ctx.lineWidth * 5 + 5, 155-data.particles[peek_id][2]*height_multiplier + 5)
         ctx.fillRect(peek_id * ctx.lineWidth * 5 - 2.5 - 2.5, 155-data.particles[peek_id][2]*height_multiplier - 2.5, 5, 5);   
     }
 
@@ -158,13 +158,19 @@ function draw_time () {
 }
 
 // draws any text in (x, y) and offsets x if it is outside canvas
-function draw_text (text, x, y) {
+function draw_energy_text (text, x, y) {
+    const width = ctx.measureText(text).width;
+    if (x > canvas.width - width) x -= width - 4;
+    ctx.fillText(text, x, y);
+}
+
+function draw_peek_energy_text (text, x, y) {
     const width = ctx.measureText(text).width;
     if (x > canvas.width - width) x -= width + 16;
     ctx.fillText(text, x, y);
 }
 
-function draw_text_non_transparent (text, x, y) {
+function draw_time_text (text, x, y) {
     const width = ctx.measureText(text).width;
     if (x > canvas.width - width) x -= width + 16;
     ctx.fillStyle = "white";

@@ -59,6 +59,7 @@ function fetch_data () {
         }).then(res => {
 		res.json().then(received => {
             	data = received;
+                //data.particles.shift();
                 update_settings ();
                 draw_penumbra();
          	});
@@ -75,7 +76,7 @@ function fetch_trace (energy) {
             headers: { "Content-Type": "application/json" }
         }).then(res => res.json()).then(function (data) {
             let trace = data;
-            trace.pop();    // useless last value from nowhere, so we just pop it
+            //trace.pop();    // useless last value from nowhere, so we just pop it
             start_trace(trace);
             draw_penumbra();
         }).catch(error => show_error(error));
