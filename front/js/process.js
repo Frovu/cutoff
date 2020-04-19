@@ -1,5 +1,6 @@
 const progress = document.getElementById('progress');
 let processing = false;
+let status_updater;
 
 function start_process () {
     processing = true;

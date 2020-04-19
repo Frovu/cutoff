@@ -13,7 +13,7 @@ loadJSON(function(response) {
 
 init_input_events();
 
-change_step ("0.1 GV");
+change_step (0.1);
 
 function init_input_events () {
      params.forEach (function (param) {
@@ -62,25 +62,27 @@ function update_settings () {
     settings.latitude = parseFloat(document.getElementById('lat').value);
 	settings.station = isStation(settings.latitude, settings.longitude);
     settings.altitude = parseFloat(document.getElementById('alt').value);
-    limit_energy ();    // maybe not neccesary?
+
+    settings.dublicate = function dublicate() {
+        // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
+        // also settings.clone "is not a function" so i had to rename it to "dublicate" (probably jquery's fault)
+        settings_clone = {};
+        settings_clone.lower = settings.lower;
+        settings_clone.upper = settings.upper;
+        settings_clone.step = settings.step;
+        settings_clone.energy = settings.energy;
+    
+        settings_clone.longitude = settings.longitude;
+        settings_clone.latitude = settings.latitude;
+        settings_clone.station = settings.station;
+        settings_clone.altitude = settings.altitude;
+        return settings_clone;
+    }
+
+    limit_energy_input ();
 }
 
-// js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
-function clone_settings () {
-    settings_clone = {};
-    settings_clone.lower = settings.lower;
-    settings_clone.upper = settings.upper;
-    settings_clone.step = settings.step;
-    settings_clone.energy = settings.energy;
-
-    settings_clone.longitude = settings.longitude;
-    settings_clone.latitude = settings.latitude;
-    settings_clone.station = settings.station;
-    settings_clone.altitude = settings.altitude;
-    return settings_clone;
-}
-
-function limit_energy () {
+function limit_energy_input () {
     const energy_el = document.getElementById('energy');
     energy_el.value = settings.energy;
     energy_el.setAttribute("min", settings.lower);
@@ -107,7 +109,6 @@ function is_bad_value (param, value) {
     if (param != "model" && param != "step") {
         // if param is numeric, then we check it for having any letters
         if (!/^-?\d*\.?\d*$/.test(value)) {
-            console.log("numerical test fail");
             return true;
         }
 
@@ -161,8 +162,12 @@ function is_bad_input() {
     return bad;
 }
 
-function change_step (value) {  // rename to change_step_unput
-	document.getElementById("step").innerHTML = "Step: " + value;
+function change_step (value) {
+    const float = parseFloat(value);
+    let text;
+    if (!isNaN(float)) text = "Step: " + float + " GV";
+	else text = "Step: " + parse_sentence_for_number(value) + " GV";
+    document.getElementById("step").innerHTML = text;
     settings_changed ();
 }
 
@@ -196,6 +201,5 @@ function json () {
 		}
     });
 
-    object.trace = '1';
 	return JSON.stringify(object);
 }

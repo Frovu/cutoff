@@ -33,34 +33,31 @@ function start_trace (trace_data) {
 	const color = get_free_color();
 	stop_timeouts();
 
-	let step = 4;
-	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;	// = real flight time in ms / total segments
+	const step = 1;
+	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;
 
 	const line = get_line_mesh(
 		-trace_data[0][1], trace_data[0][3], trace_data[0][2],
 		-trace_data[1][1], trace_data[1][3], trace_data[1][2], color
 	);
 
-	const settings_clone = clone_settings ();
-
-
 	const time = trace_data[trace_data.length-1][0];
-	const trace = new Trace(settings_clone, color, line, time);
+	const trace = new Trace(settings.dublicate(), color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
 	current_trace = trace;
 
 	update_info();
+	draw_penumbra();
 
 	for (let i = step; i < trace_data.length; i+=step) {
 		timeouts[i] = setTimeout(function draw() {
-  			draw_trace_frame(trace_data, step, i, color);	// trace_id?
+  			draw_trace_frame(trace_data, step, i, color);
   		}, (i/step+1)*interval_ms);
 	}
 }
 
 function stop_timeouts () {
-	console.log("stopping timeouts...");
 	// removing from the end of array with pop() for performance
 	for (let i = timeouts.length-1; i >= 0; i--) {
 		clearTimeout(timeouts[i]);
@@ -106,7 +103,6 @@ function delete_trace (index) {
 	if (traces[index] == current_trace) {
 		stop_timeouts(traces[index])
 	}
-	console.log("deleting trace " + index)
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	update_info();
