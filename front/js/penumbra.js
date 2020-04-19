@@ -24,8 +24,9 @@ canvas.addEventListener('mousemove', function(event) {
     if (!active) return;
     cursor_present = true;
     const mouse_pos = get_canvas_mouse_pos(canvas);
-    peek_energy = Math.floor(mouse_pos[0]-line_width/2.0)/line_width*settings.step + parseFloat(float_to_step_precision(lower_edge*settings.step));
-    peek_energy = float_to_step_precision(peek_energy); // fixing floating number issues, check without parsefloat's later
+    //peek_energy = Math.floor(mouse_pos[0]-line_width/2.0)/line_width*settings.step + parseFloat(float_to_step_precision(lower_edge*settings.step));
+    //peek_energy = peek_energy); // fixing floating number issues, check without parsefloat's later
+    peek_energy = x_to_energy(mouse_pos[0]);
     if (peek_energy < settings.lower || peek_energy > settings.upper) return;
     draw_penumbra();
 }, false);
@@ -53,8 +54,13 @@ window.addEventListener('keydown', function(event) {
 // maybe some function like update() to call draw_penumbra() and draw_time() at once? also handling "active" variable and etc.
 
 function set_penumbra_edges() {
-    lower_edge = Math.floor(max_lines_onscreen*(viewport_position-1));
-    upper_edge = Math.floor(max_lines_onscreen*viewport_position);
+    const arrow_left = document.getElementById("arrow_left");
+    const arrow_right = document.getElementById("arrow_right");
+    arrow_left.style.visibility = "visible";
+    arrow_right.style.visibility = "visible";
+
+    lower_edge = Math.round(max_lines_onscreen*(viewport_position-1));
+    upper_edge = Math.round(max_lines_onscreen*viewport_position);
 
     if (lower_edge < 0) {
         //viewport_position += move_value;
@@ -65,8 +71,13 @@ function set_penumbra_edges() {
         upper_edge = data.particles.length
     } 
 
+    if (Math.ceil(viewport_position) == 1) {
+        arrow_left.style.visibility = "hidden";
+    }
 
-
+    if (Math.round(viewport_position) == Math.round(data.particles.length / max_lines_onscreen)) {
+        arrow_right.style.visibility = "hidden";
+    }
     console.log(lower_edge + " le")
     console.log(upper_edge + " ue")
 }
@@ -83,8 +94,18 @@ function penumbra_right () {
     draw_penumbra();
 }
 
+// canvas x position to corresponding energy value
+function x_to_energy (x) {
+    return float_to_step_precision(Math.floor(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower);
+}
+
+// energy value to corresponding canvas x position
 function energy_to_x (energy) {
-    return Math.round(float_to_step_precision (parseFloat(energy)) / settings.step) * line_width - lower_edge * line_width;
+    return Math.round(float_to_step_precision (parseFloat(energy-settings.lower)) / settings.step) * line_width - lower_edge * line_width;
+}
+
+function get_peek_particle () {
+    return data.particles[Math.round(peek_energy / settings.step)];
 }
 
 function init_penumbra () {
@@ -146,9 +167,6 @@ function get_trace_at (energy) {
 }
 
 function draw_time () {
-    //const text = "Time of the proton motion in the magnetosphere, s";
-    //draw_text (text, ctx.measureText(text).width / 2, 75);
-
     ctx.lineWidth = 1;
     const height_multiplier = 8.0; // 5 for now; change it dynamically later (rely on maximum flight time)
     for (let i = 1; i < upper_edge - lower_edge; i++) {
@@ -165,28 +183,11 @@ function draw_time () {
         ctx.stroke();
     }
 
-    let peek_id = Math.round(peek_energy / settings.step) - lower_edge;
-    if (!isNaN(peek_id) && cursor_present && lower_edge + peek_id < data.particles.length) {
-        draw_time_text(data.particles[lower_edge + peek_id][2] + "s", energy_to_x(peek_energy) + 10, 155-data.particles[lower_edge + peek_id][2]*height_multiplier + 5)
-        ctx.fillRect(peek_id * line_width, 155-data.particles[lower_edge + peek_id][2]*height_multiplier - 2.5, 5, 5);   
+    const peek_particle = get_peek_particle();
+    if (peek_particle != undefined && cursor_present) {
+        draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-peek_particle[2]*height_multiplier + 5)
+        ctx.fillRect(energy_to_x(peek_energy), 155-peek_particle[2]*height_multiplier - 2.5, 5, 5);   
     }
-
-
-
-    // vertical labels
-    /*
-    ctx.beginPath();
-    ctx.moveTo(10, 90);
-    ctx.lineTo(10, 140);
-    ctx.strokeStyle = "black";
-    ctx.stroke();
-
-    // horizontal labels
-    ctx.beginPath();
-    ctx.moveTo(10, 140);
-    ctx.lineTo(canvas.width - 10, 140);
-    ctx.strokeStyle = "black";
-    ctx.stroke();*/
 }
 
 // draws any text in (x, y) and offsets x if it is outside canvas

@@ -33,7 +33,7 @@ function start_trace (trace_data) {
 	const color = get_free_color();
 	stop_timeouts();
 
-	const step = 2;
+	const step = 1;
 	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;
 
 	const line = get_line_mesh(
@@ -48,10 +48,11 @@ function start_trace (trace_data) {
 	current_trace = trace;
 
 	update_info();
+	draw_penumbra();
 
 	for (let i = step; i < trace_data.length; i+=step) {
 		timeouts[i] = setTimeout(function draw() {
-  			draw_trace_frame(trace_data, step, i, color);	// trace_id?
+  			draw_trace_frame(trace_data, step, i, color);
   		}, (i/step+1)*interval_ms);
 	}
 }

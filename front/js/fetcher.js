@@ -9,7 +9,6 @@ const url = '';
 
 const status_update_ms = 200;   // default: 100
 let uid;
-let status_updater; // used by process.js to terminate status updates
 
 function fetch_uid (settings) {
     try {
@@ -59,10 +58,8 @@ function fetch_data () {
         }).then(res => {
 		res.json().then(received => {
             	data = received;
-                //data.particles.shift();
                 update_settings ();
                 init_penumbra();
-                draw_penumbra();
          	});
 	}).catch(error => show_error(error));
     } catch (error) {
@@ -76,10 +73,7 @@ function fetch_trace (energy) {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
         }).then(res => res.json()).then(function (data) {
-            let trace = data;
-            //trace.pop();    // useless last value from nowhere, so we just pop it
-            start_trace(trace);
-            draw_penumbra();
+            start_trace(data);
         }).catch(error => show_error(error));
     } catch (error) {
         show_error(error);
