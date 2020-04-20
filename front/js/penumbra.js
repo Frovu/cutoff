@@ -155,17 +155,17 @@ function draw_penumbra () {
 
         ctx.fillStyle = 'black';
         ctx.font = secondary_font;
-        if (particle[0] == data.lower) {
+        if (particle[0] == data.lower && data.lower != settings.lower) {
             height = 45;
             draw_energy_text ("R low", energy_to_x(particle[0]) - ctx.measureText("R low").width - 3, 72);
         }
 
-        if (particle[0] == data.upper) {
+        if (particle[0] == data.upper && data.lower != settings.upper) {
             height = 45;
             draw_energy_text ("R upp", energy_to_x(particle[0]) + 7, 72);
         }
 
-        if (particle[0] == data.effective) {
+        if (particle[0] == data.effective && data.effective != settings.lower) {
             height = 45;
             draw_energy_text ("eff", energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 2 , 84 + 3);
         }
