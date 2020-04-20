@@ -15,6 +15,9 @@ const max_lines_onscreen = Math.floor(800.0 / line_width);
 
 let time_min, time_max;
 
+const primary_font = "bold 16px TextBook";
+const secondary_font = "12px Arial";
+
 
 canvas.addEventListener('click', function(event) {
     if (!active) return;
@@ -130,7 +133,7 @@ function draw_penumbra () {
     ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
     ctx.fill();
 
-    ctx.font = "bold 16px Times New Roman";
+    ctx.font = primary_font;
 
     for (let i = 0; i < upper_edge - lower_edge; i++) {
         if (lower_edge + i >= data.particles.length) {
@@ -138,16 +141,35 @@ function draw_penumbra () {
         }
         const particle = data.particles[lower_edge + i];
         let height = 30;
-        if (particle[0] == peek_energy && cursor_present) height += 15;
+        if (particle[0] == peek_energy && cursor_present) height = 45;
         let color = particle[1] == 0 ? "gray" : "black";
         
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
-            height += 15;
+            height = 45;
             ctx.fillStyle = drawn_trace.color;
+            ctx.font = primary_font;
             draw_energy_text (drawn_trace.settings.energy + "GV", energy_to_x(drawn_trace.settings.energy), 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
+
+        ctx.fillStyle = 'black';
+        ctx.font = secondary_font;
+        if (particle[0] == data.lower) {
+            height = 45;
+            draw_energy_text ("R low", energy_to_x(particle[0]) - ctx.measureText("R low").width - 3, 72);
+        }
+
+        if (particle[0] == data.upper) {
+            height = 45;
+            draw_energy_text ("R upp", energy_to_x(particle[0]) + 7, 72);
+        }
+
+        if (particle[0] == data.effective) {
+            height = 45;
+            draw_energy_text ("eff", energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 2 , 84 + 3);
+        }
+
         ctx.beginPath();
         ctx.moveTo(i * ctx.lineWidth+line_width/2.0, 30);
         ctx.lineTo(i * ctx.lineWidth+line_width/2.0, 30+height);
@@ -156,7 +178,7 @@ function draw_penumbra () {
     }
 
     ctx.fillStyle = 'black';
-
+    ctx.font = primary_font;
     if (cursor_present) {
         draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 10 , 75)
     }
@@ -213,6 +235,11 @@ function draw_time () {
         draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-height + 5)
         ctx.fillRect(energy_to_x(peek_energy), 155-height - 2.5, 5, 5);   
     }
+
+    ctx.fillStyle = 'white';
+    ctx.font = secondary_font;
+    draw_energy_text(float_to_step_precision(lower_edge * settings.step + settings.lower) + "GV", 8, 50);  
+    draw_energy_text(float_to_step_precision(upper_edge * settings.step + settings.lower) + "GV", canvas.width - 8, 50);  
 }
 
 // normalization of a time value to 0-1 range
@@ -230,6 +257,10 @@ function draw_energy_text (text, x, y) {
 function draw_peek_energy_text (text, x, y) {
     const width = ctx.measureText(text).width;
     if (x > canvas.width - width) x -= width + 16;
+    ctx.fillStyle = "white";
+    ctx.fillRect(x - 6, y - 15, width + 10, 22);
+    ctx.fillStyle = "black";
+    ctx.fillText(text, x, y);
     ctx.fillText(text, x, y);
 }
 
