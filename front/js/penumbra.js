@@ -80,7 +80,7 @@ function set_penumbra_edges() {
         arrow_left.style.visibility = "hidden";
     }
 
-    if (Math.round(viewport_position) == Math.round(data.particles.length / max_lines_onscreen)) {
+    if (lower_edge >= data.particles.length - max_lines_onscreen) {
         arrow_right.style.visibility = "hidden";
     }
     console.log(lower_edge + " le")
