@@ -1,6 +1,6 @@
 API REFERENCE:
 
-    POST /submit
+    POST /instance
         spawn calculations instance
             body - settings
         returns
@@ -9,17 +9,12 @@ API REFERENCE:
             500 'error message'
             503 'busy' // too many instances
 
-    GET /:uuid/status
-        get instance status
+    GET /instance/:uuid
+        get instance data
+        status
             'running'   - calculating things
             'failed'    - Cutoff process dead
             'completed' - completed
-        return
-            200 {status: string, percentage: number}
-            404
-
-    GET /:uuid/dat
-        get instande .dat file contents
         return
             102 // instance processing
             200 {
@@ -29,9 +24,9 @@ API REFERENCE:
                 effective: energy
             }
             404
-            500 'error message'
+            500 'error'
 
-    GET /:uuid/:trace (where :trace is energy)
+    GET /instance/:uuid/:trace (where :trace is energy)
         get trace data (calculate if not exist)m can take some seconds
         return
             102 // instance processing
@@ -40,7 +35,7 @@ API REFERENCE:
             500 'error message'
             503 'too many traces'
 
-    GET /:uuid/kill
+    POST /instance/:uuid/kill
         stop processing instance and remove it
         return
             200 uuid
