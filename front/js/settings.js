@@ -179,7 +179,7 @@ function change_energy (value) {
     settings.energy = value;
     document.getElementById('energy').value = settings.energy;
     fetch_trace(settings.energy);
-    //fetch_trace(data.particles.findIndex(el => el[0] == settings.energy));  // bad way of doing this, just use step multiplication
+    document.getElementById("trace-spinner").style = "visibility:visible;";
 }
 
 function json () {

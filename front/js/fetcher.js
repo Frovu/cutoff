@@ -74,6 +74,7 @@ function fetch_trace (energy) {
             headers: { "Content-Type": "application/json" }
         }).then(res => res.json()).then(function (data) {
             start_trace(data);
+            document.getElementById("trace-spinner").style = "visibility:hidden;";
         }).catch(error => show_error(error));
     } catch (error) {
         show_error(error);

@@ -10,8 +10,10 @@ let upper_edge = 0;
 let viewport_position = 1;
 const move_value = 0.33;    // 1.0 - moving every trace off screen
 
-const line_width = 4;
+const line_width = 5;
 const max_lines_onscreen = Math.floor(800.0 / line_width);
+
+let time_min, time_max;
 
 
 canvas.addEventListener('click', function(event) {
@@ -111,6 +113,9 @@ function get_peek_particle () {
 function init_penumbra () {
     active = true; // maybe you can use first_start_occured instead? btw rename this variable
     viewport_position = 1;
+    time_min = get_min_flight_time ();
+    time_max = get_max_flight_time ();
+    console.log(time_min + " " + time_max)
     set_penumbra_edges();
     draw_penumbra();
 }
@@ -133,12 +138,12 @@ function draw_penumbra () {
         }
         const particle = data.particles[lower_edge + i];
         let height = 30;
-        if (particle[0] == peek_energy && cursor_present) height = 30 + 15;
+        if (particle[0] == peek_energy && cursor_present) height += 15;
         let color = particle[1] == 0 ? "gray" : "black";
         
         const drawn_trace = get_trace_at(particle[0]);
         if (drawn_trace != null) {
-            height = 30 + 15;
+            height += 15;
             ctx.fillStyle = drawn_trace.color;
             draw_energy_text (drawn_trace.settings.energy + "GV", energy_to_x(drawn_trace.settings.energy), 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
@@ -159,6 +164,23 @@ function draw_penumbra () {
     draw_time();
 }
 
+// confusion with settings flight time. change name?
+function get_max_flight_time () {
+    let max = 0.0;
+    for (let i = 0; i < data.particles.length; i++) {
+        if (data.particles[i][2] > max) max = data.particles[i][2];
+    }
+    return max;
+}
+
+function get_min_flight_time () {
+    let min = Infinity;
+    for (let i = 0; i < data.particles.length; i++) {
+        if (data.particles[i][2] < min) min = data.particles[i][2];
+    }
+    return min;
+}
+
 function get_trace_at (energy) {
     for (let i = 0; i < traces.length; i++) {
         if (traces[i].settings.energy == energy) return traces[i];
@@ -168,26 +190,34 @@ function get_trace_at (energy) {
 
 function draw_time () {
     ctx.lineWidth = 1;
-    const height_multiplier = 8.0; // 5 for now; change it dynamically later (rely on maximum flight time)
+
+    const max_height = 60;   // maximum time graph height, in pixels
     for (let i = 1; i < upper_edge - lower_edge; i++) {
         if (lower_edge + i >= data.particles.length) {
             break;
         }
-        //const particle_id = Math.round(energy_per_line * i);
-        const height = data.particles[lower_edge + i][2] * height_multiplier;
-        const old_height = data.particles[lower_edge + i-1][2] * height_multiplier;
+
+        const height = time_normalize(data.particles[lower_edge + i][2]) * max_height; 
+        const previous_height = time_normalize(data.particles[lower_edge + i-1][2]) * max_height;
+
         ctx.beginPath();
         ctx.moveTo(i* line_width + line_width/2.0, 155-height);
-        ctx.lineTo((i-1) * line_width + line_width/2.0, 155-old_height);
+        ctx.lineTo((i-1) * line_width + line_width/2.0, 155-previous_height);
         ctx.strokeStyle = "black";
         ctx.stroke();
     }
 
     const peek_particle = get_peek_particle();
     if (peek_particle != undefined && cursor_present) {
-        draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-peek_particle[2]*height_multiplier + 5)
-        ctx.fillRect(energy_to_x(peek_energy), 155-peek_particle[2]*height_multiplier - 2.5, 5, 5);   
+        const height = time_normalize(peek_particle[2]) * max_height;
+        draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-height + 5)
+        ctx.fillRect(energy_to_x(peek_energy), 155-height - 2.5, 5, 5);   
     }
+}
+
+// normalization of a time value to 0-1 range
+function time_normalize (time) {
+    return (time - time_min)/(time_max - time_min);
 }
 
 // draws any text in (x, y) and offsets x if it is outside canvas
