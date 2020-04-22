@@ -69,7 +69,7 @@ module.exports.create = function(ini, callback) {
 			if(code === null) {
 				return;	// process killed by signal
 			} else if(code === 0) {
-				instances[id].status = 'complete';
+				instances[id].status = 'completed';
 				instances[id].completeAt = Date.now();
 				// save .dat file with another filename
 				fs.renameSync(path.join(dir, config.datFilename), path.join(dir, 'data.dat'));
@@ -116,6 +116,11 @@ module.exports.status = function(id) {
 
 module.exports.percentage = function(id) {
 	return running[id].linesGot / running[id].linesPredict * 100;
+};
+
+const trace = require('./trace.js');
+module.exports.trace = function(id, energy, callback) {
+	trace(id, energy, callback);
 };
 
 module.exports.kill = function(id) {
