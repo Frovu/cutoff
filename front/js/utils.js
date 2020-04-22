@@ -40,9 +40,12 @@ function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
 }
 
 function show_error (error) {
-    let element = document.getElementById("error_alert");
-    element.innerHTML = "ERROR: " + error;
-    element.style["display"] = "inline-block";
+    const alert_element = document.getElementById("error_alert");
+    alert_element.style["display"] = "inline-block";
+
+    const alert_text_element = document.getElementById("error_text");
+    alert_text_element.innerHTML = "<strong>ERROR:</strong> " + error;
+
     console.error(error);
 }
 

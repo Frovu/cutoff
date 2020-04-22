@@ -62,6 +62,7 @@ async function fetch_data () {
                 // i don't like it
                 status_updater = setTimeout(function() {
                     fetch_data();
+                    console.log("updating process");
                 }, update_interval_ms);
                 break;
 
@@ -69,7 +70,7 @@ async function fetch_data () {
                 show_error("Data has failed to retreive");
                 break;
 
-            case "completed":
+            case "complete":
                 console.log('Status: completed');
                 complete_process();
                 if (json.data != undefined && json.data != null) {
@@ -91,7 +92,7 @@ async function fetch_trace (energy) {
     start_spinner();
 
     const response = await fetch('/instance/' + uid + "/" + energy, {
-        method: 'POST',
+        method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
         show_error(error);
@@ -99,8 +100,8 @@ async function fetch_trace (energy) {
 
     if (response.ok) {
         const json = await response.json();
+        stop_spinner();
         start_trace(json);
-        
     } else {
         switch (response.status) {
             case 102: // processing
@@ -108,13 +109,12 @@ async function fetch_trace (energy) {
                     fetch_trace(energy);
                 }, update_interval_ms);
                 break;
-
             case 404:
-                show_error("Trace is not found on server");
+                show_error("Instance is not found on server");
                 break;
 
             case 500:
-                show_error("Trace has failed to calculate");
+                show_error("Instance has failed to calculate");
                 break;
         }
     }
