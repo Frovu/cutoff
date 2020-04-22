@@ -43,6 +43,7 @@ function show_error (error) {
     let element = document.getElementById("error_alert");
     element.innerHTML = "ERROR: " + error;
     element.style["display"] = "inline-block";
+    console.error(error);
 }
 
 // TODO change to fetch and move it to fetcher.js
