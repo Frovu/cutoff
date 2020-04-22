@@ -178,7 +178,7 @@ function draw_penumbra () {
     ctx.fillStyle = 'black';
     ctx.font = primary_font;
     if (cursor_present) {
-        draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 10 , 75)
+        draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 12 , 75)
     }
 
     draw_time();
@@ -257,7 +257,7 @@ function draw_peek_energy_text (text, x, y) {
     const width = ctx.measureText(text).width;
     if (x > canvas.width - width) x -= width + 20;
     ctx.fillStyle = "white";
-    ctx.fillRect(x - 2, y - 15, width + 10, 22);
+    ctx.fillRect(x - 2, y - 15, width + 5, 22);
     ctx.fillStyle = "black";
     ctx.fillText(text, x, y);
     ctx.fillText(text, x, y);
