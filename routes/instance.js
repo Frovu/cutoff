@@ -34,7 +34,7 @@ router.get('/:id', (req, res) => {
 
 // request trace data
 router.get('/:id/:trace', (req, res) => {
-	if(!instance.available(req.id)) {
+	if(instance.available(req.id)) {
         instance.trace(req.id, req.params.trace, (data) => {
             if(data)
                 res.status(200).json(data);
@@ -54,6 +54,7 @@ router.post('/:id/kill', (req, res) => {
 });
 
 router.param('id', (req, res, next, id) => {
+	console.log(id)
     if(!instance.exist(id))
         return res.status(404).json({message: 'instance not found'});
 	req.id = id;

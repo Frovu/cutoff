@@ -118,6 +118,11 @@ module.exports.percentage = function(id) {
 	return running[id].linesGot / running[id].linesPredict * 100;
 };
 
+const trace = require('./trace.js');
+module.exports.trace = function(id, energy, callback) {
+	trace(id, energy, callback);
+};
+
 module.exports.kill = function(id) {
 	const toKill = running[id];
 	if(!toKill) return false;
