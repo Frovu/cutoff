@@ -27,7 +27,7 @@ router.get('/:id', (req, res) => {
     let info = {status: status};
     if(status === 'processing')
         info.percentage = instance.percentage(req.id);
-    else if(status === 'complete')
+    else if(status === 'completed')
         info.data = instance.data(req.id);
 	res.status(200).json(info);
 });
