@@ -1,50 +1,46 @@
 API REFERENCE:
 
-    POST /submit
+    POST /instance
         spawn calculations instance
             body - settings
         returns
-            200 id
+            200 {id: id}
             400 // bad settings
-            500 'error message'
-            503 'busy' // too many instances
+            500 // failed
+            503 // too many instances
 
-    GET /:uuid/status
-        get instance status
-            'running'   - calculating things
+    GET /instance/:id
+        get instance data
+        status
+            'processing'- calculating things
             'failed'    - Cutoff process dead
             'completed' - completed
         return
-            200 {status: string, percentage: number}
-            404
-
-    GET /:uuid/dat
-        get instande .dat file contents
-        return
-            102 // instance processing
             200 {
-                particles: [[energy, status, time], ...],
-                lower: energy,
-                upper: energy,
-                effective: energy
+                status,
+                ?percentage,
+                ?data: { // can be null if something breaks
+                    particles: [[energy, status, time], ...],
+                    lower,
+                    upper,
+                    effective
+                }
             }
             404
-            500 'error message'
 
-    GET /:uuid/:trace (where :trace is energy)
+    GET /instance/:id/:trace (where :trace is energy)
         get trace data (calculate if not exist)m can take some seconds
         return
-            102 // instance processing
+            102 // instance or another processing
             200 [[t, x, y, z],...]
             404
-            500 'error message'
-            503 'too many traces'
+            500 // failed
 
-    GET /:uuid/kill
+    POST /instance/:id/kill
         stop processing instance and remove it
         return
-            200 uuid
-            402 // if instance is not processing
+            200 // dead
+            400 // if instance is not processing
             404
 
 BEHAVIOR DESCRIPTION:
