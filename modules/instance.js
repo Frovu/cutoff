@@ -79,7 +79,7 @@ module.exports.create = function(ini, callback) {
 			}
 			jsonDump();
 		});
-		callback(true);
+		callback(id);
 	});
 };
 

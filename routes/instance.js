@@ -54,7 +54,6 @@ router.post('/:id/kill', (req, res) => {
 });
 
 router.param('id', (req, res, next, id) => {
-	console.log(id)
     if(!instance.exist(id))
         return res.status(404).json({message: 'instance not found'});
 	req.id = id;
