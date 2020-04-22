@@ -62,7 +62,6 @@ async function fetch_data () {
                 // i don't like it
                 status_updater = setTimeout(function() {
                     fetch_data();
-                    console.log("updating process");
                 }, update_interval_ms);
                 break;
 
@@ -75,6 +74,7 @@ async function fetch_data () {
                 complete_process();
                 if (json.data != undefined && json.data != null) {
                     data = json.data;
+                    //data.particles.unshift(0);
                     update_settings ();
                     init_penumbra();
                 } else {

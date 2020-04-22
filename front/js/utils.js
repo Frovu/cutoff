@@ -40,6 +40,8 @@ function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
 }
 
 function show_error (error) {
+    stop_spinner();
+
     const alert_element = document.getElementById("error_alert");
     alert_element.style["display"] = "inline-block";
 

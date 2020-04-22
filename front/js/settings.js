@@ -172,7 +172,7 @@ function change_step (value) {
 }
 
 function change_energy (value) {
-    if (value < settings.lower || value >= settings.upper || isNaN(value)) {
+    if (value < settings.lower || value > settings.upper || isNaN(value)) {
         console.log("invalid energy")
         return;
     }

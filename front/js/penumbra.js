@@ -83,8 +83,6 @@ function set_penumbra_edges() {
     if (lower_edge >= data.particles.length - max_lines_onscreen) {
         arrow_right.style.visibility = "hidden";
     }
-    console.log(lower_edge + " le")
-    console.log(upper_edge + " ue")
 }
 
 function penumbra_left () {
@@ -101,16 +99,17 @@ function penumbra_right () {
 
 // canvas x position to corresponding energy value
 function x_to_energy (x) {
-    return float_to_step_precision(Math.floor(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower);
+    if (x <= 1) return;
+    return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower + parseFloat(settings.step));
 }
 
 // energy value to corresponding canvas x position
 function energy_to_x (energy) {
-    return Math.round(float_to_step_precision (parseFloat(energy-settings.lower)) / settings.step) * line_width - lower_edge * line_width;
+    return Math.round(float_to_step_precision (parseFloat(parseFloat(energy-settings.lower)) / settings.step + parseFloat(settings.step))) * line_width - lower_edge * line_width - line_width;
 }
 
 function get_peek_particle () {
-    return data.particles[Math.round(peek_energy / settings.step)];
+    return data.particles[Math.round(parseFloat(peek_energy) / settings.step) - 1];
 }
 
 function init_penumbra () {
@@ -118,7 +117,6 @@ function init_penumbra () {
     viewport_position = 1;
     time_min = get_min_flight_time ();
     time_max = get_max_flight_time ();
-    console.log(time_min + " " + time_max)
     set_penumbra_edges();
     draw_penumbra();
 }
@@ -160,14 +158,14 @@ function draw_penumbra () {
             draw_energy_text ("R low", energy_to_x(particle[0]) - ctx.measureText("R low").width - 3, 72);
         }
 
-        if (particle[0] == data.upper && data.lower != settings.upper) {
+        if (particle[0] == data.upper && data.upper != settings.upper) {
             height = 45;
             draw_energy_text ("R upp", energy_to_x(particle[0]) + 7, 72);
         }
 
-        if (particle[0] == data.effective && data.effective != settings.lower) {
+        if (particle[0] == data.effective && data.effective != settings.lower && data.effective != settings.upper) {
             height = 45;
-            draw_energy_text ("eff", energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 2 , 84 + 3);
+            draw_energy_text ("eff", energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 3 , 84 + 3);
         }
 
         ctx.beginPath();
@@ -186,29 +184,6 @@ function draw_penumbra () {
     draw_time();
 }
 
-// confusion with settings flight time. change name?
-function get_max_flight_time () {
-    let max = 0.0;
-    for (let i = 0; i < data.particles.length; i++) {
-        if (data.particles[i][2] > max) max = data.particles[i][2];
-    }
-    return max;
-}
-
-function get_min_flight_time () {
-    let min = Infinity;
-    for (let i = 0; i < data.particles.length; i++) {
-        if (data.particles[i][2] < min) min = data.particles[i][2];
-    }
-    return min;
-}
-
-function get_trace_at (energy) {
-    for (let i = 0; i < traces.length; i++) {
-        if (traces[i].settings.energy == energy) return traces[i];
-    }
-    return null;
-}
 
 function draw_time () {
     ctx.lineWidth = 1;
@@ -238,8 +213,32 @@ function draw_time () {
 
     ctx.fillStyle = 'white';
     ctx.font = secondary_font;
-    draw_energy_text(float_to_step_precision(lower_edge * settings.step + settings.lower) + "GV", 8, 50);  
+    draw_energy_text(float_to_step_precision((lower_edge + 1) * settings.step + settings.lower) + "GV", 8, 50);  
     draw_energy_text(float_to_step_precision(upper_edge * settings.step + settings.lower) + "GV", canvas.width - 8, 50);  
+}
+
+// confusion with settings flight time. change name?
+function get_max_flight_time () {
+    let max = 0.0;
+    for (let i = 0; i < data.particles.length; i++) {
+        if (data.particles[i][2] > max) max = data.particles[i][2];
+    }
+    return max;
+}
+
+function get_min_flight_time () {
+    let min = Infinity;
+    for (let i = 0; i < data.particles.length; i++) {
+        if (data.particles[i][2] < min) min = data.particles[i][2];
+    }
+    return min;
+}
+
+function get_trace_at (energy) {
+    for (let i = 0; i < traces.length; i++) {
+        if (traces[i].settings.energy == energy) return traces[i];
+    }
+    return null;
 }
 
 // normalization of a time value to 0-1 range
@@ -256,9 +255,9 @@ function draw_energy_text (text, x, y) {
 
 function draw_peek_energy_text (text, x, y) {
     const width = ctx.measureText(text).width;
-    if (x > canvas.width - width) x -= width + 16;
+    if (x > canvas.width - width) x -= width + 20;
     ctx.fillStyle = "white";
-    ctx.fillRect(x - 6, y - 15, width + 10, 22);
+    ctx.fillRect(x - 2, y - 15, width + 10, 22);
     ctx.fillStyle = "black";
     ctx.fillText(text, x, y);
     ctx.fillText(text, x, y);
@@ -266,7 +265,7 @@ function draw_peek_energy_text (text, x, y) {
 
 function draw_time_text (text, x, y) {
     const width = ctx.measureText(text).width;
-    if (x > canvas.width - width) x -= width + 16;
+    if (x > canvas.width - width) x -= width + 18;
     ctx.fillStyle = "white";
     ctx.fillRect(x - 6, y - 15, width + 10, 22);
     ctx.fillStyle = "black";
