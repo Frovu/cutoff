@@ -70,7 +70,7 @@ async function fetch_data () {
                 show_error("Data has failed to retreive");
                 break;
 
-            case "complete":
+            case "completed":
                 console.log('Status: completed');
                 complete_process();
                 if (json.data != undefined && json.data != null) {
@@ -115,6 +115,9 @@ async function fetch_trace (energy) {
 
             case 500:
                 show_error("Instance has failed to calculate");
+                break;
+            default:
+                console.log(response.status);
                 break;
         }
     }
