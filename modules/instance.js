@@ -12,7 +12,7 @@ if(!fs.existsSync(config.instancesDir))
 	fs.mkdirSync(config.instancesDir);
 
 function jsonDump() {
-	fs.writeFileSync(jpath, JSON.stringify(lessons, null, 2), 'utf8', (err) => {
+	fs.writeFileSync(jpath, JSON.stringify(instances, null, 2), 'utf8', (err) => {
 	    if(err) log(`Failed writing ${jsonPath} ${err.stack}`);
 	});
 }
@@ -30,16 +30,15 @@ function spawnCutoff(id, trace) {
 	const ini = instances[id].ini;
 	const initxt = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${trace||(ini.lower!=='0'?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${t?1:0}`;
+${ini.azimutal}\n${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const cutoff = spawn('wine', [path.join(__dirname, config.execName)], {cwd: path.join(config.instancesDir, id)});
 	return running[id] = {
 		type: trace?'trace':'instance',
 		spawnedAt: new Date(),
 		linesPredict: trace?undefined:(ini.upper-ini.lower)/ini.step*2, // for percentage count
 		linesGot: trace?undefined:0,
 		tracesCalculating: trace?undefined:0,
-		cutoff: cutoff
+		cutoff: spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	};
 }
 
@@ -61,7 +60,6 @@ module.exports.create = function(ini, callback) {
 		let instance = spawnCutoff(id);
 		jsonDump();
 		log(`instance spawned ${id}`);
-
 		instance.cutoff.stdout.on('data', data => {
 			instance.linesGot++;
 		});

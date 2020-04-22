@@ -23,25 +23,19 @@ router.post('/', (req, res) => {
 
 // request instance status/data
 router.get('/:id', (req, res) => {
-	const id = req.params.uuid;
-    const status = instance.status(id);
-    if(!status)
-		res.sendStatus(404);
-	else {
-        let info = {status: status};
-        if(status === 'processing')
-            info.percentage = instance.percentage(id);
-        else if(status === 'complete')
-            info.data = instance.data(id);
-		res.status(200).json(info);
-    }
+    const status = instance.status(req.id);
+    let info = {status: status};
+    if(status === 'processing')
+        info.percentage = instance.percentage(req.id);
+    else if(status === 'complete')
+        info.data = instance.data(req.id);
+	res.status(200).json(info);
 });
 
 // request trace data
 router.get('/:id/:trace', (req, res) => {
-	const id = req.params.id;
-	if(!instance.available(id)) {
-        instance.trace(id, req.params.trace, (data) => {
+	if(!instance.available(req.id)) {
+        instance.trace(req.id, req.params.trace, (data) => {
             if(data)
                 res.status(200).json(data);
             else
@@ -53,17 +47,18 @@ router.get('/:id/:trace', (req, res) => {
 
 // kill running process
 router.post('/:id/kill', (req, res) => {
-    if(instances.kill(req.params.id))
+    if(instances.kill(req.id))
         res.status(200).json({message: 'killed'});
 	else
         res.status(400).json({message: 'not running'});
 });
 
 router.param('id', (req, res, next, id) => {
+	console.log(id)
     if(!instance.exist(id))
-        res.status(404).json({message: 'instance not found'});
-    else
-        next();
+        return res.status(404).json({message: 'instance not found'});
+	req.id = id;
+	next();
 });
 
 module.exports = router;
