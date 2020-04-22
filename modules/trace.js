@@ -36,8 +36,7 @@ module.exports = function(id, energy, callback) {
         };
         if(!files.includes(filename)) {
             const start = new Date();
-            const cutoff = spawnCutoff(id, energy);
-            cutoff.cutoff.on('exit', (code, signal) => {
+            const cutoff = spawnCutoff(id, energy, (code, signal) => {
                 log(`cutoff(trace) code=${code} sg=${signal} took ${(Date.now()-start)/1000} seconds`);
                 if(code === 0) {
                     proceed();

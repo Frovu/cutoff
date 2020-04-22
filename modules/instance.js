@@ -26,19 +26,24 @@ setInterval(() =>
 		}
 	}, config.time / 4));
 
-function spawnCutoff(id, trace) {
+function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].ini;
 	const initxt = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
 ${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
 ${ini.azimutal}\n${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
+	cutoff.on('exit', (code, signal)=>{
+		delete running[id];
+		onExit(code, signal);
+	});
 	return running[id] = {
 		type: trace?'trace':'instance',
 		spawnedAt: new Date(),
 		linesPredict: trace?undefined:(ini.upper-ini.lower)/ini.step*2, // for percentage count
 		linesGot: trace?undefined:0,
 		tracesCalculating: trace?undefined:0,
-		cutoff: spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
+		stdout: cutoff.stdout
 	};
 }
 
@@ -57,13 +62,7 @@ module.exports.create = function(ini, callback) {
 			createdAt: new Date(),
 			ini: ini
 		};
-		let instance = spawnCutoff(id);
-		jsonDump();
-		log(`instance spawned ${id}`);
-		instance.cutoff.stdout.on('data', data => {
-			instance.linesGot++;
-		});
-		instance.cutoff.on('exit', (code, signal) => {
+		let instance = spawnCutoff(id, null, (code, signal) => {
 			delete running[id];
 			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawnedAt)/1000} seconds`)
 			if(code === null) {
@@ -78,6 +77,11 @@ module.exports.create = function(ini, callback) {
 				instances[id].completeAt = Date.now();
 			}
 			jsonDump();
+		});
+		jsonDump();
+		log(`instance spawned ${id}`);
+		instance.stdout.on('data', data => {
+			instance.linesGot++;
 		});
 		callback(id);
 	});
