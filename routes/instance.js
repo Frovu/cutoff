@@ -47,7 +47,7 @@ router.get('/:id/:trace', (req, res) => {
 
 // kill running process
 router.post('/:id/kill', (req, res) => {
-    if(instances.kill(req.id))
+    if(instance.kill(req.id))
         res.status(200).json({message: 'killed'});
 	else
         res.status(400).json({message: 'not running'});
