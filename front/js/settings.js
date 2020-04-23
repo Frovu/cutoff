@@ -7,8 +7,7 @@ const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'step', 'flightTime'];
 
 loadJSON(function(response) {
-  // Parse JSON string into object
-    valueranges = JSON.parse(response);
+    valueranges = response;
  }, "valueranges.json");
 
 init_input_events();
@@ -48,14 +47,14 @@ function submit () {
         return;
     }
     start_process ();
-    fetch_uid(json());
+    fetch_uid(get_settings_JSON());
 }
 
 function update_settings () {
     settings = {};
     settings.lower = parseFloat(document.getElementById('lower').value);
     settings.upper = parseFloat(document.getElementById('upper').value);
-    settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML)) + "";
+    settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML));
     settings.energy = parseFloat(settings.lower);
 
     settings.longitude = parseFloat(document.getElementById('lon').value);
@@ -165,6 +164,7 @@ function is_bad_input() {
 function change_step (value) {
     const float = parseFloat(value);
     let text;
+    // workaround
     if (!isNaN(float)) text = "Step: " + float + " GV";
 	else text = "Step: " + parse_sentence_for_number(value) + " GV";
     document.getElementById("step").innerHTML = text;
@@ -176,13 +176,13 @@ function change_energy (value) {
         console.log("invalid energy")
         return;
     }
-    settings.energy = value;
+    settings.energy = parseFloat(value);
     document.getElementById('energy').value = settings.energy;
     fetch_trace(settings.energy);
     document.getElementById("trace-spinner").style = "visibility:visible;";
 }
 
-function json () {
+function get_settings_JSON () {
     let object = {};
     params.forEach (function (param) {
         const el = document.getElementById(param);
