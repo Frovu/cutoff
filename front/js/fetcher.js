@@ -154,7 +154,7 @@ async function fetch_cancel () {
     }
 }
 
-async function loadJSON (callback, path) {
+async function fetch_JSON (callback, path) {
     const response = await fetch(path, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },

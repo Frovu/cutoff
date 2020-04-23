@@ -6,7 +6,7 @@ const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
 'step', 'flightTime'];
 
-loadJSON(function(response) {
+fetch_JSON(function(response) {
     valueranges = response;
  }, "valueranges.json");
 
