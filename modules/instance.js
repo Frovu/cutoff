@@ -50,7 +50,7 @@ ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${
 		linesPredict: trace?undefined:(ini.upper-ini.lower)/ini.step*2, // for percentage count
 		linesGot: trace?undefined:0,
 		tracesCalculating: trace?undefined:0,
-		stdout: cutoff.stdout
+		cutoff: cutoff
 	};
 }
 
@@ -99,7 +99,7 @@ module.exports.create = function(ini, user, callback) {
 			}
 		});
 		log(`instance spawned ${id}`);
-		instance.stdout.on('data', data => {
+		instance.cutoff.stdout.on('data', data => {
 			instance.linesGot++;
 		});
 		callback(id);
