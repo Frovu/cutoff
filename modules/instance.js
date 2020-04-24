@@ -157,6 +157,10 @@ module.exports.exist = async function(id) {
     }
 };
 
+module.exports.hasAccess = function(id, user, guest) {
+	return guest || (instances[id].owner === user);
+};
+
 module.exports.status = function(id) {
 	return instances[id] ? instances[id].status : null;
 };
