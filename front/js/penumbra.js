@@ -8,7 +8,7 @@ let cursor_present = false;
 let lower_edge = 0;
 let upper_edge = 0;
 let viewport_position = 1;
-const move_value = 0.33;    // 1.0 - moving every trace off screen
+const move_value = 0.3;    // 1.0 - moving every trace off screen
 
 const line_width = 5;
 const max_lines_onscreen = Math.floor(800.0 / line_width);
@@ -20,7 +20,7 @@ const secondary_font = "12px Arial";
 
 
 canvas.addEventListener('click', function(event) {
-    if (!active) return;
+    if (!active || get_trace_at(peek_energy) != null) return;
     change_energy(peek_energy);
     draw_penumbra();
 }, false);
@@ -29,8 +29,6 @@ canvas.addEventListener('mousemove', function(event) {
     if (!active) return;
     cursor_present = true;
     const mouse_pos = get_canvas_mouse_pos(canvas);
-    //peek_energy = Math.floor(mouse_pos[0]-line_width/2.0)/line_width*settings.step + parseFloat(float_to_step_precision(lower_edge*settings.step));
-    //peek_energy = peek_energy); // fixing floating number issues, check without parsefloat's later
     peek_energy = x_to_energy(mouse_pos[0]);
     if (peek_energy < settings.lower || peek_energy > settings.upper) return;
     draw_penumbra();
@@ -43,20 +41,14 @@ canvas.addEventListener('mouseout', function(event) {
 }, false);
 
 window.addEventListener('keydown', function(event) {
-    if (document.hasFocus()) return;    // do not listen to arrow or AD keys when user is writing
-    if (event.keyCode == 'A' || event.keyCode == 37) {   // left
-        const new_energy = settings.energy-settings.step;
-        change_energy(new_energy);
-    }
-
-    if (event.keyCode == 'D' || event.keyCode == 39) {   // right
-        const new_energy = settings.energy+settings.step;
-        change_energy(new_energy)
+    if (!active || document.activeElement != document.body) return;    // do not listen to arrow or AD keys when user is writing
+    if (event.keyCode == 37) {   // left
+        change_energy(float_to_step_precision(settings.energy-settings.step));
+    } 
+    else if (event.keyCode == 39) {   // right
+        change_energy(float_to_step_precision(settings.energy+settings.step))
     }
 }, false);
-
-
-// maybe some function like update() to call draw_penumbra() and draw_time() at once? also handling "active" variable and etc.
 
 function set_penumbra_edges() {
     const arrow_left = document.getElementById("arrow_left");
@@ -100,20 +92,20 @@ function penumbra_right () {
 // canvas x position to corresponding energy value
 function x_to_energy (x) {
     if (x <= 1) return;
-    return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower + parseFloat(settings.step));
+    return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower + settings.step);
 }
 
 // energy value to corresponding canvas x position
 function energy_to_x (energy) {
-    return Math.round(float_to_step_precision (parseFloat(parseFloat(energy-settings.lower)) / settings.step + parseFloat(settings.step))) * line_width - lower_edge * line_width - line_width;
+    return Math.round(float_to_step_precision (energy-settings.lower) / settings.step + settings.step) * line_width - lower_edge * line_width - line_width;
 }
 
 function get_peek_particle () {
-    return data.particles[Math.round(parseFloat(peek_energy) / settings.step) - 1];
+    return data.particles[Math.round(peek_energy / settings.step) - 1];
 }
 
 function init_penumbra () {
-    active = true; // maybe you can use first_start_occured instead? btw rename this variable
+    active = true;
     viewport_position = 1;
     time_min = get_min_flight_time ();
     time_max = get_max_flight_time ();
@@ -122,6 +114,7 @@ function init_penumbra () {
 }
 
 function draw_penumbra () {
+    if (!active) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = canvas.style.width = (upper_edge - lower_edge) * line_width;
@@ -186,8 +179,10 @@ function draw_penumbra () {
 
 
 function draw_time () {
-    ctx.lineWidth = 1;
+    if (!active) return;
 
+    ctx.lineWidth = 1;
+    
     const max_height = 60;   // maximum time graph height, in pixels
     for (let i = 1; i < upper_edge - lower_edge; i++) {
         if (lower_edge + i >= data.particles.length) {
@@ -270,8 +265,4 @@ function draw_time_text (text, x, y) {
     ctx.fillRect(x - 6, y - 15, width + 10, 22);
     ctx.fillStyle = "black";
     ctx.fillText(text, x, y);
-}
-
-function get_line_height (value) {
-    // maybe?
 }

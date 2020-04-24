@@ -39,6 +39,14 @@ function get_line_mesh (x1, y1, z1, x2, y2, z2, color) {
     return new THREE.Line(geometry, material);
 }
 
+
+// some jquery handler to hide bootstrap alert element instead of deleting it when using dismiss button
+$(".close").on("click", function(e) 
+{   
+    $("#error_alert").hide();
+});
+
+
 function show_error (error) {
     stop_spinner();
 
@@ -50,20 +58,6 @@ function show_error (error) {
 
     console.error(error);
 }
-
-// TODO change to fetch and move it to fetcher.js
- function loadJSON(callback, path) {
-    var xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-    xobj.open('GET', path, true);
-    xobj.onreadystatechange = function () {
-          if (xobj.readyState == 4 && xobj.status == "200") {
-            callback(xobj.responseText);
-          }
-    };
-    xobj.send(null);
- }
-
 
  // Validates that the input string is a valid date formatted as "mm/dd/yyyy"
 function is_valid_date(dateString)
@@ -139,14 +133,3 @@ function remove_elements_by_class(className) {
         elements[0].parentNode.removeChild(elements[0]);
     }
 }
-
-// generates distinct random colors
-// by stackoverflow
-// [FIXME] NOT USED ANYMORE, USELESS
-/*
-function random_color(h)
-{
-    let f= (n,k=(n+h*12)%12) => .5-.5*Math.max(Math.min(k-3,9-k,1),-1);
-    let rgb2hex = (r,g,b) => "#"+[r,g,b].map(x=>Math.round(x*255).toString(16).padStart(2,0)).join('');
-    return ( rgb2hex(f(0), f(8), f(4)) );
-}*/
