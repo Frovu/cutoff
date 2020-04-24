@@ -1,9 +1,15 @@
 API REFERENCE:
 
+    EVERY /instance :id
+        return
+            401 // user unauthorized
+            403 // access to instance forbidden
+            404 // instance not found
+
     POST /instance
         spawn calculations instance
             body - settings
-        returns
+        return
             200 {id: id}
             400 // bad settings
             500 // failed
@@ -26,14 +32,12 @@ API REFERENCE:
                     effective
                 }
             }
-            404
 
     GET /instance/:id/:trace (where :trace is energy)
         get trace data (calculate if not exist)m can take some seconds
         return
             102 // instance or another processing
             200 [[t, x, y, z],...]
-            404
             500 // failed
 
     POST /instance/:id/kill
@@ -41,7 +45,48 @@ API REFERENCE:
         return
             200 // dead
             400 // if instance is not processing
+
+
+    POST /user
+        body {email: "", password: ""}
+        register
+        return
+            201 // user created
+            400 // no user data provided
+            409 // email already occupied
+
+    POST /user/login
+        body {email: "", password: ""} or {guest: true}
+        login as user or as guest
+        return
+            200 // logged in as {}
+            400 // wrong password
             404
+
+    POST /user/logout
+        return
+            200 // logged out
+
+    GET /user/
+        return
+            200 // logged in as {}
+            404 // ???
+
+SQL TABLES:
+    CREATE TABLE IF NOT EXISTS `users` (
+      `id` int NOT NULL AUTO_INCREMENT,
+      `email` varchar(255) NOT NULL,
+      `password` BINARY(60) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+
+    CREATE TABLE IF NOT EXISTS `instances` (
+      `id` int NOT NULL AUTO_INCREMENT,
+      `owner` int NOT NULL,
+      `password` BINARY(60) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+
 
 BEHAVIOR DESCRIPTION:
     calculates some things and draws cool colored traces

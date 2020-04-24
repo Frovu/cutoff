@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const fs = require('fs-extra');
 
 config = {
@@ -24,13 +25,35 @@ process.on('unhandledRejection', error => {
 });
 
 const app = express();
+app.use(session({
+    key: 'session_id',
+    secret: "42bayana1stratocaster",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 7200000 }
+}));
 
 app.use(require('compression')({ level: 9 }));
 app.use(express.json()); // for parsing application/json
 
 // TODO: remove on production
 app.use(express.static('./front/'));
+
+// clear cookie if not logged in
+app.use(async (req, res, next) => {
+    if(req.cookies && req.cookies.session_id && !req.session.user)
+        res.clearCookie('session_id');
+	next();
+});
+
 app.use('/instance', require('./routes/instance.js'));
+app.use('/user', require('./routes/user.js'));
+
+// handle error
+app.use((err, req, res, next)=>{
+	log(err);
+	res.status(500).json({message: 'some error occured'});
+});
 
 // start server
 app.listen(config.port, () =>

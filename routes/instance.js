@@ -54,6 +54,8 @@ router.post('/:id/kill', (req, res) => {
 });
 
 router.param('id', (req, res, next, id) => {
+	if(!req.session.userId && !req.session.guest)
+		return res.status(401).json({message: 'unauthorized'});
     if(!instance.exist(id))
         return res.status(404).json({message: 'instance not found'});
 	req.id = id;
