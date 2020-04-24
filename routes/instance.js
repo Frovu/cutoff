@@ -10,7 +10,7 @@ router.post('/', (req, res) => {
 	} else {
 		if(!instance.available())
 			return res.status(503).json({message: 'busy'});
-		instance.create(req.body, (id) => {
+		instance.create(req.body, req.session.userId, (id) => {
 			if(id)
 				res.status(200).json({id: id});
 			else
@@ -19,6 +19,7 @@ router.post('/', (req, res) => {
 	}
 });
 
+// get instances owned by user
 //router.get('/')
 
 // request instance status/data
@@ -53,11 +54,13 @@ router.post('/:id/kill', (req, res) => {
         res.status(400).json({message: 'not running'});
 });
 
-router.param('id', (req, res, next, id) => {
+router.param('id', async(req, res, next, id) => {
 	if(!req.session.userId && !req.session.guest)
 		return res.status(401).json({message: 'unauthorized'});
-    if(!instance.exist(id))
+    if(!(await instance.exist(id)))
         return res.status(404).json({message: 'instance not found'});
+    if(!instance.hasAccess(id, req.session.userId, req.session.guest))
+        return res.status(403).json({message: 'access forbidden'});
 	req.id = id;
 	next();
 });

@@ -4,33 +4,40 @@ const uuid = require('uuid/v4');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const jpath = '../instance.json';
-let instances = require(jpath);
+let instances = {};
 let running = {};
 // create instances directory if not exists
 if(!fs.existsSync(config.instancesDir))
 	fs.mkdirSync(config.instancesDir);
-
-function jsonDump() {
-	fs.writeFileSync(jpath, JSON.stringify(instances, null, 2), 'utf8', (err) => {
-	    if(err) log(`Failed writing ${jsonPath} ${err.stack}`);
-	});
-}
+else // clear lost instances
+	fs.readdir(path.join(config.instancesDir), async(err, files) => {
+        const result = await query(`select id from instances`);
+		const stored = result.map(i => i.id); let i=0;
+		for(const f of files) {
+			if(!stored.includes(f)) {
+				fs.removeSync(path.join(config.instancesDir, f));
+				++i;
+			}
+		}
+		log(`Removed ${i} unowned instances`);;
+});
 
 setInterval(() =>
 	Object.keys(instances).forEach(el => {
 		if(Date.now() - instances[el].spawnedAt >= config.timeToLive) {
 				fs.removeSync(path.join(config.instancesDir, el));
 				delete instances[el];
-				log('instance rotted: '+el);
+				log('instance rotted away from storage: '+el);
 		}
 	}, config.time / 4));
 
+const iniOrder = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
+	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
+
 function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].ini;
-	const initxt = `\n${ini.date}\n${ini.time}\n${ini.swdp}\n${ini.dst}\n${ini.imfBy}\n${ini.imfBz}
-${ini.g1}\n${ini.g2}\n${ini.kp}\n${ini.model}\n${ini.alt}\n${ini.lat}\n${ini.lon}\n${ini.vertical}
-${ini.azimutal}\n${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
+${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
 	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
@@ -39,7 +46,7 @@ ${ini.azimutal}\n${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trac
 	});
 	return running[id] = {
 		type: trace?'trace':'instance',
-		spawnedAt: new Date(),
+		spawned: new Date(),
 		linesPredict: trace?undefined:(ini.upper-ini.lower)/ini.step*2, // for percentage count
 		linesGot: trace?undefined:0,
 		tracesCalculating: trace?undefined:0,
@@ -48,7 +55,7 @@ ${ini.azimutal}\n${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trac
 }
 
 module.exports.spawnCutoff = spawnCutoff;
-module.exports.create = function(ini, callback) {
+module.exports.create = function(ini, user, callback) {
 	const id = uuid();
 	const dir = path.join(config.instancesDir, id);
 	// create instance directory
@@ -59,26 +66,38 @@ module.exports.create = function(ini, callback) {
 		}
 		instances[id] = {
 			status: 'processing',
-			createdAt: new Date(),
+			created: new Date(),
+			owner: user,
 			ini: ini
 		};
-		let instance = spawnCutoff(id, null, (code, signal) => {
+		let instance = spawnCutoff(id, null, async(code, signal) => {
 			delete running[id];
-			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawnedAt)/1000} seconds`)
+			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawned)/1000} seconds`)
 			if(code === null) {
 				return;	// process killed by signal
 			} else if(code === 0) {
 				instances[id].status = 'completed';
-				instances[id].completeAt = Date.now();
+				instances[id].completed = Date.now();
 				// save .dat file with another filename
 				fs.renameSync(path.join(dir, config.datFilename), path.join(dir, 'data.dat'));
+				// save instance in db
+				const owner = instances[id].owner;
+				if(owner) {
+					try {
+						const q = `insert into instances(id, owner, created, completed) values(?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
+				        await query(q, [id, owner, instances[id].created, Date.now()]);
+						log(`instance saved: ${id} owner=${owner}`);
+				    } catch(e) {
+				        log(e)
+						return false;
+				    }
+				}
+
 			} else {
 				instances[id].status = 'failed';
-				instances[id].completeAt = Date.now();
+				instances[id].completed = Date.now();
 			}
-			jsonDump();
 		});
-		jsonDump();
 		log(`instance spawned ${id}`);
 		instance.stdout.on('data', data => {
 			instance.linesGot++;
@@ -110,8 +129,32 @@ module.exports.available = function(id) {
 	return id ? !running.hasOwnProperty(id) : Object.keys(running).length < config.maxRunningInstances;
 };
 
-module.exports.exist = function(id) {
-	return instances.hasOwnProperty(id);
+// cache instance if not cached since this is callen before any other action
+module.exports.exist = async function(id) {
+	if(instances.hasOwnProperty(id))
+		return true;
+    try {
+		if(!fs.existsSync(config.instancesDir, id)) return false;
+        const result = await query(`select * from instances where id=?`, [id]);
+		if(result.length > 0) {
+			instances[id] = {
+				created: new Date(result[0].created),
+				completed: new Date(result[0].completed),
+				owner: result[0].owner,
+				status: 'completed',
+				ini: {}
+			};
+			const txt = fs.readFileSync(path.join(config.instancesDir, id, config.iniFilename));
+			const ini = txt.toString().split('\n').slice(1);
+			for(const i in iniOrder)
+				instances[id].ini[iniOrder[i]] = ini[i];
+			log(`Cached instance: ${id}`);
+		}
+        return result.length > 0;
+    } catch(e) {
+        log(e)
+		return false;
+    }
 };
 
 module.exports.status = function(id) {

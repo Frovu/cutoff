@@ -81,9 +81,10 @@ SQL TABLES:
     ) ENGINE=InnoDB;
 
     CREATE TABLE IF NOT EXISTS `instances` (
-      `id` int NOT NULL AUTO_INCREMENT,
+      `id` VARCHAR(36) NOT NULL,
       `owner` int NOT NULL,
-      `password` BINARY(60) NOT NULL,
+      `created` DATETIME NOT NULL,
+      `completed` DATETIME NOT NULL,
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB;
 

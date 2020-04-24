@@ -1,6 +1,17 @@
 const express = require('express');
 const session = require('express-session');
 const fs = require('fs-extra');
+const mysql   = require('mysql');
+const util = require('util');
+const db   = mysql.createConnection({
+    host: 'localhost',
+    user: 'cutoff',
+    password: 'cutoff5020',
+    database: 'cutoff'
+});
+
+// profisify db.query to not spam callbacks
+query = util.promisify(db.query).bind(db);
 
 config = {
 	port: 3050,

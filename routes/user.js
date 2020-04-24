@@ -1,17 +1,6 @@
 const express = require('express');
 const router  = express.Router();
 const bcrypt  = require('bcrypt');
-const mysql   = require('mysql');
-const util = require('util');
-const db =  mysql.createConnection({
-    host: 'localhost',
-    user: 'cutoff',
-    password: 'cutoff5020',
-    database: 'cutoff'
-});
-
-// profisify db.query to not spam callbacks
-const query = util.promisify(db.query).bind(db);
 
 // register
 router.post('/', async (req, res, next) => {
