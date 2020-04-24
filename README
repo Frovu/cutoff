@@ -15,6 +15,18 @@ API REFERENCE:
             500 // failed
             503 // too many instances
 
+    GET /instance
+        get list of all instances owned by user
+            array of objects like:
+            {
+                id: "instance id",
+                created: sql datetime string or Date() object,
+                ?completed: sql datetime string or Date() object,
+            }
+            completed === undefined => instance is still calculating
+        return
+            200 {instances: [...]}
+
     GET /instance/:id
         get instance data
         status

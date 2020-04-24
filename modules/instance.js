@@ -106,27 +106,15 @@ module.exports.create = function(ini, user, callback) {
 	});
 };
 
-module.exports.data = function(id) {
-	try {
-		var data = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
-	} catch(e) {
-		log(e.stack);
-		return null;
-	}
-	let response = {};
-	// на первый взгляд спагетти, но если знать формат, то нормально
-	let arr = data.toString().split(/\r?\n/);
-	let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
-	response.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
-	arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
-	response.lower = arr[0];
-	response.upper = arr[1];
-	response.effective = arr[2];
-	return response;
-};
-
-module.exports.available = function(id) {
-	return id ? !running.hasOwnProperty(id) : Object.keys(running).length < config.maxRunningInstances;
+module.exports.getOwned = async function(user) {
+	let list = [];
+	const result = await query(`select (id, created, completed) from instances where owner=?`, [user]);
+	list = list.concat(result.map(r => Object.assign({}, r)));
+	// append running instances
+	for(const id in instances)
+		if(instances[id].owner == user && instances[id].type == 'processing')
+			list.push({id: id, created: created});
+	return list;
 };
 
 // cache instance if not cached since this is callen before any other action
@@ -155,6 +143,29 @@ module.exports.exist = async function(id) {
         log(e)
 		return false;
     }
+};
+
+module.exports.data = function(id) {
+	try {
+		var data = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
+	} catch(e) {
+		log(e.stack);
+		return null;
+	}
+	let response = {};
+	// на первый взгляд спагетти, но если знать формат, то нормально
+	let arr = data.toString().split(/\r?\n/);
+	let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
+	response.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
+	arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
+	response.lower = arr[0];
+	response.upper = arr[1];
+	response.effective = arr[2];
+	return response;
+};
+
+module.exports.available = function(id) {
+	return id ? !running.hasOwnProperty(id) : Object.keys(running).length < config.maxRunningInstances;
 };
 
 module.exports.hasAccess = function(id, user, guest) {

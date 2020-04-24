@@ -3,6 +3,12 @@ const router = express.Router();
 const assertIni = require('../modules/assert.js');
 const instance = require('../modules/instance.js');
 
+router.all('*', (req, res, next) => {
+	if(!req.session.userId && !req.session.guest)
+		return res.status(401).json({message: 'unauthorized'});
+	next();
+}
+
 // spawn cutoff instance
 router.post('/', (req, res) => {
 	if(!assertIni(req.body)) {
@@ -20,7 +26,10 @@ router.post('/', (req, res) => {
 });
 
 // get instances owned by user
-//router.get('/')
+router.get('/', async(req, res) => {
+	const a = await instance.getOwned(req.session.userId);
+	res.status(200).json({instances: a});
+});
 
 // request instance status/data
 router.get('/:id', (req, res) => {
@@ -55,8 +64,6 @@ router.post('/:id/kill', (req, res) => {
 });
 
 router.param('id', async(req, res, next, id) => {
-	if(!req.session.userId && !req.session.guest)
-		return res.status(401).json({message: 'unauthorized'});
     if(!(await instance.exist(id)))
         return res.status(404).json({message: 'instance not found'});
     if(!instance.hasAccess(id, req.session.userId, req.session.guest))
