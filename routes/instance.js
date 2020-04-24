@@ -7,7 +7,7 @@ router.all('*', (req, res, next) => {
 	if(!req.session.userId && !req.session.guest)
 		return res.status(401).json({message: 'unauthorized'});
 	next();
-}
+});
 
 // spawn cutoff instance
 router.post('/', (req, res) => {
