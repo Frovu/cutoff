@@ -9,6 +9,66 @@ function stop_spinner () {
     document.getElementById("trace-spinner").style = "visibility:hidden;";
 }
 
+async function fetch_register_user (email, password) {
+    let who = {};
+    who.email = email;
+    who.password = password;
+    const response = await fetch('user', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: who
+    }).catch ((error) => {
+        show_error(error);
+    });
+}
+
+async function fetch_login_user (guest, email, password) {
+    let who = {};
+    if (guest) {
+        who.guest = true;
+    } else {
+        who.email = email;
+        who.password = password;
+    }
+    console.log(who)
+
+    const response = await fetch('user/login', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: who
+    }).catch ((error) => {
+        show_error(error);
+    });
+
+
+    if (response != undefined) {
+        if (response.ok) { 
+            console.log("Succesful login");
+
+            //  HTTP 200-299
+            //const json = await response.json();
+            //uid = json.id;
+            //fetch_data();
+        } else {
+            switch (response.status) {
+                case 400:
+                    show_error("Wrong password");
+                    break;
+
+                case 404:
+                    show_error("User not found.");
+                    break;
+
+               case 500:
+                    show_error("Internal server error");
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
 async function fetch_uid (settings) {
     const response = await fetch('instance', {
         method: 'POST',
@@ -26,15 +86,19 @@ async function fetch_uid (settings) {
         } else {
             switch (response.status) {
                 case 400:
-                    alert("bad settings");
+                    show_error("Bad settings");
+                    break;
+
+                case 401:
+                    show_error("Please, log in to use Cutoff Visualiser");
                     break;
     
                 case 500:
-                    alert("failed");
+                    show_error("Internal server error");
                     break;
     
                 case 503:
-                    alert("too many instances");
+                    show_error("Server is busy");
                     break;
             }
         }
@@ -117,6 +181,7 @@ async function fetch_trace (energy) {
                 case 500:
                     show_error("Instance has failed to calculate");
                     break;
+
                 default:
                     console.log(response.status);
                     break;
