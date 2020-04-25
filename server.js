@@ -1,10 +1,11 @@
 const express = require('express');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const mysql   = require('mysql');
 const util = require('util');
 const db   = mysql.createConnection({
-    host: 'localhost',
+    host: '193.232.24.48',
     user: 'cutoff',
     password: 'cutoff5020',
     database: 'cutoff'
@@ -45,7 +46,9 @@ app.use(session({
 }));
 
 app.use(require('compression')({ level: 9 }));
-app.use(require('body-parser').json()); // for parsing application/json
+
+//app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json()); // for parsing application/json
 
 // TODO: remove on production
 app.use(express.static('./front/'));
