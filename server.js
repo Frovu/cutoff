@@ -45,7 +45,7 @@ app.use(session({
 }));
 
 app.use(require('compression')({ level: 9 }));
-app.use(express.json()); // for parsing application/json
+app.use(require('body-parser').json()); // for parsing application/json
 
 // TODO: remove on production
 app.use(express.static('./front/'));
