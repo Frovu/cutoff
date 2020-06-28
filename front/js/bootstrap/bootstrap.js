@@ -2138,7 +2138,8 @@
 
         var transitionComplete = function transitionComplete() {
           if (_this3._config.focus) {
-            _this3._element.focus();
+            //_this3._element.focus();
+            console.log("hello");
           }
 
           _this3._isTransitioning = false;

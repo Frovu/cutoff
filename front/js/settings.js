@@ -32,18 +32,11 @@ function settings_changed () {
 }
 
 function submit () {
-    
-    if (!is_logged_in()) {
-        show_login_modal();
-        return;
-    }
-
     if (processing) {
         cancel();
         return;
     }
     if (is_bad_input()) return;
-
     if (!first_start_occured) first_start_occured = true;
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
@@ -51,6 +44,7 @@ function submit () {
         "\nEntered amount is " + (settings.upper - settings.lower)/settings.step + ".");
         return;
     }
+
     start_process ();
     fetch_uid(get_settings_JSON());
 }

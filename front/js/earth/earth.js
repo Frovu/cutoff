@@ -7,6 +7,8 @@ let camera, scene, renderer;
 let controls;
 let fps;
 
+fitToContainer();
+
 window.addEventListener('resize', function(event){
 	resize();
 });
@@ -19,6 +21,16 @@ function resize () {
      	canvas_el.height = height;
     	//animate();
     }
+}
+
+
+function fitToContainer(canvas) {
+  // Make it visually fill the positioned parent
+  canvas_el.style.width ='100%';
+  canvas_el.style.height ='100%';
+  // ...then set the internal size to match
+  resize();
+
 }
 
 function init() {

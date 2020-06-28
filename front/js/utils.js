@@ -133,3 +133,12 @@ function remove_elements_by_class(className) {
         elements[0].parentNode.removeChild(elements[0]);
     }
 }
+
+function list_cookies() {
+    var theCookies = document.cookie.split(';');
+    var aString = '';
+    for (var i = 0 ; i <= theCookies.length; i++) {
+        aString += i + ' ' + theCookies[i] + "\n";
+    }
+    return document.cookie;
+}

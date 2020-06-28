@@ -1,23 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <html>
     <head>
-        <title>Cutoff</title>
+    	<meta charset="utf-8">
+  		<!--<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">-->
+
+        <title>Cutoff Calculator</title>
+
         <link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="./css/custom.css">
+        <link rel="stylesheet" type="text/css" href="./css/simple-sidebar.css">
     </head>
     <body>
-        <div>
-            <!--
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-secondary">Load</button>
-                <button type="button" class="btn btn-secondary">Save</button>
-                <button type="button" class="btn btn-secondary">Save as..</button>
-            </div>-->
-            <div class="row">
-                <div class="col-md-2" style="max-height: 820px; min-width: 940px; background-color: black; padding-right: 0px;">
-                    <h3 style='margin-top: 15px; height: 30px' class='bg-dark text-white'>Cutoff Rigidity Visualiser</h3>
+        <div class="d-flex" id="wrapper">
+        	<!-- sidebar -->
+        	<div class="bg-light border-right" id="sidebar-wrapper">
+      			<div class="sidebar-heading">Cutoff Calculator</div>
+      			<div class="list-group list-group-flush">
+        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
+        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #2</a>
+        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #3</a>
+                <a href="#" onclick="new_instance()" class="list-group-item list-group-item-action bg-light">New Instance...</a>
+      			</div>
+    		</div>
+            
+            <!-- page content -->
+            <div id="page-content-wrapper">
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="           #navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"       aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+            
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                      <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                        <li class="nav-item active">
+                          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Dropdown
+                          </a>
+                          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                </nav>
+
+
+            	<div style="background-color: black;">
+                    <!-- <h3 style='margin-top: 15px; height: 30px' class='bg-dark text-white'>Cutoff Rigidity Visualiser</h3>-->
                     <div id="info" style="font-size: 15px"></div>
                     <div>
-                        <canvas class="center" width=850 height=520 id="earth"></canvas>
+                        <canvas class="center" id="earth"></canvas>
                         <div class="mt-2 d-flex justify-content-center">
                             <div class="spinner-border text-light" id="trace-spinner" style="visibility:hidden" role="status">
                                 <span class="sr-only">Loading...</span>
@@ -40,200 +83,238 @@
 
                     </div>
                 </div>
+        </div>
+        </div>
 
-                <div class="col-md-2" style="min-width: 940px; padding-top: 35px">
-                    <div class="mt-2 row ml-1">
-                        <div class="col-md-3">
-                            <div class="dropdown" id="modelDd">
-                                <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Geomagnetic Field Model</button>
-
-                                <div class="dropdown-menu" aria-labelledby="model">
-                                    <a onclick='change_model(this.innerHTML)' class="dropdown-item">Dipole</a>
-                                    <a onclick='change_model(this.innerHTML)' class="dropdown-item">IGRF</a>
-                                    <a onclick='change_model(this.innerHTML)' class="dropdown-item">T89_Kp</a>
-                                    <a onclick='change_model(this.innerHTML)' class="dropdown-item">T96_01</a>
-                                    <a onclick='change_model(this.innerHTML)' class="dropdown-item">T01_01</a>
+        <!-- instance modal -->
+        <div class="modal fade" id="instance_modal" tabindex="-1" role="dialog" aria-labelledby="login"   aria-hidden=  "true">
+          <div class="modal-dialog modal-dialog-centered" data-focus="false" role="document" style="min-width: 900px">
+            <div class="modal-content">
+                <div class="row">
+                    <div class="col-md-2" style="min-width: 900px; padding-top: 35px">
+                        <div class="mt-2 row ml-1">
+                            <div class="col-md-3">
+                                <div class="dropdown" id="modelDd">
+                                    <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="  dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Geomagnetic Field Model</button>
+    
+                                    <div class="dropdown-menu" aria-labelledby="model">
+                                        <a onclick='change_model(this.innerHTML)' class="dropdown-item">Dipole</a>
+                                        <a onclick='change_model(this.innerHTML)' class="dropdown-item">IGRF</a>
+                                        <a onclick='change_model(this.innerHTML)' class="dropdown-item">T89_Kp</a>
+                                        <a onclick='change_model(this.innerHTML)' class="dropdown-item">T96_01</a>
+                                        <a onclick='change_model(this.innerHTML)' class="dropdown-item">T01_01</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="date">Launch Date</label>
-                            <input class="form-control rounded" type="text" id="date" value="2020.06.30">
-                            <small id="dateHelp" class="form-text text-muted">Format: yyyy.mm.dd</small>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="time">Launch Time</label>
-                            <input class="form-control rounded" type="text" id="time" value="12:00:00">
-                        </div>
-                    </div>
-
-                    <div class="row ml-1">
-                        <div class="col-md-3">
-                            <label id="kp-label" class="col-form-label" for="kp">Kp-index</label>
-                            <input class="form-control rounded" type="text" id="kp" value="2">
-                        </div>
-                        <div class="col-md-3">
-                            <label id="swdp-label" class="col-form-label" for="swdp">SWDP</label>
-                            <input class="form-control rounded" type="text" id="swdp" value="0.5">
-                        </div>
-                        <div class="col-md-3">
-                            <label id="dst-label"class="col-form-label" for="dst">Dst-index</label>
-                            <input class="form-control rounded" type="text" id="dst" value="-30.0">
-                        </div>
-                        <div class="col-md-3">
-                            <label id="imfBy-label" class="col-form-label" for="imfBy">IMF By</label>
-                            <input class="form-control rounded" type="text" id="imfBy" value="-7.8">
-                        </div>
-                        <div class="col-md-3">
-                            <label id="imfBz-label" class="col-form-label" for="imfBz">IMF Bz</label>
-                            <input class="form-control rounded" type="text" id="imfBz" value="-2.9">
-                        </div>
-                    </div>
-                    <div class="mt-2 row ml-1">
-                        <div class="col-md-3">
-                            <label id="g1-label" class="col-form-label" for="g1">G1</label>
-                            <input class="form-control rounded" type="text" id="g1" value="1.8">
-                        </div>
-                        <div class="col-md-3">
-                            <label id="g2-label" class="col-form-label" for="g2">G2</label>
-                            <input class="form-control rounded" type="text" id="g2" value="7.0">
-                        </div>
-                    </div>
-
-                    <legend class="ml-1">Launch Direction</legend>
-                    <div class="row ml-1">
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="alt">Altitude (km)</label>
-                            <input class="form-control rounded" type="text" id="alt" value="20.0">
-                            <small class="form-text text-muted">Height above sea level in kilometers</small>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="vertical">Vertical angle (deg)</label>
-                            <input class="form-control rounded" type="text" id="vertical" value="0.00">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="azimutal">Azimutal angle (deg)</label>
-                            <input class="form-control rounded" type="text" id="azimutal" value="0.00">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="flightTime">Particle flight time (seconds)</label>
-                            <input class="form-control" type="text" id="flightTime" value="8.0">
-                        </div>
-                    </div>
-
-                    <legend class="ml-1">Launch Location</legend>
-                    <div class="row ml-1">
-                        <div class="col-md-3">
-                            <div class="dropdown" id="stationDd">
-                                <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="station" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Select station<span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu scrollable-menu" id="stationDropdown">
-                                    <input type="text" placeholder="Search.." id="stationSearchButton" onkeyup="dropdown_filter()">
-                                </ul>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="date">Launch Date</label>
+                                <input class="form-control rounded" type="text" id="date" value="2020.06.30">
+                                <small id="dateHelp" class="form-text text-muted">Format: yyyy.mm.dd</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="time">Launch Time</label>
+                                <input class="form-control rounded" type="text" id="time" value="12:00:00">
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="lat">Latitude</label>
-                            <input class="form-control rounded" type="text" id="lat" value="">
+    
+                        <div class="row ml-1">
+                            <div class="col-md-3">
+                                <label id="kp-label" class="col-form-label" for="kp">Kp-index</label>
+                                <input class="form-control rounded" type="text" id="kp" value="2">
+                            </div>
+                            <div class="col-md-3">
+                                <label id="swdp-label" class="col-form-label" for="swdp">SWDP</label>
+                                <input class="form-control rounded" type="text" id="swdp" value="0.5">
+                            </div>
+                            <div class="col-md-3">
+                                <label id="dst-label"class="col-form-label" for="dst">Dst-index</label>
+                                <input class="form-control rounded" type="text" id="dst" value="-30.0">
+                            </div>
+                            <div class="col-md-3">
+                                <label id="imfBy-label" class="col-form-label" for="imfBy">IMF By</label>
+                                <input class="form-control rounded" type="text" id="imfBy" value="-7.8">
+                            </div>
+                            <div class="col-md-3">
+                                <label id="imfBz-label" class="col-form-label" for="imfBz">IMF Bz</label>
+                                <input class="form-control rounded" type="text" id="imfBz" value="-2.9">
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="lon">Longitude</label>
-                            <input class="form-control rounded" type="text" id="lon" value="">
+                        <div class="mt-2 row ml-1">
+                            <div class="col-md-3">
+                                <label id="g1-label" class="col-form-label" for="g1">G1</label>
+                                <input class="form-control rounded" type="text" id="g1" value="1.8">
+                            </div>
+                            <div class="col-md-3">
+                                <label id="g2-label" class="col-form-label" for="g2">G2</label>
+                                <input class="form-control rounded" type="text" id="g2" value="7.0">
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-secondary btn-block rounded" id="map" onclick="on_map(document.getElementById('lat').value, document.getElementById('lon').value)">Show on map</button>
+    
+                        <legend class="ml-1">Launch Direction</legend>
+                        <div class="row ml-1">
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="alt">Altitude (km)</label>
+                                <input class="form-control rounded" type="text" id="alt" value="20.0">
+                                <small class="form-text text-muted">Height above sea level in kilometers</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="vertical">Vertical angle (deg)</label>
+                                <input class="form-control rounded" type="text" id="vertical" value="0.00">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="azimutal">Azimutal angle (deg)</label>
+                                <input class="form-control rounded" type="text" id="azimutal" value="0.00">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="flightTime">Particle flight time (seconds)</label>
+                                <input class="form-control rounded" type="text" id="flightTime" value="8.0">
+                            </div>
                         </div>
-                    </div>
-
-                    <legend class="ml-1">Rigidity</legend>
-                    <div class="row ml-1">
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="lower">Lowest rigidity (GV)</label>
-                            <input class="form-control rounded" type="text" id="lower" value="0.00">
+    
+                        <legend class="ml-1">Launch Location</legend>
+                        <div class="row ml-1">
+                            <div class="col-md-3">
+                                <div class="dropdown" id="stationDd">
+                                    <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="station" data-toggle="    dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Select station<span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu scrollable-menu" id="stationDropdown">
+                                        <input type="text" placeholder="Search.." id="stationSearchButton" onkeyup="dropdown_filter()">
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="lat">Latitude</label>
+                                <input class="form-control rounded" type="text" id="lat" value="">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="lon">Longitude</label>
+                                <input class="form-control rounded" type="text" id="lon" value="">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-secondary btn-block rounded" id="map" onclick="on_map(document.getElementById('lat').  value, document.getElementById('lon').value)">Show on map</button>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="upper">Highest rigidity (GV)</label>
-                            <input class="form-control rounded" type="text" id="upper" value="6.00">
+    
+                        <legend class="ml-1">Rigidity</legend>
+                        <div class="row ml-1">
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="lower">Lowest rigidity (GV)</label>
+                                <input class="form-control rounded" type="text" id="lower" value="0.00">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="upper">Highest rigidity (GV)</label>
+                                <input class="form-control rounded" type="text" id="upper" value="6.00">
+                            </div>
+                            <div class="col-md-3">
+                                <!--
+                                <label class="col-form-label" for="step">Rigidity step (GV)</label>
+                                <input class="form-control rounded" type="number" id="step" value="0.01" min="0.001" max="0.1" step="0.01">
+                                <small class="form-text text-muted">From 0.1 to 0.001 GV</small>
+                                -->
+    
+                                <span class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="step" data-toggle="   dropdown" aria-haspopup="true" aria-expanded="false">Rigidity step (GV)</button>
+    
+                                    <span class="dropdown-menu" aria-labelledby="step">
+                                        <a onclick="change_step(this.innerHTML)" class="dropdown-item">0.1 GV</a>
+                                        <a onclick="change_step(this.innerHTML)" class="dropdown-item">0.01 GV</a>
+                                        <a onclick="change_step(this.innerHTML)" class="dropdown-item">0.001 GV</a>
+                                    </span>
+                                <span class="dropdown">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-primary btn-block rounded" id="submit" onclick="submit()">Calculate</button>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-							<!--
-                            <label class="col-form-label" for="step">Rigidity step (GV)</label>
-                            <input class="form-control rounded" type="number" id="step" value="0.01" min="0.001" max="0.1" step="0.01">
-                            <small class="form-text text-muted">From 0.1 to 0.001 GV</small>
-							-->
-
-							<span class="dropdown">
-								<button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="step" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rigidity step (GV)</button>
-
-								<span class="dropdown-menu" aria-labelledby="step">
-									<a onclick="change_step(this.innerHTML)" class="dropdown-item">0.1 GV</a>
-									<a onclick="change_step(this.innerHTML)" class="dropdown-item">0.01 GV</a>
-									<a onclick="change_step(this.innerHTML)" class="dropdown-item">0.001 GV</a>
-								</span>
-							<span class="dropdown">
+    
+                        <div class="progress bg-gray ml-2 mt-5" style="width: 100%; margin-top: 15px; height: 30px">
+                            <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="  width: 0%; font-size: 16;"></div>
                         </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-primary btn-block rounded" id="submit" onclick="submit()">Calculate</button>
+                        
+                        <hr>
+                        <legend class="ml-1">Visuals</legend>
+                        <div class="row ml-1" id="options">
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="cameraSpeed">Camera speed</label>
+                                <input class="form-control rounded" type="text" id="cameraSpeed" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="energy">Energy</label>
+                                <input class="form-control rounded" type="number" id="energy" value="0" onchange="change_energy(this.value)">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-form-label" for="gifTime">Record for (seconds)</label>
+                                <input class="form-control rounded" type="text" id="gifTime" value="6.0">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-secondary btn-block rounded" onclick="makeGif();">Start recording</button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="progress bg-gray ml-2 mt-5" style="width: 100%; margin-top: 15px; height: 30px">
-                        <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%; font-size: 16;"></div>
-                    </div>
-
-                    <hr>
-                    <legend class="ml-1">Visuals</legend>
-                    <div class="row ml-1" id="options">
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="cameraSpeed">Camera speed</label>
-                            <input class="form-control rounded" type="text" id="cameraSpeed" value="1">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="energy">Energy</label>
-                            <input class="form-control rounded" type="number" id="energy" value="0" onchange="change_energy(this.value)">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="col-form-label" for="gifTime">Record for (seconds)</label>
-                            <input class="form-control rounded" type="text" id="gifTime" value="6.0">
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-secondary btn-block rounded" onclick="makeGif();">Start recording</button>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
+          </div>
         </div>
 
-
-        <!-- Modal -->
+        <!-- login modal -->
         <div class="modal fade" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="login"   aria-hidden=  "true">
-          <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 300px">
             <div class="modal-content">
                 <div class="login-form ml-2 mr-2 mt-2 mb-2">
-                    <form onclick="login()">
+                    <form>
                         <h4 class="text-center">Log in</h2>       
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Username" required="required">
+                            <input id="login-email" type="text" class="form-control" placeholder="E-mail" required="required">
                         </div>
                         <div class="form-group">
-                            <input type="password" class="form-control" placeholder="Password" required="required">
+                            <input id="login-password" type="password" class="form-control" placeholder="Password" required="required">
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                            <button type="submit" class="btn btn-primary btn-block" onclick="login()">Log in</button>
                         </div>
+                        <!-- 
                         <div class="clearfix">
                             <label class="pull-left checkbox-inline"><input type="checkbox"> Remember me</label>
                             <a href="#" class="pull-right">Forgot Password?</a>
-                        </div>        
+                        </div>
+                        -->
                     </form>
-                    <p class="text-center"><a href="#">Create an Account</a></p>
+                    <p class="text-center"><a href="#" onclick="show_register_modal()">New user</a></p>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- register modal -->
+        <div class="modal fade" id="register_modal" tabindex="-1" role="dialog" aria-labelledby="login"   aria-hidden=  "true">
+          <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 300px">
+            <div class="modal-content">
+                <div class="login-form ml-2 mr-2 mt-2 mb-2">
+                    <form>
+                        <h4 class="text-center">Register</h2>       
+                        <div class="form-group">
+                            <input id="reg-email" type="text" class="form-control" placeholder="E-mail" required="required">
+                        </div>
+                        <div class="form-group">
+                            <input id="reg-password" type="password" class="form-control" placeholder="Password" required="required">
+                        </div>
+                        <div class="form-group">
+                            <input id="reg-confirm-password" type="password" class="form-control" placeholder="Confirm Password" required="required">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" onclick="register();" class="btn btn-primary btn-block">Register</button>
+                        </div>     
+                    </form>
+                    <p class="text-center"><a href="#" onclick="show_login_modal()">Log in</a></p>
                 </div>
             </div>
           </div>
         </div>
     </body>
+
     <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
     <script src="./js/jquery-3.3.1.min.js"></script>
     <script src="./js/bootstrap/bootstrap.min.js"></script>
@@ -245,6 +326,7 @@
     <script src="./js/dropdown.js"></script>
     <script src="./js/process.js"></script>
     <script src="./js/login.js"></script>
+    <script src="./js/instance.js"></script>
     <script src="./js/settings.js"></script>
     <script src="./js/stations.js"></script>
     <script src="./js/models.js"></script>

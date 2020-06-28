@@ -10,9 +10,8 @@ function stop_spinner () {
 }
 
 async function fetch_register_user (email, password) {
-    let who = {};
-    who.email = email;
-    who.password = password;
+    let who = JSON.stringify({email: email, password: password});
+    console.log(who);
     const response = await fetch('user', {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
@@ -20,18 +19,91 @@ async function fetch_register_user (email, password) {
     }).catch ((error) => {
         show_error(error);
     });
+
+    if (response != undefined) {
+        if (response.ok) { 
+            console.log("Succesful register");
+            is_logged_in = true;
+            fetch_login_user(false, email, password);              
+
+            //  HTTP 200-299
+            //const json = await response.json();
+            //uid = json.id;
+            //fetch_data();
+        } else {
+            is_logged_in = false;
+            switch (response.status) {
+                case 400:
+                    show_error("No user data provided");
+                    break;
+
+                case 409:
+                    show_error("Email is already in use");
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
 }
 
 async function fetch_login_user (guest, email, password) {
-    let who = {};
+    let who;
     if (guest) {
-        who.guest = true;
+        who = JSON.stringify({guest: true});
     } else {
-        who.email = email;
-        who.password = password;
+        who = JSON.stringify({email: email, password: password});
     }
-    console.log(who)
 
+    const response = await fetch('user/login', {
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        method: 'POST',
+        body: who
+    }).catch ((error) => {
+        show_error(error);
+    });
+
+    if (response != undefined) {
+        if (response.ok) { 
+            console.log("Succesful login");
+            console.log(response.headers)
+            logged_in_as_user = true;
+            fetch_user();
+            
+            return "Success";
+        } else {
+            logged_in_as_user = false;
+            switch (response.status) {
+                case 400:
+                    //show_error("Wrong password");
+                    return "Wrong password";
+                    break;
+
+                case 404:
+                    //show_error("User not found");
+                    return "User not found";
+                    break;
+
+               case 500:
+                    //show_error("Internal server error");
+                    return "Internal server error";
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
+async function fetch_user_instances (guest, email, password) {
+    let who;
+    if (guest) {
+        who = JSON.stringify({guest: true});
+    } else {
+        who = JSON.stringify({email: email, password: password});
+    }
+    
     const response = await fetch('user/login', {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
@@ -40,15 +112,52 @@ async function fetch_login_user (guest, email, password) {
         show_error(error);
     });
 
-
     if (response != undefined) {
         if (response.ok) { 
             console.log("Succesful login");
+            is_logged_in = true;
+            return "Success";
+        } else {
+            is_logged_in = false;
+            switch (response.status) {
+                case 400:
+                    //show_error("Wrong password");
+                    return "Wrong password";
+                    break;
 
-            //  HTTP 200-299
-            //const json = await response.json();
-            //uid = json.id;
-            //fetch_data();
+                case 404:
+                    //show_error("User not found");
+                    return "User not found";
+                    break;
+
+               case 500:
+                    //show_error("Internal server error");
+                    return "Internal server error";
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
+async function fetch_user () {
+    logged_in_as_user = false;
+
+    const response = await fetch('/user/', {
+        credentials: "same-origin",
+        method: 'GET',
+    }).catch ((error) => {
+        show_error(error);
+    });
+
+    if (response != undefined) {
+        if (response.ok) { 
+            console.log("Current User: ");
+            console.log(response.json());
+            //if (response.json() != "logged in as guest") {
+            //    logged_in_as_user = true;
+            //}
         } else {
             switch (response.status) {
                 case 400:
