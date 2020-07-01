@@ -67,10 +67,7 @@ async function fetch_login_user (guest, email, password) {
     if (response != undefined) {
         if (response.ok) { 
             console.log("Succesful login");
-            console.log(response.headers)
-            logged_in_as_user = true;
             fetch_user();
-            
             return "Success";
         } else {
             logged_in_as_user = false;
@@ -96,43 +93,28 @@ async function fetch_login_user (guest, email, password) {
     }
 }
 
-async function fetch_user_instances (guest, email, password) {
-    let who;
-    if (guest) {
-        who = JSON.stringify({guest: true});
-    } else {
-        who = JSON.stringify({email: email, password: password});
-    }
-    
-    const response = await fetch('user/login', {
-        method: 'POST',
+async function fetch_user_instances () {
+    const response = await fetch('instance', {
+        method: 'GET',
         headers: { "Content-Type": "application/json" },
-        body: who
     }).catch ((error) => {
         show_error(error);
     });
 
     if (response != undefined) {
         if (response.ok) { 
-            console.log("Succesful login");
-            is_logged_in = true;
-            return "Success";
+            console.log("Succesful instance get");
+            return response.json();
         } else {
-            is_logged_in = false;
             switch (response.status) {
-                case 400:
-                    //show_error("Wrong password");
-                    return "Wrong password";
+                case 401:
+                    show_error("Unauthorized");
                     break;
-
                 case 404:
-                    //show_error("User not found");
-                    return "User not found";
+                    show_error("User not found");
                     break;
-
-               case 500:
-                    //show_error("Internal server error");
-                    return "Internal server error";
+                default:
+                    show_error(response.status);
                     break;
             }
         }
@@ -153,11 +135,7 @@ async function fetch_user () {
 
     if (response != undefined) {
         if (response.ok) { 
-            console.log("Current User: ");
-            console.log(response.json());
-            //if (response.json() != "logged in as guest") {
-            //    logged_in_as_user = true;
-            //}
+            return response;
         } else {
             switch (response.status) {
                 case 400:
