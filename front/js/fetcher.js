@@ -67,7 +67,7 @@ async function fetch_login_user (guest, email, password) {
     if (response != undefined) {
         if (response.ok) { 
             console.log("Succesful login");
-            fetch_user();
+            //fetch_user();
             return "Success";
         } else {
             logged_in_as_user = false;

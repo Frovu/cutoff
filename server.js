@@ -57,6 +57,7 @@ app.use(express.static('./front/'));
 app.use(async (req, res, next) => {
     if(req.cookies && req.cookies.session_id && !req.session.user)
         res.clearCookie('session_id');
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
 	next();
 });
 
