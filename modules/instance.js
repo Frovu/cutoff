@@ -87,7 +87,7 @@ module.exports.create = function(ini, user, callback) {
 				if(owner) {
 					try {
 						const q = `insert into instances(id, owner, created, completed) values(?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
-				        await query(q, [id, owner, instances[id].created, Date.now()]);
+				        await query(q, [id, owner, instances[id].created.getTime(), Date.now()]);
 						log(`instance saved: ${id} owner=${owner}`);
 				    } catch(e) {
 				        log(e)
