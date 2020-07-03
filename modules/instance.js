@@ -110,7 +110,7 @@ module.exports.create = function(ini, user, callback) {
 
 module.exports.getOwned = async function(user) {
 	let list = [];
-	const result = await query(`select (id, created, completed) from instances where owner=?`, [user]);
+	const result = await query(`select id, created, completed from instances where owner=?`, [user]);
 	list = list.concat(result.map(r => Object.assign({}, r)));
 	// append running instances
 	for(const id in instances)
