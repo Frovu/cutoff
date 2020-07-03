@@ -17,11 +17,9 @@
         	<!-- sidebar -->
         	<div class="bg-light border-right" id="sidebar-wrapper">
       			<div class="sidebar-heading">Cutoff Calculator</div>
-      			<div class="list-group list-group-flush">
-        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
-        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #2</a>
-        		<a href="#" class="list-group-item list-group-item-action bg-light">Instance #3</a>
-                <a href="#" onclick="new_instance()" class="list-group-item list-group-item-action bg-light">New Instance...</a>
+      			<div class="list-group list-group-flush" id="instances-list">
+        		    <!--<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>-->
+                    <a href="#" onclick="new_instance()" class="list-group-item list-group-item-action bg-light">New Instance...</a>
       			</div>
     		</div>
             
@@ -34,21 +32,22 @@
             
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                       <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                        <!--
                         <li class="nav-item active">
                           <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link" href="#">Link</a>
-                        </li>
+                        </li>-->
                         <li class="nav-item dropdown">
-                          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Dropdown
+                          <a class="nav-link dropdown-toggle" href="#" id="navbarUsernameDropdown" role="button"            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Logged in as Guest
                           </a>
                           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Instances List</a>
+                            <a class="dropdown-item" href="#">Account Settings</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Something else here</a>
+                            <a class="dropdown-item" href="#">Logout</a>
                           </div>
                         </li>
                       </ul>

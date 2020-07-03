@@ -43,14 +43,15 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
     try {
+        let ans = {login: }
         if(!req.session.userId && !req.session.guest)
-            return res.status(200).json({message: 'not logged in'});
+            return res.status(200).json({login: false});
         if(req.session.guest)
-            return res.status(200).json({message: 'logged in as guest'});
+            return res.status(200).json({login: true, guest: true});
         const result = await query(`select email from users where id=?`, [req.session.userId]);
         if(result.length == 0)
             return res.status(404).json({message: 'logged user not found'});
-        res.status(200).json({message: `logged in as ${result[0].email}`});
+        res.status(200).json({login: true, guest: false, username: result[0].email});
     } catch(e) {
         next(e);
     }

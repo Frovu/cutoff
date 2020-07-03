@@ -81,7 +81,7 @@ API REFERENCE:
 
     GET /user/
         return
-            200 // logged in as {}
+            200 with json {login: bool, [guest: bool, username: string]}
             404 // ???
 
 SQL TABLES:

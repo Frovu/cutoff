@@ -1,9 +1,16 @@
-let logged_in_as_user = false;   // rename to logged_in_as_user?
+let logged_in_as_user = false;  
 
 // dropdown does not show in modals: fix (doesn't work)
 $.fn.modal.Constructor.prototype._enforceFocus = function() {};
 
-fetch_user();
+
+fetch_user().then((response) => {
+    response.json().then((json) => {
+        console.log(json.message);
+        document.getElementById("navbarUsernameDropdown").innerHTML = json.message;
+        generate_instance_list ();
+    });
+});
 
 function show_login_modal () {
     $("#login_modal").modal('toggle');
@@ -21,8 +28,6 @@ function login () {
                 show_instance_after_login = false;
             }
         }
-
-        console.log(list_cookies());
     });
 }
 
