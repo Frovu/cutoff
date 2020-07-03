@@ -39,8 +39,9 @@ function spawnCutoff(id, trace, onExit) {
 	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
 ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
-	const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+	//const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
+	//const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
 		onExit(code, signal);

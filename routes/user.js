@@ -43,7 +43,6 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
     try {
-        let ans = {login: }
         if(!req.session.userId && !req.session.guest)
             return res.status(200).json({login: false});
         if(req.session.guest)
