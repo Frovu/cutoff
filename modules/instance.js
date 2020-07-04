@@ -22,14 +22,14 @@ else // clear lost instances
 		log(`Removed ${i} unowned instances`);;
 });
 
-setInterval(() =>
+/*setInterval(() =>
 	Object.keys(instances).forEach(el => {
 		if(Date.now() - instances[el].spawnedAt >= config.timeToLive) {
 				fs.removeSync(path.join(config.instancesDir, el));
 				delete instances[el];
 				log('Instance rotted away from storage: '+el);
 		}
-	}, config.time / 4));
+	}, config.time / 4));*/
 
 const iniOrder = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
