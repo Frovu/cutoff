@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs-extra');
 const mysql   = require('mysql');
 const util = require('util');
-const db   = mysql.createConnection({
+const db   = mysql.createPool({
     host: '193.232.24.48',
     user: 'cutoff',
     password: 'cutoff5020',

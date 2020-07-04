@@ -39,8 +39,9 @@ function spawnCutoff(id, trace, onExit) {
 	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
 ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
-	const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+	//const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
+	//const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
 		onExit(code, signal);
@@ -86,7 +87,7 @@ module.exports.create = function(ini, user, callback) {
 				if(owner) {
 					try {
 						const q = `insert into instances(id, owner, created, completed) values(?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
-				        await query(q, [id, owner, instances[id].created, Date.now()]);
+				        await query(q, [id, owner, instances[id].created.getTime(), Date.now()]);
 						log(`instance saved: ${id} owner=${owner}`);
 				    } catch(e) {
 				        log(e)
@@ -109,7 +110,7 @@ module.exports.create = function(ini, user, callback) {
 
 module.exports.getOwned = async function(user) {
 	let list = [];
-	const result = await query(`select (id, created, completed) from instances where owner=?`, [user]);
+	const result = await query(`select id, created, completed from instances where owner=?`, [user]);
 	list = list.concat(result.map(r => Object.assign({}, r)));
 	// append running instances
 	for(const id in instances)
