@@ -1,5 +1,3 @@
-html, body {margin: 0; height: 100%;}
-
 #info {
 	position: relative;
 	/*top: 100px;*/
@@ -41,6 +39,7 @@ html, body {margin: 0; height: 100%;}
 a {
 	line-height: 125%;
 }
+
 a:hover {
   background-color:#888888;
   cursor:pointer;
@@ -49,6 +48,9 @@ a:hover {
 html, body {
   max-width: 100%;
   overflow-x: hidden;
+  margin: 0; 
+  height: 100%; 
+  background-color: black;
 }
 
 legend {

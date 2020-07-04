@@ -3,8 +3,8 @@ let show_instance_after_login = false;	// weird variable but ok
 function generate_instance_list () {
 	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
 	console.log("generating..")
-	fetch_user_instances().then((json)=>{
-		console.log(json);
+	fetch_user_instances().then((response)=>{
+		console.log(response);
 		/*
 		let node = document.createElement("a");                 // Create a <li> node
 		let textnode = document.createTextNode("Instance");         // Create a text node
@@ -19,12 +19,13 @@ function show_instance () {
 }
 
 function new_instance () {
+	/*
 	if (!logged_in_as_user) {
-		show_instance_after_login = true;
 		show_login_modal ();
 	} else {
 		show_instance_modal ();
-	}
+	}*/
+	show_instance_modal ();
 }
 
 function show_instance_modal () {

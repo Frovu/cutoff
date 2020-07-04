@@ -23,7 +23,6 @@ async function fetch_register_user (email, password) {
     if (response != undefined) {
         if (response.ok) { 
             console.log("Succesful register");
-            is_logged_in = true;
             fetch_login_user(false, email, password);              
 
             //  HTTP 200-299
@@ -31,7 +30,6 @@ async function fetch_register_user (email, password) {
             //uid = json.id;
             //fetch_data();
         } else {
-            is_logged_in = false;
             switch (response.status) {
                 case 400:
                     show_error("No user data provided");
@@ -70,7 +68,6 @@ async function fetch_login_user (guest, email, password) {
             //fetch_user();
             return "Success";
         } else {
-            logged_in_as_user = false;
             switch (response.status) {
                 case 400:
                     //show_error("Wrong password");
@@ -124,8 +121,6 @@ async function fetch_user_instances () {
 }
 
 async function fetch_user () {
-    logged_in_as_user = false;
-
     const response = await fetch('/user/', {
         credentials: "same-origin",
         method: 'GET',
