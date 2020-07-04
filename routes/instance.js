@@ -59,6 +59,14 @@ router.get('/:id/:trace', (req, res) => {
 		res.status(102).json({message: 'instance is procesing'});
 });
 
+// set instance name
+router.post('/:id/name', async(req, res) => {
+	if(await instance.setName(req.id, req.body.name))
+    	res.status(200).json({message: 'renamed'});
+	else
+		res.status(500).json({message: 'failed'});
+});
+
 // kill running process
 router.post('/:id/kill', async(req, res) => {
 	await instance.kill(req.id);

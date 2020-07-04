@@ -198,6 +198,15 @@ module.exports.trace = function(id, energy, callback) {
 	trace(id, energy, callback);
 };
 
+module.exports.setName = async function(id, name) {
+	try {
+		await query(`update instances set name=? where id=?`, [name, id]);
+	} catch (e) {
+		return false;
+	}
+	return true;
+};
+
 module.exports.kill = async function(id) {
 	delete instances[id];
 	try {
