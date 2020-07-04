@@ -74,6 +74,11 @@ function login () {
     });
 }
 
+function logout () {
+    fetch_logout ();
+    window.location.reload();
+}
+
 function show_register_modal () {
     $("#register_modal").modal('toggle');
     $("#login_modal").modal('hide');

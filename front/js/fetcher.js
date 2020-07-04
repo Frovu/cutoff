@@ -1,5 +1,4 @@
 const update_interval_ms = 200;
-let uid;    // rename to id? instance_id?
 
 function start_spinner () {
     document.getElementById("trace-spinner").style = "visibility:visible;";
@@ -90,6 +89,37 @@ async function fetch_login_user (guest, email, password) {
     }
 }
 
+
+async function fetch_logout () {
+    const response = await fetch('user/logout', {
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        method: 'POST',
+    }).catch ((error) => {
+        show_error(error);
+    });
+
+    if (response != undefined) {
+        if (response.ok) { 
+            console.log("Succesful logout");
+        } else {
+            switch (response.status) {
+                case 404:
+                    //show_error("User not found");
+                    return "User not found";
+                    break;
+
+               case 500:
+                    //show_error("Internal server error");
+                    return "Internal server error";
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
 async function fetch_user_instances () {
     const response = await fetch('instance', {
         method: 'GET',
@@ -100,7 +130,6 @@ async function fetch_user_instances () {
 
     if (response != undefined) {
         if (response.ok) { 
-            console.log("Succesful instance get");
             return response.json();
         } else {
             switch (response.status) {
@@ -109,9 +138,6 @@ async function fetch_user_instances () {
                     break;
                 case 404:
                     show_error("User not found");
-                    break;
-                default:
-                    show_error(response.status);
                     break;
             }
         }
@@ -151,7 +177,7 @@ async function fetch_user () {
     }
 }
 
-async function fetch_uid (settings) {
+async function fetch_new_instance (settings) {
     const response = await fetch('instance', {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
@@ -163,8 +189,8 @@ async function fetch_uid (settings) {
     if (response != undefined) {
         if (response.ok) { //  HTTP 200-299
             const json = await response.json();
-            uid = json.id;
-            fetch_data();
+            console.log(json.id);
+            fetch_instance_data(json.id);
         } else {
             switch (response.status) {
                 case 400:
@@ -189,8 +215,9 @@ async function fetch_uid (settings) {
     }
 }
 
-async function fetch_data () {
-    const response = await fetch('instance/' + uid, {
+async function fetch_instance_data (id) {
+    console.log("fetching " + id);
+    const response = await fetch('instance/' + id, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
@@ -200,13 +227,14 @@ async function fetch_data () {
     if (response != undefined) {
         if (response.ok) {
             const json = await response.json();
+            current_instance_id = id;
             switch (json.status) {
                 case "processing":
                     update_process(json.percentage.toFixed(1));
 
                     // i don't like it
                     status_updater = setTimeout(function() {
-                        fetch_data();
+                        fetch_instance_data();
                     }, update_interval_ms);
                     break;
 
@@ -237,7 +265,7 @@ async function fetch_data () {
 async function fetch_trace (energy) {
     start_spinner();
 
-    const response = await fetch('instance/' + uid + "/" + energy, {
+    const response = await fetch('instance/' + current_instance_id + "/" + energy, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
@@ -274,8 +302,8 @@ async function fetch_trace (energy) {
     }
 }
 
-async function fetch_cancel () {
-    const response = await fetch('instance/' + uid + "/kill", {
+async function fetch_cancel (id) {
+    const response = await fetch('instance/' + id + "/kill", {
         method: 'POST',
     }).catch ((error) => {
         show_error(error);
