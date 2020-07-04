@@ -27,7 +27,7 @@ setInterval(() =>
 		if(Date.now() - instances[el].spawnedAt >= config.timeToLive) {
 				fs.removeSync(path.join(config.instancesDir, el));
 				delete instances[el];
-				log('instance rotted away from storage: '+el);
+				log('Instance rotted away from storage: '+el);
 		}
 	}, config.time / 4));
 
@@ -88,19 +88,17 @@ module.exports.create = function(ini, user, callback) {
 					try {
 						const q = `insert into instances(id, owner, settings, created, completed) values(?,?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
 				        await query(q, [id, owner, initxt, instances[id].created.getTime(), Date.now()]);
-						log(`instance saved: ${id} owner=${owner}`);
-				    } catch(e) {
+					} catch(e) {
 				        log(e)
 						return false;
 				    }
 				}
-
 			} else {
 				instances[id].status = 'failed';
 				instances[id].completed = Date.now();
 			}
 		});
-		log(`instance spawned ${id}`);
+		log(`Spawned instance of owner (${user}): ${id}`);
 		instance.cutoff.stdout.on('data', data => {
 			instance.linesGot++;
 		});
@@ -150,6 +148,8 @@ module.exports.exist = async function(id) {
 			for(const i in iniOrder)
 				instances[id].ini[iniOrder[i]] = ini[i];
 			log(`Restored instance: ${id}`);
+		} else {
+			delete instances[id];
 		}
         return result.length > 0;
     } catch(e) {
@@ -162,7 +162,7 @@ module.exports.data = function(id) {
 	try {
 		var data = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
 	} catch(e) {
-		log(e.stack);
+		//log(e.stack);
 		return null;
 	}
 	let response = {};
@@ -198,16 +198,16 @@ module.exports.trace = function(id, energy, callback) {
 	trace(id, energy, callback);
 };
 
-module.exports.kill = function(id) {
+module.exports.kill = async function(id) {
 	delete instances[id];
 	try {
 		fs.removeSync(path.join(config.instancesDir, id));
 	} catch(e) {
 		log(e);
-		return false;
 	}
+	await query(`delete from instances where id=?`, [id]);
 	const toKill = running[id];
 	if(toKill)
 		toKill.cutoff.kill('SIGHUP');
-	return true;
+	log(`Deleted instance: ${id}`);
 }

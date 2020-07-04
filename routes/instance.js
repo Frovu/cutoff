@@ -3,10 +3,14 @@ const router = express.Router();
 const assertIni = require('../modules/assert.js');
 const instance = require('../modules/instance.js');
 
-router.all('*', (req, res, next) => {
+router.all('*', async(req, res, next) => {
 	if(!req.session.userId && !req.session.guest)
 		return res.status(401).json({message: 'unauthorized'});
-	next();
+	try {
+		await next();
+	} catch(e) {
+		next(e);
+	}
 });
 
 // spawn cutoff instance
@@ -56,11 +60,9 @@ router.get('/:id/:trace', (req, res) => {
 });
 
 // kill running process
-router.post('/:id/kill', (req, res) => {
-    if(instance.kill(req.id))
-        res.status(200).json({message: 'killed'});
-	else
-        res.status(500).json({message: 'failed deleting files'});
+router.post('/:id/kill', async(req, res) => {
+	await instance.kill(req.id);
+    res.status(200).json({message: 'killed'});
 });
 
 router.param('id', async(req, res, next, id) => {

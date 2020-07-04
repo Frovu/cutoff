@@ -66,7 +66,7 @@ app.use('/user', require('./routes/user.js'));
 
 // handle error
 app.use((err, req, res, next)=>{
-	log(err);
+	log(`Error hadling request: ${err.stack}`);
 	res.status(500).json({message: 'some error occured'});
 });
 
