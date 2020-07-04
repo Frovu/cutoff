@@ -138,7 +138,7 @@ module.exports.exist = async function(id) {
 			const ini = txt.toString().split('\n').slice(1);
 			for(const i in iniOrder)
 				instances[id].ini[iniOrder[i]] = ini[i];
-			log(`Cached instance: ${id}`);
+			log(`Restored instance: ${id}`);
 		}
         return result.length > 0;
     } catch(e) {

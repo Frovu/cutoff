@@ -18,7 +18,7 @@ module.exports = function(id, energy, callback) {
                             .map(el => el.trim().split(/\s+/).slice(0, 4).map(e => Number(e)));
                     let optimized = [trace[0]]; let oi = 0;
                     const threshold = trace.length<300?0:(trace.length<4000?0.015:0.07);
-                    if(threshold)
+                    if(threshold) {
                         for(let i=1; i<trace.length; ++i) {
                             const dx = trace[i][1] - optimized[oi][1];
                             const dy = trace[i][2] - optimized[oi][2];
@@ -28,6 +28,7 @@ module.exports = function(id, energy, callback) {
                                 optimized.push(trace[i]);
                                 oi++;
                             }
+                        }
                     }
                     log(`Trace. pts=${trace.length} optimized=${threshold?optimized.length:trace.length}`);
                     callback(threshold?optimized:trace);
