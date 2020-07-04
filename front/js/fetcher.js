@@ -189,7 +189,6 @@ async function fetch_new_instance (settings) {
     if (response != undefined) {
         if (response.ok) { //  HTTP 200-299
             const json = await response.json();
-            console.log(json.id);
             fetch_instance_data(json.id);
         } else {
             switch (response.status) {
@@ -234,7 +233,7 @@ async function fetch_instance_data (id) {
 
                     // i don't like it
                     status_updater = setTimeout(function() {
-                        fetch_instance_data();
+                        fetch_instance_data(id);
                     }, update_interval_ms);
                     break;
 
