@@ -44,7 +44,7 @@ ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${
 	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
-		onExit(code, signal);
+		onExit(code, signal, initxt);
 	});
 	return running[id] = {
 		type: trace?'trace':'instance',
@@ -72,7 +72,7 @@ module.exports.create = function(ini, user, callback) {
 			owner: user,
 			ini: ini
 		};
-		let instance = spawnCutoff(id, null, async(code, signal) => {
+		let instance = spawnCutoff(id, null, async(code, signal, initxt) => {
 			delete running[id];
 			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawned)/1000} seconds`)
 			if(code === null) {
@@ -86,8 +86,8 @@ module.exports.create = function(ini, user, callback) {
 				const owner = instances[id].owner;
 				if(owner) {
 					try {
-						const q = `insert into instances(id, owner, created, completed) values(?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
-				        await query(q, [id, owner, instances[id].created.getTime(), Date.now()]);
+						const q = `insert into instances(id, owner, settings, created, completed) values(?,?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
+				        await query(q, [id, owner, initxt, instances[id].created.getTime(), Date.now()]);
 						log(`instance saved: ${id} owner=${owner}`);
 				    } catch(e) {
 				        log(e)
@@ -110,27 +110,22 @@ module.exports.create = function(ini, user, callback) {
 
 module.exports.getOwned = async function(user) {
 	let list = [];
-	const result = await query(`select id, created, completed from instances where owner=?`, [user]);
+	const result = await query(`select id, name, settings, created, completed from instances where owner=?`, [user]);
 	list = list.concat(result.map(r => Object.assign({}, r)));
 	// append running instances
 	for(const id in instances)
 		if(instances[id].owner == user && instances[id].type == 'processing')
-			list.push({id: id, created: created});
+			list.push({id: id, created: instances[id].created});
 	// set ini's, restore if needed
 	for(const i in list) {
 		const id = list[i].id;
-		if(instances.hasOwnProperty(id)) {
-			list[i].ini = instances[id].ini;
+		if(instances[id] && instances[id].type == 'processing') {
+			list[i].settings = instances[id].ini;
 		} else {
-			try {
-				list[i].ini = {};
-				const txt = fs.readFileSync(path.join(config.instancesDir, id, config.iniFilename));
-				const ini = txt.toString().split('\n').slice(1);
-				for(const i in iniOrder)
-					list[i].ini[iniOrder[i]] = ini[i];
-			} catch(e) {
-				list[i].ini = null;
-			}
+			const ini = list[i].settings.split('\n').slice(1);
+			list[i].settings = {};
+			for(const j in iniOrder)
+				list[i].settings[iniOrder[j]] = ini[j];
 		}
 	}
 	return list;
@@ -151,8 +146,7 @@ module.exports.exist = async function(id) {
 				status: 'completed',
 				ini: {}
 			};
-			const txt = fs.readFileSync(path.join(config.instancesDir, id, config.iniFilename));
-			const ini = txt.toString().split('\n').slice(1);
+			const ini = result[0].settings.split('\n').slice(1);
 			for(const i in iniOrder)
 				instances[id].ini[iniOrder[i]] = ini[i];
 			log(`Restored instance: ${id}`);

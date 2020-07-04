@@ -22,7 +22,7 @@ API REFERENCE:
                 id: "instance id",
                 created: sql datetime string or Date() object,
                 ?completed: sql datetime string or Date() object,
-                ini: ini Object if instance is present in filesystem or null
+                settings: ini Object if instance is present in filesystem or null
             }
             completed === undefined => instance is still calculating
         return
@@ -96,6 +96,8 @@ SQL TABLES:
     CREATE TABLE IF NOT EXISTS `instances` (
       `id` VARCHAR(36) NOT NULL,
       `owner` int NOT NULL,
+      `name` varchar(255),
+      `settings` varchar(255) NOT NULL,
       `created` DATETIME NOT NULL,
       `completed` DATETIME NOT NULL,
       PRIMARY KEY (`id`)
