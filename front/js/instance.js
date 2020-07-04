@@ -1,30 +1,81 @@
 let show_instance_after_login = false;	// weird variable but ok
+let current_instance_id;
 
+/*
+                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
+                    <div class="d-flex w-100 justify-content-between">
+                       <h5 class="mb-1">Irkutsk</h5>
+                       <small class="text-muted">Done</small>
+                   </div>
+                   <p class="mb-1">
+                        <i>Energy: 0.00 - 6.00 GV<br>
+                        Date: 27.01.2007<br>
+                        Time: 23:00<br>
+                        </i>
+                    </p>
+                <!--<small class="text-muted">Donec id elit non mi porta.</small>-->
+                </a>
+*/
 function generate_instance_list () {
 	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
 	console.log("generating..")
-	fetch_user_instances().then((json)=>{
-		console.log(json);
-		/*
-		let node = document.createElement("a");                 // Create a <li> node
-		let textnode = document.createTextNode("Instance");         // Create a text node
-		node.appendChild(textnode);                              // Append the text to <li>
-		document.getElementById("myList").appendChild(node);     // Append <li> to <ul> with id="myList"*/
+	fetch_user_instances().then((response)=>{
+		response.instances.forEach((instance) => {
+			const list_group_item = document.createElement("a");
+			list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
+
+			const header_item = document.createElement("div");
+			header_item.className = "d-flex w-100 justify-content-between";
+			
+			const name_item = document.createElement("h5");
+			name_item.className = "mb-1";
+			name_item.innerHTML = "Instance Name";
+
+			const status_item = document.createElement("small");
+			status_item.className = "text-muted";
+			status_item.innerHTML = "status";	// TODO: get instance status through  GET /instance/:id
+
+			const description_item = document.createElement("p");
+			description_item.className = "mb-1";
+			description_item.innerHTML = "<i>" + "Model: IGRF<br>Range: 0.00 - 6.00GV<br>Date: 10.12.2008" + "</i>";	// instance.date time energy range
+
+			const delete_item = document.createElement("a");
+			delete_item.className = "mb-1 text-danger";
+			delete_item.onclick = function() {
+				fetch_cancel(instance.id);
+				document.getElementById("instances-list").removeChild(list_group_item);
+			}; 
+			delete_item.innerHTML = "Delete";	// instance.date time energy range
+
+			header_item.appendChild(name_item);
+			header_item.appendChild(status_item);
+			list_group_item.appendChild(header_item);
+			list_group_item.appendChild(description_item);
+			list_group_item.appendChild(delete_item);
+
+			list_group_item.onclick = function() {
+				fetch_instance_data(instance.id);
+				list_group_item.className += " active";
+			};
+
+			document.getElementById("instances-list").appendChild(list_group_item);
+		});
 	});
 
 }
 
-function show_instance () {
-	//instances-list
+function show_instance (id) {
+	
 }
 
 function new_instance () {
+	/*
 	if (!logged_in_as_user) {
-		show_instance_after_login = true;
 		show_login_modal ();
 	} else {
 		show_instance_modal ();
-	}
+	}*/
+	show_instance_modal ();
 }
 
 function show_instance_modal () {

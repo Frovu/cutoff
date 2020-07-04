@@ -14,6 +14,8 @@ window.addEventListener('resize', function(event){
 });
 
 function resize () {
+	canvas_el.style.width ='70%';
+	canvas_el.style.height ='70%';
 	let width = canvas_el.clientWidth;
     let height = canvas_el.clientHeight;
     if (canvas_el.width != width || canvas_el.height != height) {
@@ -26,8 +28,8 @@ function resize () {
 
 function fitToContainer(canvas) {
   // Make it visually fill the positioned parent
-  canvas_el.style.width ='100%';
-  canvas_el.style.height ='100%';
+  canvas_el.style.width ='70%';
+
   // ...then set the internal size to match
   resize();
 

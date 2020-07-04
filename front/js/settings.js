@@ -40,13 +40,13 @@ function submit () {
     if (!first_start_occured) first_start_occured = true;
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
-        " calculate it properly.\nMaximum amount of traces is " + particles_limit+
+        " calculate it properly.\nMaximum amount of particles is " + particles_limit+
         "\nEntered amount is " + (settings.upper - settings.lower)/settings.step + ".");
         return;
     }
 
     start_process ();
-    fetch_uid(get_settings_JSON());
+    fetch_new_instance(get_settings_JSON());
 }
 
 function update_settings () {
