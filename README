@@ -22,6 +22,7 @@ API REFERENCE:
                 id: "instance id",
                 created: sql datetime string or Date() object,
                 ?completed: sql datetime string or Date() object,
+                ini: ini Object if instance is present in filesystem or null
             }
             completed === undefined => instance is still calculating
         return

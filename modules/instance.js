@@ -39,9 +39,9 @@ function spawnCutoff(id, trace, onExit) {
 	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
 ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
-	const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
-	//const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
+	//const winpath = 'C:\\Users\\Egor\\Desktop\\cutoff'
+	//const cutoff = spawn(winpath+'\\CutOff2050.exe', [], {cwd: `${winpath}\\cutoff\\${id}`})
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
 		onExit(code, signal);
@@ -116,6 +116,23 @@ module.exports.getOwned = async function(user) {
 	for(const id in instances)
 		if(instances[id].owner == user && instances[id].type == 'processing')
 			list.push({id: id, created: created});
+	// set ini's, restore if needed
+	for(const i in list) {
+		const id = list[i].id;
+		if(instances.hasOwnProperty(id)) {
+			list[i].ini = instances[id].ini;
+		} else {
+			try {
+				list[i].ini = {};
+				const txt = fs.readFileSync(path.join(config.instancesDir, id, config.iniFilename));
+				const ini = txt.toString().split('\n').slice(1);
+				for(const i in iniOrder)
+					list[i].ini[iniOrder[i]] = ini[i];
+			} catch(e) {
+				list[i].ini = null;
+			}
+		}
+	}
 	return list;
 };
 

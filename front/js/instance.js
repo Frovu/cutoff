@@ -21,12 +21,13 @@ function generate_instance_list () {
 	console.log("generating..")
 	fetch_user_instances().then((response)=>{
 		response.instances.forEach((instance) => {
+			console.log(instance)
 			const list_group_item = document.createElement("a");
 			list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
 
 			const header_item = document.createElement("div");
 			header_item.className = "d-flex w-100 justify-content-between";
-			
+
 			const name_item = document.createElement("h5");
 			name_item.className = "mb-1";
 			name_item.innerHTML = "Instance Name";
@@ -44,7 +45,7 @@ function generate_instance_list () {
 			delete_item.onclick = function() {
 				fetch_cancel(instance.id);
 				document.getElementById("instances-list").removeChild(list_group_item);
-			}; 
+			};
 			delete_item.innerHTML = "Delete";	// instance.date time energy range
 
 			header_item.appendChild(name_item);
@@ -65,7 +66,7 @@ function generate_instance_list () {
 }
 
 function show_instance (id) {
-	
+
 }
 
 function new_instance () {
