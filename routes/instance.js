@@ -60,7 +60,7 @@ router.post('/:id/kill', (req, res) => {
     if(instance.kill(req.id))
         res.status(200).json({message: 'killed'});
 	else
-        res.status(400).json({message: 'not running'});
+        res.status(500).json({message: 'failed deleting files'});
 });
 
 router.param('id', async(req, res, next, id) => {

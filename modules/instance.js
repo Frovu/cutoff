@@ -188,13 +188,15 @@ module.exports.trace = function(id, energy, callback) {
 };
 
 module.exports.kill = function(id) {
-	const toKill = running[id];
-	if(!toKill) return false;
-	if(toKill) {
-		// delete instance
-		delete instances[id];
-		try{fs.removeSync(path.join(config.instancesDir, id));}
-		catch(e){log(e);}
+	delete instances[id];
+	try {
+		fs.removeSync(path.join(config.instancesDir, id));
+	} catch(e) {
+		log(e);
+		return false;
 	}
-	toKill.cutoff.kill('SIGHUP');
+	const toKill = running[id];
+	if(toKill)
+		toKill.cutoff.kill('SIGHUP');
+	return true;
 }
