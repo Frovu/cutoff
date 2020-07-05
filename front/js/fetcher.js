@@ -16,7 +16,7 @@ function stop_spinner () {
 }
 
 async function fetch_uid (settings) {
-    const response = await fetch('/instance', {
+    const response = await fetch('instance', {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
         body: settings
@@ -46,7 +46,7 @@ async function fetch_uid (settings) {
 }
 
 async function fetch_data () {
-    const response = await fetch('/instance/' + uid, {
+    const response = await fetch('instance/' + uid, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
@@ -91,7 +91,7 @@ async function fetch_data () {
 async function fetch_trace (energy) {
     start_spinner();
 
-    const response = await fetch('/instance/' + uid + "/" + energy, {
+    const response = await fetch('instance/' + uid + "/" + energy, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
@@ -124,7 +124,7 @@ async function fetch_trace (energy) {
 }
 
 async function fetch_cancel () {
-    const response = await fetch('/instance/' + uid + "/kill", {
+    const response = await fetch('instance/' + uid + "/kill", {
         method: 'POST',
     }).catch ((error) => {
         show_error(error);

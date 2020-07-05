@@ -29,7 +29,7 @@ app.use(require('compression')({ level: 9 }));
 app.use(express.json()); // for parsing application/json
 
 // TODO: remove on production
-app.use(express.static('./front/'));
+//app.use(express.static('./front/'));
 app.use('/instance', require('./routes/instance.js'));
 
 // start server

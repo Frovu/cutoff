@@ -4,8 +4,8 @@ const uuid = require('uuid/v4');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const jpath = '../instance.json';
-let instances = require(jpath);
+const jpath = './instance.json';
+let instances = require('.'+jpath);
 let running = {};
 // create instances directory if not exists
 if(!fs.existsSync(config.instancesDir))
