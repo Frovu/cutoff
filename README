@@ -35,6 +35,7 @@ API REFERENCE:
             'processing'- calculating things
             'failed'    - Cutoff process dead
             'completed' - completed
+            'zombie'    - results lost
         return
             200 {
                 status,
