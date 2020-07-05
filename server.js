@@ -42,7 +42,7 @@ app.use(session({
     secret: "42bayana1stratocaster",
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 7200000 }
+    cookie: { maxAge: 7200000, sameSite: true }
 }));
 
 app.use(require('compression')({ level: 9 }));
