@@ -35,7 +35,7 @@ const iniOrder = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', '
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
 function spawnCutoff(id, trace, onExit) {
-	const ini = instances[id].ini;
+	const ini = instances[id].settings;
 	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
 ${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
@@ -70,7 +70,7 @@ module.exports.create = function(ini, user, callback) {
 			status: 'processing',
 			created: new Date(),
 			owner: user,
-			ini: ini
+			settings: ini
 		};
 		let instance = spawnCutoff(id, null, async(code, signal, initxt) => {
 			delete running[id];
@@ -111,14 +111,15 @@ module.exports.getOwned = async function(user) {
 	const result = await query(`select id, name, settings, created, completed from instances where owner=?`, [user]);
 	list = list.concat(result.map(r => Object.assign({}, r)));
 	// append running instances
-	for(const id in instances)
-		if(instances[id].owner == user && instances[id].type == 'processing')
+	for(const id in instances) {
+		if(instances[id].owner == user && instances[id].status == 'processing')
 			list.push({id: id, created: instances[id].created});
+	}
 	// set ini's, restore if needed
 	for(const i in list) {
 		const id = list[i].id;
-		if(instances[id] && instances[id].type == 'processing') {
-			list[i].settings = instances[id].ini;
+		if(instances[id] && instances[id].status == 'processing') {
+			list[i].settings = instances[id].settings;
 		} else {
 			const ini = list[i].settings.split('\n').slice(1);
 			list[i].settings = {};
@@ -142,11 +143,11 @@ module.exports.exist = async function(id) {
 				completed: new Date(result[0].completed),
 				owner: result[0].owner,
 				status: 'completed',
-				ini: {}
+				settings: {}
 			};
 			const ini = result[0].settings.split('\n').slice(1);
 			for(const i in iniOrder)
-				instances[id].ini[iniOrder[i]] = ini[i];
+				instances[id].settings[iniOrder[i]] = ini[i];
 			log(`Restored instance: ${id}`);
 		} else {
 			delete instances[id];

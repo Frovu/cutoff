@@ -256,7 +256,6 @@ async function fetch_instance_data (id) {
                     // i don't like it
                     status_updater = setTimeout(function() {
                         fetch_instance_data(id);
-                        update_instance_list();
                     }, update_interval_ms);
                     break;
 

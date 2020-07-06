@@ -69,7 +69,7 @@ function update_instance_list () {
 			const progressbar_item = document.createElement("div");
 			progressbar_item.className = "progress-bar";
 			progressbar_item.setAttribute("role", "progressbar");
-			progressbar_item.setAttribute("style", "width: 100%");
+			progressbar_item.setAttribute("style", "width: 0%");
 
 
 
@@ -78,14 +78,15 @@ function update_instance_list () {
 			delete_item.onclick = function(event) {
 				event.stopPropagation();
 				fetch_cancel(instance.id);
-				update_instance_list();
-				/*
+				//update_instance_list();
+				
 				// TODO remove deleted instance from instances variable
 				for(i of instances){
 					if(i.data == instance) {
-						instances.splice(instances.indexOf(i), i);
+						instances.splice(instances.indexOf(i), 1);
+						document.getElementById("instances-list").removeChild(list_group_item);
 					}
-				}*/
+				}
 
 			};
 			delete_item.innerHTML = "Delete";	// instance.date time energy range
@@ -100,7 +101,12 @@ function update_instance_list () {
 
 			list_group_item.onclick = function() {
 				fetch_instance_data(instance.id);
+				/*
 				list_group_item.className += " active";
+				name_item.className += " text-white";
+				model_item.className += " text-light";
+				description_item.className += " text-white";*/
+
 			};
 
 			document.getElementById("instances-list").appendChild(list_group_item);
