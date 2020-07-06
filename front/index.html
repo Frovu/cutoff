@@ -19,7 +19,7 @@
             <div class="sidebar-heading">Cutoff Calculator</div>
             <div class="list-group list-group-flush">
 
-                                <!--<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>-->
+                <!--<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>-->
 
                 <!--
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
@@ -35,25 +35,25 @@
                     </p>
                 </a>-->
 
-            <a class="list-group-item list-group-item-action flex-column align-items-start" onclick="show_instance_modal()">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">Add New Instance...</h5>
-                </div>
-            </a>
+                <a class="list-group-item list-group-item-action flex-column align-items-start" onclick="show_instance_modal()">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Add New Instance...</h5>
+                    </div>
+                </a>
 
-            <div id="instances-list"></div>
+                <div id="instances-list"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- page content -->
-    <div id="page-content-wrapper">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="           #navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"       aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-          </button>
+        <!-- page content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="           #navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"       aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+              </button>
 
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                  <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
                         <!--
                         <li class="nav-item active">
                           <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
@@ -107,6 +107,7 @@
 </div>
 
 <!-- instance modal -->
+
 <div class="modal fade" id="instance_modal" tabindex="-1" role="dialog" aria-labelledby="login"   aria-hidden=  "true">
   <div class="modal-dialog modal-dialog-centered" data-focus="false" role="document" style="min-width: 900px">
     <div class="modal-content">
@@ -114,8 +115,9 @@
             <div class="col-md-2" style="min-width: 900px; padding-top: 35px">
                 <div class="mt-2 row ml-1">
                     <div class="col-md-3">
+                        
                         <div class="dropdown" id="modelDd">
-                            <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="  dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Geomagnetic Field Model</button>
 
                             <div class="dropdown-menu" aria-labelledby="model">
@@ -196,7 +198,7 @@
                 <div class="row ml-1">
                     <div class="col-md-3">
                         <div class="dropdown" id="stationDd">
-                            <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="station" data-toggle="    dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="station" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Select station<span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu scrollable-menu" id="stationDropdown">
@@ -235,7 +237,7 @@
                             -->
 
                             <span class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="step" data-toggle="   dropdown" aria-haspopup="true" aria-expanded="false">Rigidity step (GV)</button>
+                                <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="step" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rigidity step (GV)</button>
 
                                 <span class="dropdown-menu" aria-labelledby="step">
                                     <a onclick="change_step(this.innerHTML)" class="dropdown-item">0.1 GV</a>
