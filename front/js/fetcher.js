@@ -215,6 +215,28 @@ async function fetch_new_instance (settings) {
     }
 }
 
+async function fetch_instance_progress (id) {
+    const response = await fetch('instance/' + id, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json" },
+    }).catch ((error) => {
+        show_error(error);
+    });;
+
+    if (response != undefined) {
+        if (response.ok) {
+            const json = await response.json();
+            switch (json.status) {
+                case "processing": return json.percentage;
+                case "completed": return 100;
+                case "failed": return 0;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
 async function fetch_instance_data (id) {
     const response = await fetch('instance/' + id, {
         method: 'GET',
@@ -234,6 +256,7 @@ async function fetch_instance_data (id) {
                     // i don't like it
                     status_updater = setTimeout(function() {
                         fetch_instance_data(id);
+                        update_instance_list();
                     }, update_interval_ms);
                     break;
 

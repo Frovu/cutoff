@@ -64,12 +64,6 @@ function login () {
     .then((message) => {
         if (message == "Success") {
             window.location.reload();
-            /*
-            $("#login_modal").modal('hide');
-            if (show_instance_after_login) {
-                show_instance_modal();
-                show_instance_after_login = false;
-            }*/
         }
     });
 }

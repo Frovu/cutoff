@@ -18,7 +18,6 @@ let time_min, time_max;
 const primary_font = "bold 16px TextBook";
 const secondary_font = "12px Arial";
 
-
 canvas.addEventListener('click', function(event) {
     if (!active || get_trace_at(peek_energy) != null) return;
     change_energy(peek_energy);
