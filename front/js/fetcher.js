@@ -190,6 +190,8 @@ async function fetch_new_instance (settings) {
         if (response.ok) { //  HTTP 200-299
             const json = await response.json();
             fetch_instance_data(json.id);
+            console.log(json);
+            update_instance_list();
         } else {
             switch (response.status) {
                 case 400:
@@ -215,7 +217,6 @@ async function fetch_new_instance (settings) {
 }
 
 async function fetch_instance_data (id) {
-    console.log("fetching " + id);
     const response = await fetch('instance/' + id, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },

@@ -16,11 +16,12 @@ let current_instance_id;
                 <!--<small class="text-muted">Donec id elit non mi porta.</small>-->
                 </a>
 */
-function generate_instance_list () {
+function update_instance_list () {
 	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
-	console.log("generating..")
 	fetch_user_instances().then((response)=>{
+		document.getElementById("instances-list").innerHTML = "";
 		response.instances.forEach((instance) => {
+
 			console.log(instance)
 			const list_group_item = document.createElement("a");
 			list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
@@ -30,7 +31,11 @@ function generate_instance_list () {
 
 			const name_item = document.createElement("h5");
 			name_item.className = "mb-1";
-			name_item.innerHTML = "Instance Name";
+			if (instance.name != null) {
+				name_item.innerHTML = instance.name;
+			} else {
+				name_item.innerHTML = "Instance";
+			}
 
 			const status_item = document.createElement("small");
 			status_item.className = "text-muted";
@@ -38,11 +43,14 @@ function generate_instance_list () {
 
 			const description_item = document.createElement("p");
 			description_item.className = "mb-1";
-			description_item.innerHTML = "<i>" + "Model: IGRF<br>Range: 0.00 - 6.00GV<br>Date: 10.12.2008" + "</i>";	// instance.date time energy range
+			description_item.innerHTML
+			 = "<i>Model: " + get_model_by_id(instance.settings.model).name + 
+			"<br>Range: " + instance.settings.lower + " - " + instance.settings.upper + "GV<br>Date: " + instance.settings.date + "</i>";	// instance.date time energy range
 
 			const delete_item = document.createElement("a");
 			delete_item.className = "mb-1 text-danger";
-			delete_item.onclick = function() {
+			delete_item.onclick = function(event) {
+				 event.stopPropagation();
 				fetch_cancel(instance.id);
 				document.getElementById("instances-list").removeChild(list_group_item);
 			};

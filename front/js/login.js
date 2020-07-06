@@ -25,7 +25,7 @@ login_check_done(function (json) {
         document.getElementById("navbarUsernameDropdown").innerHTML = "Logged in as " + json.username;
         document.getElementById("navbarUsernameDropdown").style.display = "block";
         document.getElementById("navbarLoginButton").style.display = "none";
-        generate_instance_list ();
+        update_instance_list ();
     }
 });
 

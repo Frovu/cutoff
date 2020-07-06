@@ -17,7 +17,8 @@
         <!-- sidebar -->
         <div class="bg-light border-right" id="sidebar-wrapper">
             <div class="sidebar-heading">Cutoff Calculator</div>
-            <div class="list-group list-group-flush" id="instances-list">
+            <div class="list-group list-group-flush">
+
                                 <!--<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>-->
 
                 <!--
@@ -38,9 +39,9 @@
                 <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">Add New Instance...</h5>
                 </div>
-                <!--<a><span style="text-align: right;" class="text-danger">Delete</span></a>-->
-                <!--<small class="text-muted">Donec id elit non mi porta.</small>-->
             </a>
+
+            <div id="instances-list"></div>
         </div>
     </div>
 
@@ -68,9 +69,7 @@
                             Logged in as .
                         </a>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Instances List</a>
-                            <a class="dropdown-item" href="#">Account Settings</a>
-                            <div class="dropdown-divider"></div>
+                            <!--<div class="dropdown-divider"></div>-->
                             <a class="dropdown-item" onclick="logout();">Logout</a>
                         </div>
                     </li>
