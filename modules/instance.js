@@ -176,6 +176,7 @@ module.exports.data = function(id) {
 	response.lower = arr[0];
 	response.upper = arr[1];
 	response.effective = arr[2];
+	response.settings = instances[id].settings;
 	return response;
 };
 
