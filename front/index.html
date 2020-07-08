@@ -91,10 +91,13 @@
                 <a><img src="arrow_left.png" class="arrow" id="arrow_left" style="visibility:hidden" onclick="penumbra_left()"></a>
                 <a><img src="arrow_right.png" class="arrow" id="arrow_right" style="visibility:hidden" onclick="penumbra_right()"></a>
                 <canvas class="center" width=800 height=165 id="penumbra"></canvas>
+                <canvas class="center" width=800 height=165 id="penumbra2"></canvas>
+
+                <!--
                 <small class="mt-2 form-text center" style="color: white">
                     Drag mouse on the animation to rotate, scroll to zoom<br>
                     Navigate through penumbra by mouse click or arrow keys
-                </small>
+                </small>-->
                 <div class="alert alert-danger alert-dismissible fade show" id="error_alert" style="margin-bottom:0px;display:none;width:100%;" role="alert">
                     <p id="error_text"></p>
                     <button type="button" class="close" aria-label="Close">
@@ -115,7 +118,7 @@
             <div class="col-md-2" style="min-width: 900px; padding-top: 35px">
                 <div class="mt-2 row ml-1">
                     <div class="col-md-3">
-                        
+
                         <div class="dropdown" id="modelDd">
                             <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Geomagnetic Field Model</button>

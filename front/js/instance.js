@@ -1,5 +1,6 @@
-let show_instance_after_login = false;	// weird variable but ok
+const progress_update_interval_ms = 500;
 let current_instance_id;
+let instances = [];
 
 /*
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
@@ -16,13 +17,29 @@ let current_instance_id;
                 <!--<small class="text-muted">Donec id elit non mi porta.</small>-->
                 </a>
 */
+setTimeout(function() {
+	update_instance_progresses ();
+}, progress_update_interval_ms);
+
+function update_instance_progresses () {
+	instances.forEach((instance) => {
+		fetch_instance_progress(instance.data.id).then((percentage) => {
+			instance.progressbar.setAttribute("style", "width: " + percentage + "%");
+		});
+	});
+
+	setTimeout(function() {
+		update_instance_progresses ();
+	}, progress_update_interval_ms);
+}
+
+
 function update_instance_list () {
 	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
 	fetch_user_instances().then((response)=>{
 		document.getElementById("instances-list").innerHTML = "";
+		instances = [];
 		response.instances.forEach((instance) => {
-
-			console.log(instance)
 			const list_group_item = document.createElement("a");
 			list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
 
@@ -37,37 +54,64 @@ function update_instance_list () {
 				name_item.innerHTML = "Instance";
 			}
 
-			const status_item = document.createElement("small");
-			status_item.className = "text-muted";
-			status_item.innerHTML = "status";	// TODO: get instance status through  GET /instance/:id
+			const model_item = document.createElement("small");
+			model_item.className = "text-muted";
+			model_item.innerHTML = get_model_by_id(instance.settings.model).name;	// TODO: get instance status through  GET /instance/:id
 
 			const description_item = document.createElement("p");
 			description_item.className = "mb-1";
 			description_item.innerHTML
-			 = "<i>Model: " + get_model_by_id(instance.settings.model).name + 
-			"<br>Range: " + instance.settings.lower + " - " + instance.settings.upper + "GV<br>Date: " + instance.settings.date + "</i>";	// instance.date time energy range
+			 = instance.settings.lower + " - " + instance.settings.upper + "GV<br>" + instance.settings.date + "</i>";	// instance.date time energy range
+
+			const progress_item = document.createElement("div");
+			progress_item.className = "progress";
+
+			const progressbar_item = document.createElement("div");
+			progressbar_item.className = "progress-bar";
+			progressbar_item.setAttribute("role", "progressbar");
+			progressbar_item.setAttribute("style", "width: 0%");
+
+
 
 			const delete_item = document.createElement("a");
 			delete_item.className = "mb-1 text-danger";
 			delete_item.onclick = function(event) {
-				 event.stopPropagation();
+				event.stopPropagation();
 				fetch_cancel(instance.id);
-				document.getElementById("instances-list").removeChild(list_group_item);
+				//update_instance_list();
+				
+				// TODO remove deleted instance from instances variable
+				for(i of instances){
+					if(i.data == instance) {
+						instances.splice(instances.indexOf(i), 1);
+						document.getElementById("instances-list").removeChild(list_group_item);
+					}
+				}
+
 			};
 			delete_item.innerHTML = "Delete";	// instance.date time energy range
 
 			header_item.appendChild(name_item);
-			header_item.appendChild(status_item);
+			header_item.appendChild(model_item);
 			list_group_item.appendChild(header_item);
+			progress_item.appendChild(progressbar_item);
+			list_group_item.appendChild(progress_item);
 			list_group_item.appendChild(description_item);
 			list_group_item.appendChild(delete_item);
 
 			list_group_item.onclick = function() {
 				fetch_instance_data(instance.id);
+				/*
 				list_group_item.className += " active";
+				name_item.className += " text-white";
+				model_item.className += " text-light";
+				description_item.className += " text-white";*/
+
 			};
 
 			document.getElementById("instances-list").appendChild(list_group_item);
+
+			instances.push({data: instance, progressbar: progressbar_item});
 		});
 	});
 
