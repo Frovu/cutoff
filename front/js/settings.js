@@ -62,7 +62,8 @@ function set_settings (s) {
     settings.latitude = parseFloat(s.lat);
     settings.station = isStation(settings.latitude, settings.longitude);
 
-    settings.model = s.model;
+    settings.model = get_model_by_id(s.model).name;
+
     settings.dublicate = function dublicate() {
         // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
         // also settings.clone "is not a function" so i had to rename it to "dublicate" (probably jquery's fault)
@@ -76,42 +77,13 @@ function set_settings (s) {
         settings_clone.latitude = settings.latitude;
         settings_clone.station = settings.station;
         settings_clone.altitude = settings.altitude;
+
+        settings_clone.model = settings.model;
         return settings_clone;
     }
 
     limit_energy_input ();
 }
-/*
-function update_settings () {
-    settings = {};
-    settings.lower = parseFloat(document.getElementById('lower').value);
-    settings.upper = parseFloat(document.getElementById('upper').value);
-    settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML));
-    settings.energy = parseFloat(settings.lower);
-
-    settings.longitude = parseFloat(document.getElementById('lon').value);
-    settings.latitude = parseFloat(document.getElementById('lat').value);
-	settings.station = isStation(settings.latitude, settings.longitude);
-    settings.altitude = parseFloat(document.getElementById('alt').value);
-
-    settings.dublicate = function dublicate() {
-        // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
-        // also settings.clone "is not a function" so i had to rename it to "dublicate" (probably jquery's fault)
-        settings_clone = {};
-        settings_clone.lower = settings.lower;
-        settings_clone.upper = settings.upper;
-        settings_clone.step = settings.step;
-        settings_clone.energy = settings.energy;
-    
-        settings_clone.longitude = settings.longitude;
-        settings_clone.latitude = settings.latitude;
-        settings_clone.station = settings.station;
-        settings_clone.altitude = settings.altitude;
-        return settings_clone;
-    }
-
-    limit_energy_input ();
-}*/
 
 function limit_energy_input () {
     const energy_el = document.getElementById('energy');
