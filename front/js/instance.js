@@ -51,7 +51,7 @@ function update_instance_list () {
 			if (instance.name != null) {
 				name_item.innerHTML = instance.name;
 			} else {
-				name_item.innerHTML = "Instance";
+				name_item.innerHTML = isStation(parseFloat(instance.settings.lat), parseFloat(instance.settings.lon));
 			}
 
 			const model_item = document.createElement("small");

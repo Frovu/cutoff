@@ -49,6 +49,39 @@ function submit () {
     fetch_new_instance(get_settings_JSON());
 }
 
+// probably not neccesary
+function set_settings (s) {
+    settings = {};
+    settings.lower = parseFloat(s.lower);
+    settings.upper = parseFloat(s.upper);
+    settings.step = parseFloat(s.step);
+    settings.energy = parseFloat(s.lower);
+
+    settings.altitude = parseFloat(s.alt);
+    settings.longitude = parseFloat(s.lon);
+    settings.latitude = parseFloat(s.lat);
+    settings.station = isStation(settings.latitude, settings.longitude);
+
+    settings.model = s.model;
+    settings.dublicate = function dublicate() {
+        // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
+        // also settings.clone "is not a function" so i had to rename it to "dublicate" (probably jquery's fault)
+        settings_clone = {};
+        settings_clone.lower = settings.lower;
+        settings_clone.upper = settings.upper;
+        settings_clone.step = settings.step;
+        settings_clone.energy = settings.energy;
+    
+        settings_clone.longitude = settings.longitude;
+        settings_clone.latitude = settings.latitude;
+        settings_clone.station = settings.station;
+        settings_clone.altitude = settings.altitude;
+        return settings_clone;
+    }
+
+    limit_energy_input ();
+}
+/*
 function update_settings () {
     settings = {};
     settings.lower = parseFloat(document.getElementById('lower').value);
@@ -78,7 +111,7 @@ function update_settings () {
     }
 
     limit_energy_input ();
-}
+}*/
 
 function limit_energy_input () {
     const energy_el = document.getElementById('energy');
