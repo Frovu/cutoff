@@ -147,7 +147,7 @@ async function fetch_user_instances () {
 }
 
 async function fetch_user () {
-    const response = await fetch('/user/', {
+    const response = await fetch('user', {
         credentials: "same-origin",
         method: 'GET',
     }).catch ((error) => {
