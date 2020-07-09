@@ -21,6 +21,7 @@ login_check_done(function (json) {
     if (!json.login) {
         document.getElementById("navbarUsernameDropdown").style.display = "none";
         document.getElementById("navbarLoginButton").style.display = "block";
+        show_login_modal ();
     } else {
         document.getElementById("navbarUsernameDropdown").innerHTML = "Logged in as " + json.username;
         document.getElementById("navbarUsernameDropdown").style.display = "block";
