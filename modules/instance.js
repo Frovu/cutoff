@@ -159,23 +159,24 @@ module.exports.exist = async function(id) {
 };
 
 module.exports.data = function(id) {
+	if(instances[id].data)
+		return instances[id].data;
 	try {
 		var data = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
 	} catch(e) {
 		//log(e.stack);
 		return null;
 	}
-	let response = {};
+	instances[id].data = {};
 	// на первый взгляд спагетти, но если знать формат, то нормально
 	let arr = data.toString().split(/\r?\n/);
 	let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
-	response.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
+	instances[id].data.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
 	arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
-	response.lower = arr[0];
-	response.upper = arr[1];
-	response.effective = arr[2];
-	response.settings = instances[id].settings;
-	return response;
+	instances[id].data.lower = arr[0];
+	instances[id].data.upper = arr[1];
+	instances[id].data.effective = arr[2];
+	return instances[id].data;
 };
 
 module.exports.available = function(id) {
@@ -186,8 +187,10 @@ module.exports.hasAccess = function(id, user, guest) {
 	return guest || (instances[id].owner === user);
 };
 
-module.exports.status = function(id) {
-	return instances[id] ? instances[id].status : null;
+module.exports.get = function(id) {
+	const obj = Object.assign({}, instances[id])
+	delete obj.owner;
+	return obj;
 };
 
 module.exports.percentage = function(id) {

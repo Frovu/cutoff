@@ -37,16 +37,16 @@ router.get('/', async(req, res) => {
 
 // request instance status/data
 router.get('/:id', (req, res) => {
-    const status = instance.status(req.id);
-    let info = {status: status};
+	const resp = instance.get(req.id);
+    const status = resp.status;
     if(status === 'processing')
-        info.percentage = instance.percentage(req.id);
+        resp.percentage = instance.percentage(req.id);
     else if(status === 'completed') {
-        info.data = instance.data(req.id);
-		if(!info.data)
-			info.status = 'zombie';
+        resp.data = instance.data(req.id);
+		if(!resp.data)
+			resp.status = 'zombie';
 	}
-	res.status(200).json(info);
+	res.status(200).json(resp);
 });
 
 // request trace data
