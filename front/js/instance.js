@@ -17,22 +17,16 @@ let instances = [];
                 <!--<small class="text-muted">Donec id elit non mi porta.</small>-->
                 </a>
 */
-setTimeout(function() {
-	update_instance_progresses ();
-}, progress_update_interval_ms);
 
-function update_instance_progresses () {
-	instances.forEach((instance) => {
-		fetch_instance_progress(instance.data.id).then((percentage) => {
-			instance.progressbar.setAttribute("style", "width: " + percentage + "%");
-		});
+async function update_instance_progresses () {
+	instances.forEach( async(instance) => {
+		if(!instance.data.completed) {
+			const p = await fetch_instance_progress(instance.data.id);
+			instance.progressbar.setAttribute("style", `width: ${p}%`);
+		}
 	});
-
-	setTimeout(function() {
-		update_instance_progresses ();
-	}, progress_update_interval_ms);
 }
-
+setInterval(update_instance_progresses, progress_update_interval_ms);
 
 function update_instance_list () {
 	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
@@ -79,7 +73,7 @@ function update_instance_list () {
 				event.stopPropagation();
 				fetch_cancel(instance.id);
 				//update_instance_list();
-				
+
 				// TODO remove deleted instance from instances variable
 				for(i of instances){
 					if(i.data == instance) {

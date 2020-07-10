@@ -21,6 +21,7 @@ router.post('/', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
+    console.log(req.body)
     const r = req.body;
     if(!r || ((!r.email || !r.password) && !r.guest))
         return res.status(400).json({message: 'no user data provided'});
