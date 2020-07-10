@@ -1,6 +1,7 @@
 const progress_update_interval_ms = 500;
 let current_instance_id;
-let instances = [];
+let instances = [];			// instances at the dashboard
+let active_instances = [];	// instances with penumbras on screen
 
 /*
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
@@ -94,13 +95,14 @@ function update_instance_list () {
 			list_group_item.appendChild(delete_item);
 
 			list_group_item.onclick = function() {
-				fetch_instance_data(instance.id);
-				/*
-				list_group_item.className += " active";
-				name_item.className += " text-white";
-				model_item.className += " text-light";
-				description_item.className += " text-white";*/
-
+				fetch_instance_data(instance.id).then((data) => {
+					add_penumbra(data, instance.settings);
+					/*
+					list_group_item.className += " active";
+					name_item.className += " text-white";
+					model_item.className += " text-light";
+					description_item.className += " text-white";*/
+				});
 			};
 
 			document.getElementById("instances-list").appendChild(list_group_item);
@@ -111,22 +113,71 @@ function update_instance_list () {
 
 }
 
+// TODO param-default pair to avoid this
 function reset_instance_modal () {
+	console.log("shit");
     params.forEach (function (param) {
         const el = document.getElementById(param);
-		if (param == "step") {
-			object[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
-		} else if (param == "model") {
-			object[param] = get_model_by_name(el.innerHTML).id;
-		} else if (param == "date") {
-            object[param] = front_to_back_date(el.value);
-        } else if (param == "time") {
-            // handle . and :
-            object[param] = front_to_back_time(el.value);
+        switch (param) {
+        	case 'date':
+        		console.log(param);
+        		el.value = "2020.01.01";
+        		break;
+        	case 'time':
+        		el.value = "12:00:00";
+        		break;
+        	case 'swdp':
+        		el.value = "0.5";
+        		break; 
+        	case 'dst':
+        		el.value = "-30.0";
+        		break;
+        	case 'imfBy':
+        		el.value = "-7.8";
+        		break;
+        	case 'imfBz':
+        		el.value = "-2.9";
+        		break;
+        	case 'g1':
+        		el.value = "1.8";
+        		break;
+        	case 'g2':
+        		el.value = "7.0";
+        		break;
+			case 'kp':
+				el.value = "2";
+				break;
+			case 'model':
+				el.innerHTML = "IGRF";
+				break;
+			case 'alt':
+				el.value = "20.0";
+				break;
+			case 'lat':
+				el.value = "";
+				break;
+			case 'lon':
+				el.value = "";
+				break;
+			case 'vertical':
+				el.value = "0.00";
+				break;
+			case 'azimutal':
+				el.value = "0.00";
+				break;
+			case 'lower':
+				el.value = "0.00";
+				break;
+			case 'upper':
+				el.value = "6.00";
+				break;
+			case 'step':
+				el.innerHTML = "Step: 0.1 GV";
+				break;
+			case 'flightTime':
+				el.value = "8.0";
+				break;
         }
-		else {
-			object[param] = el.value;
-		}
     });
 }
 
@@ -144,11 +195,13 @@ function new_instance () {
 	show_instance_modal ();
 }
 
+
 function show_instance_modal () {
 	login_check_done(function (json) {
     	if (!json.login) {
      		show_login_modal ();
     	} else {
+    		reset_instance_modal();
     	    $("#instance_modal").modal('toggle');
 			$("#login_modal").modal('hide');
 			$("#register_modal").modal('hide');
