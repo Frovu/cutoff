@@ -1,6 +1,5 @@
 const particles_limit = 10000;
 let settings = {};
-let first_start_occured = false;
 let valueranges;
 const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
@@ -10,34 +9,11 @@ fetch_JSON(function(response) {
     valueranges = response;
  }, "valueranges.json");
 
-init_input_events();
 
 change_step (0.1);
 
-function init_input_events () {
-     params.forEach (function (param) {
-        const el = document.getElementById(param);
-        el.oninput = function() {
-            settings_changed ();
-            return;
-        };
-    });
-}
-
-function settings_changed () {
-    if (!first_start_occured) return;
-    const progress = document.getElementById('progress');
-    progress.classList.add("bg-warning");
-    progress.innerHTML = "Unsaved changes";
-}
-
 function submit () {
-    if (processing) {
-        cancel();
-        return;
-    }
     if (is_bad_input()) return;
-    if (!first_start_occured) first_start_occured = true;
     if ((settings.upper - settings.lower)/settings.step > particles_limit) {
         alert("Entered data is too large for the server to"+
         " calculate it properly.\nMaximum amount of particles is " + particles_limit+
@@ -45,7 +21,7 @@ function submit () {
         return;
     }
 
-    start_process ();
+    $("#instance_modal").modal('hide');
     fetch_new_instance(get_settings_JSON());
 }
 
@@ -135,7 +111,6 @@ function is_bad_input() {
         const value = el.innerHTML != '' ? el.innerHTML : el.value;
         if (el.classList.contains('is-invalid')) {
             el.classList.remove('is-invalid');
-
         }
         if (is_bad_value (param, value)) {
             const feedback = document.createElement('div');
@@ -172,7 +147,6 @@ function change_step (value) {
     if (!isNaN(float)) text = "Step: " + float + " GV";
 	else text = "Step: " + parse_sentence_for_number(value) + " GV";
     document.getElementById("step").innerHTML = text;
-    settings_changed ();
 }
 
 function change_energy (value) {

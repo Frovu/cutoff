@@ -137,11 +137,9 @@ function Station (latitude, longitude, name) {
 function change_station (station) {
     $('#lat').val(station.latitude);
     $('#lon').val(station.longitude);
-    settings_changed();
 }
 
 stations.forEach(function (station) {
-	//const dropdown = document.getElementById('stationDropdown');
     const html = $('#stationDd').find('.dropdown-menu').html();
     $('#stationDd').find('.dropdown-menu').html(html + "<a class=\"dropdown-item\">" + station.name + "</a>");
 });
