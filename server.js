@@ -57,7 +57,7 @@ app.use(express.static('./front/'));
 app.use(async (req, res, next) => {
     if(req.cookies && req.cookies.session_id && !req.session.user)
         res.clearCookie('session_id');
-    console.log(req.method +' '+ req.url)
+    log(req.method +' '+ req.url)
     //res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
 	next();
 });

@@ -21,7 +21,6 @@ router.post('/', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
-    console.log(req.body)
     const r = req.body;
     if(!r || ((!r.email || !r.password) && !r.guest))
         return res.status(400).json({message: 'no user data provided'});
@@ -37,6 +36,7 @@ router.post('/login', async (req, res, next) => {
             return res.status(400).json({message: 'wrong password'});
         req.session.userId = result[0].id;
         res.status(200).json({message: `logged in as ${r.email}`});
+        log('User logged in: '+r.email);
     } catch(e) {
         next(e);
     }
@@ -58,6 +58,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => {
+    log('User logged out, id='+req.session.userId);
     if(req.session.userId)
         req.session.userId = null;
     res.status(200).json({message: 'logged out'});
