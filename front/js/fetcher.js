@@ -251,9 +251,7 @@ async function fetch_instance_data (id) {
             current_instance_id = id;
             switch (json.status) {
                 case "processing":
-                    update_process(json.percentage.toFixed(1));
 
-                    // i don't like it
                     status_updater = setTimeout(function() {
                         fetch_instance_data(id);
                     }, update_interval_ms);
@@ -265,12 +263,10 @@ async function fetch_instance_data (id) {
 
                 case "completed":
                     console.log('Status: completed');
-                    complete_process();
 
                     if (json.data != undefined && json.data != null) {
                         data = json.data;
                         set_settings (json.data.settings);
-                        //update_settings ();
                         init_penumbra();
                     } else {
                         show_error("json.data field is null or undefined");

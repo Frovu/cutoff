@@ -1,8 +1,8 @@
+/*
 const progress = document.getElementById('progress');
 let processing = false;
 let status_updater;
 
-// TODO rewrite process.js 
 
 function start_process () {
     processing = true;
@@ -37,11 +37,11 @@ function complete_process () {
     progress.classList.remove("bg-danger");
     progress.setAttribute("style", "width: 100%; font-size: 16;");
     progress.innerHTML = "Completed";
-}
-
+}*/
+/*
 function cancel () {
     processing = false;
     clearInterval(status_updater);
     fetch_cancel();
     reset_process();
-}
+}*/

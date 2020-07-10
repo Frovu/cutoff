@@ -29,7 +29,7 @@ function get_model_by_id (id) {
 function change_model (model_name) {
     document.getElementById('model').innerHTML = model_name;
     show_model_params(get_model_by_name(model_name));
-    settings_changed();
+    //settings_changed();
 }
 
 function show_model_params (model) {
