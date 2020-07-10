@@ -77,7 +77,7 @@ module.exports.create = function(ini, user, callback) {
 				return;	// process killed by signal
 			} else if(code === 0) {
 				instances[id].status = 'completed';
-				instances[id].completed = Date.now();
+				instances[id].completed = new Date();
 				// save .dat file with another filename
 				fs.renameSync(path.join(dir, config.datFilename), path.join(dir, 'data.dat'));
 				// save instance in db
@@ -93,7 +93,7 @@ module.exports.create = function(ini, user, callback) {
 				}
 			} else {
 				instances[id].status = 'failed';
-				instances[id].completed = Date.now();
+				instances[id].completed = new Date();
 			}
 		});
 		log(`Spawned instance of owner (${user}): ${id}`);

@@ -59,7 +59,6 @@ API REFERENCE:
         stop processing instance and remove it
         return
             200 // dead
-            400 // if instance is not processing
 
     POST /instance/:id/name
         with body: {name: "new name up to 255 chars"}
