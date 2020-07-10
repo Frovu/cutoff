@@ -60,17 +60,15 @@ function show_login_modal () {
 	$("#register_modal").modal('hide');
 }
 
-function login () {
-    fetch_login_user(false, document.getElementById("login-email").value, document.getElementById("login-password").value)
-    .then((message) => {
-        if (message == "Success") {
-            window.location.reload();
-        }
-    });
+async function login () {
+    const message = await fetch_login_user(false,
+        document.getElementById("login-email").value, document.getElementById("login-password").value);
+    if (message == "Success")
+        window.location.reload();
 }
 
-function logout () {
-    fetch_logout ();
+async function logout () {
+    await fetch_logout();
     window.location.reload();
 }
 
@@ -93,4 +91,3 @@ function register () {
 	fetch_register_user(document.getElementById("reg-email").value, document.getElementById("reg-password").value);
     $("#register_modal").modal('hide');
 }
-
