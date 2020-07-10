@@ -1,9 +1,10 @@
-const canvas = $('#penumbra')[0];
-const ctx = canvas.getContext("2d");
+//const canvas = $('#penumbra')[0];
+//const ctx = canvas.getContext("2d");
 
-let active = false;
 let peek_energy;
-let cursor_present = false;
+//let cursor_present = false;
+let penumbras = [];
+let step = 0.1;
 
 let lower_edge = 0;
 let upper_edge = 0;
@@ -18,39 +19,37 @@ let time_min, time_max;
 const primary_font = "bold 16px TextBook";
 const secondary_font = "12px Arial";
 
-canvas.addEventListener('click', function(event) {
-    if (!active || get_trace_at(peek_energy) != null) return;
-    change_energy(peek_energy);
-    draw_penumbra();
-}, false);
-
-canvas.addEventListener('mousemove', function(event) {
-    if (!active) return;
-    cursor_present = true;
-    const mouse_pos = get_canvas_mouse_pos(canvas);
-    peek_energy = x_to_energy(mouse_pos[0]);
-    if (peek_energy < settings.lower || peek_energy > settings.upper) return;
-    draw_penumbra();
-}, false);
-
-canvas.addEventListener('mouseout', function(event) {
-    if (!active) return;
+function Penumbra (data, settings, canvas) {
+    this.data = data;
+    this.settings = settings;
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
     cursor_present = false;
-    draw_penumbra();
-}, false);
+}
 
-/*
-window.addEventListener('keydown', function(event) {
-    if (!active || document.activeElement != document.body) return;    // do not listen to arrow or AD keys when user is writing
-    if (event.keyCode == 37) {   // left
-        change_energy(float_to_step_precision(settings.energy-settings.step));
-    } 
-    else if (event.keyCode == 39) {   // right
-        change_energy(float_to_step_precision(settings.energy+settings.step))
-    }
-}, false);*/
 
-function set_penumbra_edges() {
+function add_event_listeners (penumbra) {
+    penumbra.canvas.addEventListener('click', function(event) {
+        if (get_trace_at(peek_energy) != null) return;
+        change_energy(peek_energy);
+        draw_penumbra(penumbra);
+    }, false);
+
+    penumbra.canvas.addEventListener('mousemove', function(event) {
+       penumbra.cursor_present = true;
+       const mouse_pos = get_canvas_mouse_pos(penumbra.canvas);
+       peek_energy = x_to_energy(mouse_pos[0], penumbra);
+      if (peek_energy < penumbra.settings.lower || peek_energy > penumbra.settings.upper) return;
+      draw_penumbra(penumbra);
+    }, false);
+
+    penumbra.canvas.addEventListener('mouseout', function(event) {
+       penumbra.cursor_present = false;
+       draw_penumbra(penumbra);
+    }, false);
+}
+
+function set_penumbra_edges(penumbra) {
     const arrow_left = document.getElementById("arrow_left");
     const arrow_right = document.getElementById("arrow_right");
     arrow_left.style.visibility = "visible";
@@ -60,61 +59,82 @@ function set_penumbra_edges() {
     upper_edge = Math.round(max_lines_onscreen*viewport_position);
 
     if (lower_edge < 0) {
-        //viewport_position += move_value;
         lower_edge = 0;
     }
-    if (upper_edge > data.particles.length) {
-        //viewport_position -= move_value;
-        upper_edge = data.particles.length
+    if (upper_edge > penumbra.data.particles.length) {
+        upper_edge = penumbra.data.particles.length
     } 
 
     if (Math.ceil(viewport_position) == 1) {
         arrow_left.style.visibility = "hidden";
     }
 
-    if (lower_edge >= data.particles.length - max_lines_onscreen) {
+    if (lower_edge >= penumbra.data.particles.length - max_lines_onscreen) {
         arrow_right.style.visibility = "hidden";
     }
 }
 
-function penumbra_left () {
+function move_viewport_left () {
     viewport_position -= move_value;
-    set_penumbra_edges()
-    draw_penumbra();
+
+    penumbras.forEach((penumbra) => {
+        set_penumbra_edges(penumbra);
+        draw_penumbra(penumbra);
+    });
 }
 
-function penumbra_right () {
+function move_viewport_right () {
     viewport_position += move_value;
-    set_penumbra_edges()
-    draw_penumbra();
+
+    penumbras.forEach((penumbra) => {
+        set_penumbra_edges(penumbra);
+        draw_penumbra(penumbra);
+    });
 }
 
 // canvas x position to corresponding energy value
-function x_to_energy (x) {
+function x_to_energy (x, penumbra) {
     if (x <= 1) return;
-    return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*settings.step + lower_edge*settings.step + settings.lower + settings.step);
+    return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*penumbra.settings.step + lower_edge*penumbra.settings.step + penumbra.settings.lower + penumbra.settings.step);
 }
 
 // energy value to corresponding canvas x position
-function energy_to_x (energy) {
-    return Math.round(float_to_step_precision (energy-settings.lower) / settings.step + settings.step) * line_width - lower_edge * line_width - line_width;
+function energy_to_x (energy, penumbra) {
+    return Math.round(float_to_step_precision (energy-penumbra.settings.lower) / penumbra.settings.step + penumbra.settings.step) * line_width - lower_edge * line_width - line_width;
 }
 
 function get_peek_particle () {
-    return data.particles[Math.round(peek_energy / settings.step) - 1];
+    return data.particles[Math.round(peek_energy / step) - 1];
 }
 
-function init_penumbra () {
-    active = true;
-    viewport_position = 1;
-    time_min = get_min_flight_time ();
-    time_max = get_max_flight_time ();
-    set_penumbra_edges();
-    draw_penumbra();
+function add_penumbra (data, settings) {
+    console.log("Adding new penumbra");
+
+    const canvas = document.createElement("canvas");
+    canvas.classList = "center penumbra";
+    const parent = document.getElementById("penumbras-container");
+    parent.appendChild(canvas);
+    let penumbra = new Penumbra(data, settings, canvas);
+
+    //viewport_position = 1;
+    const temp_time_min = get_min_flight_time (penumbra);
+    const temp_time_max = get_max_flight_time (penumbra);
+    if (temp_time_min < time_min) time_min = temp_time_min;
+    if (temp_time_max > time_max) time_max = temp_time_max;
+
+    set_penumbra_edges(penumbra);
+    draw_penumbra(penumbra);
+
+    penumbras.push(penumbra);
+
+    add_event_listeners(penumbra);
 }
 
-function draw_penumbra () {
-    if (!active) return;
+function draw_penumbra (penumbra) {
+    const ctx = penumbra.ctx;
+    const canvas = penumbra.canvas;
+    const data = penumbra.data;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = canvas.style.width = (upper_edge - lower_edge) * line_width;
@@ -174,7 +194,7 @@ function draw_penumbra () {
         draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 12 , 75)
     }
 
-    draw_time();
+    //draw_time();
 }
 
 
@@ -213,18 +233,18 @@ function draw_time () {
 }
 
 // confusion with settings flight time. change name?
-function get_max_flight_time () {
+function get_max_flight_time (penumbra) {
     let max = 0.0;
-    for (let i = 0; i < data.particles.length; i++) {
-        if (data.particles[i][2] > max) max = data.particles[i][2];
+    for (let i = 0; i < penumbra.data.particles.length; i++) {
+        if (penumbra.data.particles[i][2] > max) max = penumbra.data.particles[i][2];
     }
     return max;
 }
 
-function get_min_flight_time () {
+function get_min_flight_time (penumbra) {
     let min = Infinity;
-    for (let i = 0; i < data.particles.length; i++) {
-        if (data.particles[i][2] < min) min = data.particles[i][2];
+    for (let i = 0; i < penumbra.data.particles.length; i++) {
+        if (penumbra.data.particles[i][2] < min) min = penumbra.data.particles[i][2];
     }
     return min;
 }

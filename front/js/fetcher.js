@@ -265,9 +265,11 @@ async function fetch_instance_data (id) {
                     console.log('Status: completed');
 
                     if (json.data != undefined && json.data != null) {
+                        return json.data;
+                        /*
                         data = json.data;
                         set_settings (json.data.settings);
-                        init_penumbra();
+                        init_penumbra();*/
                     } else {
                         show_error("json.data field is null or undefined");
                     }

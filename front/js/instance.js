@@ -1,6 +1,7 @@
 const progress_update_interval_ms = 500;
 let current_instance_id;
-let instances = [];
+let instances = [];			// instances at the dashboard
+let active_instances = [];	// instances with penumbras on screen
 
 /*
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
@@ -100,13 +101,14 @@ function update_instance_list () {
 			list_group_item.appendChild(delete_item);
 
 			list_group_item.onclick = function() {
-				fetch_instance_data(instance.id);
-				/*
-				list_group_item.className += " active";
-				name_item.className += " text-white";
-				model_item.className += " text-light";
-				description_item.className += " text-white";*/
-
+				fetch_instance_data(instance.id).then((data) => {
+					add_penumbra(data, instance.settings);
+					/*
+					list_group_item.className += " active";
+					name_item.className += " text-white";
+					model_item.className += " text-light";
+					description_item.className += " text-white";*/
+				});
 			};
 
 			document.getElementById("instances-list").appendChild(list_group_item);
