@@ -51,7 +51,7 @@ function update_instance_list () {
 			if (instance.name != null) {
 				name_item.innerHTML = instance.name;
 			} else {
-				name_item.innerHTML = "Instance";
+				name_item.innerHTML = isStation(parseFloat(instance.settings.lat), parseFloat(instance.settings.lon));
 			}
 
 			const model_item = document.createElement("small");
@@ -117,6 +117,25 @@ function update_instance_list () {
 
 }
 
+function reset_instance_modal () {
+    params.forEach (function (param) {
+        const el = document.getElementById(param);
+		if (param == "step") {
+			object[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
+		} else if (param == "model") {
+			object[param] = get_model_by_name(el.innerHTML).id;
+		} else if (param == "date") {
+            object[param] = front_to_back_date(el.value);
+        } else if (param == "time") {
+            // handle . and :
+            object[param] = front_to_back_time(el.value);
+        }
+		else {
+			object[param] = el.value;
+		}
+    });
+}
+
 function show_instance (id) {
 
 }
@@ -132,7 +151,13 @@ function new_instance () {
 }
 
 function show_instance_modal () {
-	$("#instance_modal").modal('toggle');
-	$("#login_modal").modal('hide');
-	$("#register_modal").modal('hide');
+	login_check_done(function (json) {
+    	if (!json.login) {
+     		show_login_modal ();
+    	} else {
+    	    $("#instance_modal").modal('toggle');
+			$("#login_modal").modal('hide');
+			$("#register_modal").modal('hide');
+    	}
+	});
 }

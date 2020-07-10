@@ -49,17 +49,20 @@ function submit () {
     fetch_new_instance(get_settings_JSON());
 }
 
-function update_settings () {
+// probably not neccesary
+function set_settings (s) {
     settings = {};
-    settings.lower = parseFloat(document.getElementById('lower').value);
-    settings.upper = parseFloat(document.getElementById('upper').value);
-    settings.step = parseFloat(parse_sentence_for_number(document.getElementById('step').innerHTML));
-    settings.energy = parseFloat(settings.lower);
+    settings.lower = parseFloat(s.lower);
+    settings.upper = parseFloat(s.upper);
+    settings.step = parseFloat(s.step);
+    settings.energy = parseFloat(s.lower);
 
-    settings.longitude = parseFloat(document.getElementById('lon').value);
-    settings.latitude = parseFloat(document.getElementById('lat').value);
-	settings.station = isStation(settings.latitude, settings.longitude);
-    settings.altitude = parseFloat(document.getElementById('alt').value);
+    settings.altitude = parseFloat(s.alt);
+    settings.longitude = parseFloat(s.lon);
+    settings.latitude = parseFloat(s.lat);
+    settings.station = isStation(settings.latitude, settings.longitude);
+
+    settings.model = get_model_by_id(s.model).name;
 
     settings.dublicate = function dublicate() {
         // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
@@ -74,6 +77,8 @@ function update_settings () {
         settings_clone.latitude = settings.latitude;
         settings_clone.station = settings.station;
         settings_clone.altitude = settings.altitude;
+
+        settings_clone.model = settings.model;
         return settings_clone;
     }
 

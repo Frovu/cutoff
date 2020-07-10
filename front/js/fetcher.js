@@ -147,7 +147,7 @@ async function fetch_user_instances () {
 }
 
 async function fetch_user () {
-    const response = await fetch('/user/', {
+    const response = await fetch('user', {
         credentials: "same-origin",
         method: 'GET',
     }).catch ((error) => {
@@ -266,9 +266,11 @@ async function fetch_instance_data (id) {
                 case "completed":
                     console.log('Status: completed');
                     complete_process();
+
                     if (json.data != undefined && json.data != null) {
                         data = json.data;
-                        update_settings ();
+                        set_settings (json.data.settings);
+                        //update_settings ();
                         init_penumbra();
                     } else {
                         show_error("json.data field is null or undefined");

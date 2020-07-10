@@ -118,7 +118,7 @@ function update_info () {
 		const altitude = trace.settings.altitude + " km";
 		const energy = trace.settings.energy + " GV";
 		const time = trace.time + " sec";
-		info.innerHTML += "<a onclick='delete_trace("+i+")'>[ X ]</a>  <span style='color: "+trace.color+"'> " + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
+		info.innerHTML += "<a onclick='delete_trace("+i+")'>[ X ]</a>  <span style='color: "+trace.color+"'> " + trace.settings.model + "<br>" + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
 		info.innerHTML += '<br><br>';
 	}
 	if (traces.length > 1) info.innerHTML += "<a onclick='delete_all_traces()'>[ Clear ]";

@@ -39,6 +39,7 @@ canvas.addEventListener('mouseout', function(event) {
     draw_penumbra();
 }, false);
 
+/*
 window.addEventListener('keydown', function(event) {
     if (!active || document.activeElement != document.body) return;    // do not listen to arrow or AD keys when user is writing
     if (event.keyCode == 37) {   // left
@@ -47,7 +48,7 @@ window.addEventListener('keydown', function(event) {
     else if (event.keyCode == 39) {   // right
         change_energy(float_to_step_precision(settings.energy+settings.step))
     }
-}, false);
+}, false);*/
 
 function set_penumbra_edges() {
     const arrow_left = document.getElementById("arrow_left");
