@@ -200,72 +200,41 @@ async function update_instance_list() {
 	console.log(instances);
 }
 
-// TODO param-default pair to avoid this
+const defaults = {
+    areHtml: ['model', 'step'],
+    params: {
+        //date: "2020.01.01",
+    	//time: "12:00:00",
+    	swdp: "0.5",
+    	dst: "-30.0",
+    	imfBy: "-7.8",
+    	imfBz: "-2.9",
+    	g1: "1.8",
+    	g2: "7.0",
+    	kp: "2",
+    	model: "IGRF",
+    	alt: "20.0",
+    	lat: "",
+    	lon: "",
+    	vertical: "0.00",
+    	azimutal: "0.00",
+    	lower: "0.00",
+    	upper: "6.00",
+    	step: "Step: 0.1 GV",
+    	flightTime: "8.0"
+    }
+}
 function reset_instance_modal () {
-	console.log("shit");
-    params.forEach (function (param) {
+    for(const param in defaults.params) {
         const el = document.getElementById(param);
-        switch (param) {
-        	case 'date':
-        		console.log(param);
-        		el.value = "2020.01.01";
-        		break;
-        	case 'time':
-        		el.value = "12:00:00";
-        		break;
-        	case 'swdp':
-        		el.value = "0.5";
-        		break;
-        	case 'dst':
-        		el.value = "-30.0";
-        		break;
-        	case 'imfBy':
-        		el.value = "-7.8";
-        		break;
-        	case 'imfBz':
-        		el.value = "-2.9";
-        		break;
-        	case 'g1':
-        		el.value = "1.8";
-        		break;
-        	case 'g2':
-        		el.value = "7.0";
-        		break;
-			case 'kp':
-				el.value = "2";
-				break;
-			case 'model':
-				el.innerHTML = "IGRF";
-				break;
-			case 'alt':
-				el.value = "20.0";
-				break;
-			case 'lat':
-				el.value = "";
-				break;
-			case 'lon':
-				el.value = "";
-				break;
-			case 'vertical':
-				el.value = "0.00";
-				break;
-			case 'azimutal':
-				el.value = "0.00";
-				break;
-			case 'lower':
-				el.value = "0.00";
-				break;
-			case 'upper':
-				el.value = "6.00";
-				break;
-			case 'step':
-				el.innerHTML = "Step: 0.1 GV";
-				break;
-			case 'flightTime':
-				el.value = "8.0";
-				break;
-        }
-    });
+        if(defaults.areHtml.includes(param))
+            el.innerHTML = defaults.params[param];
+        else
+            el.value = defaults.params[param];
+    }
+    d = new Date().toISOString().replace(/\..*/,'').replace(/-/g,'.').split('T');
+    document.getElementById("date").value = d[0];
+    document.getElementById("time").value = d[1];
 }
 
 function show_instance (id) {
