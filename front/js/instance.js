@@ -128,7 +128,7 @@ function reset_instance_modal () {
         		break;
         	case 'swdp':
         		el.value = "0.5";
-        		break; 
+        		break;
         	case 'dst':
         		el.value = "-30.0";
         		break;
@@ -196,15 +196,14 @@ function new_instance () {
 }
 
 
-function show_instance_modal () {
-	login_check_done(function (json) {
-    	if (!json.login) {
-     		show_login_modal ();
-    	} else {
-    		reset_instance_modal();
-    	    $("#instance_modal").modal('toggle');
-			$("#login_modal").modal('hide');
-			$("#register_modal").modal('hide');
-    	}
-	});
+async function show_instance_modal () {
+	const resp = await get_login_info();
+	if(!resp.login) {
+ 		show_login_modal();
+	} else {
+		reset_instance_modal();
+	    $("#instance_modal").modal('toggle');
+		$("#login_modal").modal('hide');
+		$("#register_modal").modal('hide');
+	}
 }

@@ -8,118 +8,6 @@ function stop_spinner () {
     document.getElementById("trace-spinner").style = "visibility:hidden;";
 }
 
-async function fetch_register_user (email, password) {
-    let who = JSON.stringify({email: email, password: password});
-    console.log(who);
-    const response = await fetch('user', {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: who
-    }).catch ((error) => {
-        show_error(error);
-    });
-
-    if (response != undefined) {
-        if (response.ok) { 
-            console.log("Succesful register");
-            fetch_login_user(false, email, password);              
-
-            //  HTTP 200-299
-            //const json = await response.json();
-            //uid = json.id;
-            //fetch_data();
-        } else {
-            switch (response.status) {
-                case 400:
-                    show_error("No user data provided");
-                    break;
-
-                case 409:
-                    show_error("Email is already in use");
-                    break;
-            }
-        }
-    } else {
-        show_error("Server didn't respond");
-    }
-}
-
-async function fetch_login_user (guest, email, password) {
-    let who;
-    if (guest) {
-        who = JSON.stringify({guest: true});
-    } else {
-        who = JSON.stringify({email: email, password: password});
-    }
-
-    const response = await fetch('user/login', {
-        headers: { "Content-Type": "application/json" },
-        credentials: 'include',
-        method: 'POST',
-        body: who
-    }).catch ((error) => {
-        show_error(error);
-    });
-
-    if (response != undefined) {
-        if (response.ok) { 
-            console.log("Succesful login");
-            //fetch_user();
-            return "Success";
-        } else {
-            switch (response.status) {
-                case 400:
-                    //show_error("Wrong password");
-                    return "Wrong password";
-                    break;
-
-                case 404:
-                    //show_error("User not found");
-                    return "User not found";
-                    break;
-
-               case 500:
-                    //show_error("Internal server error");
-                    return "Internal server error";
-                    break;
-            }
-        }
-    } else {
-        show_error("Server didn't respond");
-    }
-}
-
-
-async function fetch_logout () {
-    const response = await fetch('user/logout', {
-        headers: { "Content-Type": "application/json" },
-        credentials: 'include',
-        method: 'POST',
-    }).catch ((error) => {
-        show_error(error);
-    });
-
-    if (response != undefined) {
-        if (response.ok) { 
-            console.log("Succesful logout");
-        } else {
-            switch (response.status) {
-                case 404:
-                    //show_error("User not found");
-                    return "User not found";
-                    break;
-
-               case 500:
-                    //show_error("Internal server error");
-                    return "Internal server error";
-                    break;
-            }
-        }
-    } else {
-        show_error("Server didn't respond");
-    }
-}
-
 async function fetch_user_instances () {
     const response = await fetch('instance', {
         method: 'GET',
@@ -129,7 +17,7 @@ async function fetch_user_instances () {
     });
 
     if (response != undefined) {
-        if (response.ok) { 
+        if (response.ok) {
             return response.json();
         } else {
             switch (response.status) {
@@ -146,36 +34,6 @@ async function fetch_user_instances () {
     }
 }
 
-async function fetch_user () {
-    const response = await fetch('user', {
-        credentials: "same-origin",
-        method: 'GET',
-    }).catch ((error) => {
-        show_error(error);
-    });
-
-    if (response != undefined) {
-        if (response.ok) { 
-            return response;
-        } else {
-            switch (response.status) {
-                case 400:
-                    show_error("Wrong password");
-                    break;
-
-                case 404:
-                    show_error("User not found.");
-                    break;
-
-               case 500:
-                    show_error("Internal server error");
-                    break;
-            }
-        }
-    } else {
-        show_error("Server didn't respond");
-    }
-}
 
 async function fetch_new_instance (settings) {
     const response = await fetch('instance', {
@@ -200,11 +58,11 @@ async function fetch_new_instance (settings) {
                 case 401:
                     show_error("Please, log in to use Cutoff Visualiser");
                     break;
-    
+
                 case 500:
                     show_error("Internal server error");
                     break;
-    
+
                 case 503:
                     show_error("Server is busy");
                     break;
@@ -308,7 +166,7 @@ async function fetch_trace (energy) {
                 case 404:
                     show_error("Instance is not found on server");
                     break;
-    
+
                 case 500:
                     show_error("Instance has failed to calculate");
                     break;
@@ -338,7 +196,7 @@ async function fetch_cancel (id) {
                 case 400:
                     show_error("Calculation instance is not processing");
                     break;
-    
+
                 case 404:
                     show_error("Calculation instance is not found on server");
                     break;
