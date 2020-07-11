@@ -22,7 +22,7 @@ function submit () {
     }
 
     $("#instance_modal").modal('hide');
-    fetch_new_instance(get_settings_JSON());
+    create_instance(get_settings_JSON());
 }
 
 // probably not neccesary
@@ -48,7 +48,7 @@ function set_settings (s) {
         settings_clone.upper = settings.upper;
         settings_clone.step = settings.step;
         settings_clone.energy = settings.energy;
-    
+
         settings_clone.longitude = settings.longitude;
         settings_clone.latitude = settings.latitude;
         settings_clone.station = settings.station;
