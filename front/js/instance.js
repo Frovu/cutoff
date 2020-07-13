@@ -164,7 +164,7 @@ async function update_instance_list() {
 		const progressbar_item = document.createElement("div");
 		progressbar_item.className = "progress-bar";
 		progressbar_item.setAttribute("role", "progressbar");
-		progressbar_item.setAttribute("style", "width: 0%");
+		progressbar_item.setAttribute("style", `width: ${instance.completed?100:0}%`);
 		progressBars[id] = progressbar_item;
 
 		const delete_item = document.createElement("a");
