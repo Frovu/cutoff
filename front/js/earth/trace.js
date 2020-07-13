@@ -1,20 +1,21 @@
 const max_traces = 6;
+const colors = ['#ffffff', '#ffd966', '#ff4d67', '#8efc69', '#71f4f4', '#8f7fff'];
+const update_interval_ms = 200;
 let current_trace;
 let traces = [];
 let timeouts = [];
-const colors = ['#ffffff', '#ffd966', '#ff4d67', '#8efc69', '#71f4f4', '#8f7fff'];
 
-function Trace (settings, color, mesh, time) {
-    this.settings = settings;
+function Trace (penumbra, color, mesh, time) {
+    this.penumbra = penumbra;
     this.color = color;
     this.mesh = mesh;
     this.time = time;
 }
 
-async function fetch_trace (energy) {
+async function fetch_trace (penumbra, energy) {
     start_spinner();
 
-    const response = await fetch('instance/' + current_instance_id + "/" + energy, {
+    const response = await fetch('instance/' + penumbra.id + "/" + energy, {
         method: 'GET',
         headers: { "Content-Type": "application/json" },
     }).catch ((error) => {
@@ -23,9 +24,9 @@ async function fetch_trace (energy) {
 
     if (response != undefined) {
         if (response.ok) {
-            const json = await response.json();
-            stop_spinner();
-            start_trace(json);
+        	stop_spinner();
+            const data = await response.json();
+            add_trace(penumbra, data);
         } else {
             switch (response.status) {
                 case 102: // processing
@@ -36,11 +37,9 @@ async function fetch_trace (energy) {
                 case 404:
                     show_error("Instance is not found on server");
                     break;
-
                 case 500:
                     show_error("Instance has failed to calculate");
                     break;
-
                 default:
                     console.log(response.status);
                     break;
@@ -67,32 +66,32 @@ function get_free_color () {
 	return "#ffffff";
 }
 
-function start_trace (trace_data) {
+function add_trace (penumbra, data) {
 	if (traces.length > max_traces-1) return;
-
-	const color = get_free_color();
 	stop_timeouts();
 
+	const color = get_free_color();
 	const step = 1;
-	const interval_ms = (trace_data[trace_data.length-1][0] * 1000.0) / trace_data.length * step;
+	const interval_ms = (data[data.length-1][0] * 1000.0) / data.length * step;
 
 	const line = get_line_mesh(
-		-trace_data[0][1], trace_data[0][3], trace_data[0][2],
-		-trace_data[1][1], trace_data[1][3], trace_data[1][2], color
+		-data[0][1], data[0][3], data[0][2],
+		-data[1][1], data[1][3], data[1][2], color
 	);
 
-	const time = trace_data[trace_data.length-1][0];
-	const trace = new Trace(settings.dublicate(), color, line, time);
+	const time = data[data.length-1][0];
+	//const trace = new Trace(settings.dublicate(), color, line, time);
+	const trace = new Trace(penumbra, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
 	current_trace = trace;
 
 	update_info();
-	draw_penumbra();
+	draw_penumbra(penumbra);
 
-	for (let i = step; i < trace_data.length; i+=step) {
+	for (let i = step; i < data.length; i+=step) {
 		timeouts[i] = setTimeout(function draw() {
-  			draw_trace_frame(trace_data, step, i, color);
+  			draw_trace_frame(data, step, i, color);
   		}, (i/step+1)*interval_ms);
 	}
 }
@@ -152,23 +151,29 @@ function delete_trace (index) {
 	if (traces[index] == current_trace) {
 		stop_timeouts(traces[index])
 	}
+	draw_penumbra(traces[index].penumbra);
 	scene.remove(traces[index].mesh);
 	traces.splice(index, 1);
 	update_info();
-	draw_penumbra();
 }
 
+// we need to do some preparations of settings data (set model and station)
 function update_info () {
 	const info = document.getElementById('info');
 	info.innerHTML = '';
+
 	for (let i = 0; i < traces.length; i++) {
 		let trace = traces[i];
-		const location = trace.settings.station ? trace.settings.station : "LAT: " + trace.settings.latitude + "; LON: " + trace.settings.longitude;
-		const altitude = trace.settings.altitude + " km";
-		const energy = trace.settings.energy + " GV";
+		const s = trace.penumbra.settings;
+		const location = s.station ? s.station : "Lat: " + s.lat + "; Lon: " + s.lon;
+		const altitude = s.altitude + " km";
+		const energy = s.energy + " GV";
 		const time = trace.time + " sec";
-		info.innerHTML += "<a onclick='delete_trace("+i+")'>[ X ]</a>  <span style='color: "+trace.color+"'> " + trace.settings.model + "<br>" + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
+		const model = get_model_by_id(s.model).name;
+		// TODO rewrite string
+		info.innerHTML += "<a onclick='delete_trace(" + i +")'>[ X ]</a>  <span style='color: " + trace.color + "'> " + model + "<br>" + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
 		info.innerHTML += '<br><br>';
 	}
+
 	if (traces.length > 1) info.innerHTML += "<a onclick='delete_all_traces()'>[ Clear ]";
 }

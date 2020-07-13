@@ -1,8 +1,33 @@
 const progress_update_interval_ms = 500;
-let current_instance_id; // TODO: remove
 let instances = {};			// instances at the dashboard
 let active_instances = [];	// instances with penumbras on screen
 let progressBars = {};
+const defaults = {
+    areHtml: ['model', 'step'],
+    params: {
+        //date: "2020.01.01",
+    	//time: "12:00:00",
+    	swdp: "0.5",
+    	dst: "-30.0",
+    	imfBy: "-7.8",
+    	imfBz: "-2.9",
+    	g1: "1.8",
+    	g2: "7.0",
+    	kp: "2",
+    	model: "IGRF",
+    	alt: "20.0",
+    	lat: "",
+    	lon: "",
+    	vertical: "0.00",
+    	azimutal: "0.00",
+    	lower: "0.00",
+    	upper: "6.00",
+    	step: "Step: 0.1 GV",
+    	flightTime: "8.0"
+    }
+}
+
+setInterval(update_instance_progresses, progress_update_interval_ms);
 
 async function create_instance(settings) {
     const response = await fetch('instance', {
@@ -71,7 +96,24 @@ async function fetch_instance(id) {
             current_instance_id = id;
             if(resp.status == "failed")
                 show_error("Some critical error occurred during calculations");
+
 			instances[id] = resp;
+			instances[id].id = id;	// k
+			instances[id].settings.dublicate = function () {
+        		clone = {};
+        		clone.lower = this.lower;
+        		clone.upper = this.upper;
+        		clone.step = this.step;
+        		clone.energy = this.energy;
+        		clone.longitude = this.longitude;
+        		clone.latitude = this.latitude;
+        		clone.station = this.station;
+        		clone.altitude = this.altitude;
+        		clone.model = this.model;
+        		return clone;
+    		}
+
+			add_penumbra(instances[id]);
             return resp;
         } else {
             show_error("Instance not found on server or access forbidden");
@@ -100,26 +142,8 @@ async function update_instance_progresses () {
 		}
 	}
 }
-setInterval(update_instance_progresses, progress_update_interval_ms);
-
-/*
-<a href="#" class="list-group-item list-group-item-action flex-column align-items-start ">
-    <div class="d-flex w-100 justify-content-between">
-       <h5 class="mb-1">Irkutsk</h5>
-       <small class="text-muted">Done</small>
-   </div>
-   <p class="mb-1">
-        <i>Energy: 0.00 - 6.00 GV<br>
-        Date: 27.01.2007<br>
-        Time: 23:00<br>
-        </i>
-    </p>
-<!--<small class="text-muted">Donec id elit non mi porta.</small>-->
-</a>
-*/
 
 async function update_instance_list() {
-	//<a href="#" class="list-group-item list-group-item-action bg-light">Instance #1</a>
 	const response = await fetch('instance', {
         method: 'GET'
 	}).catch ((error) => {
@@ -172,7 +196,6 @@ async function update_instance_list() {
 		delete_item.onclick = function(event) {
 			event.stopPropagation();
 			delete_instance(id);
-			//update_instance_list();
 			document.getElementById("instances-list").removeChild(list_group_item);
 		};
 		delete_item.innerHTML = "Delete";	// instance.date time energy range
@@ -187,43 +210,12 @@ async function update_instance_list() {
 
 		list_group_item.onclick = async() => {
 			await fetch_instance(id);
-			console.log(instances[id].data, instances[id].settings)
-			add_penumbra(instances[id].data, instances[id].settings);
-				/*list_group_item.className += " active";
-				name_item.className += " text-white";
-				model_item.className += " text-light";
-				description_item.className += " text-white";*/
 		};
 
 		document.getElementById("instances-list").appendChild(list_group_item);
 	}
-	console.log(instances);
 }
 
-const defaults = {
-    areHtml: ['model', 'step'],
-    params: {
-        //date: "2020.01.01",
-    	//time: "12:00:00",
-    	swdp: "0.5",
-    	dst: "-30.0",
-    	imfBy: "-7.8",
-    	imfBz: "-2.9",
-    	g1: "1.8",
-    	g2: "7.0",
-    	kp: "2",
-    	model: "IGRF",
-    	alt: "20.0",
-    	lat: "",
-    	lon: "",
-    	vertical: "0.00",
-    	azimutal: "0.00",
-    	lower: "0.00",
-    	upper: "6.00",
-    	step: "Step: 0.1 GV",
-    	flightTime: "8.0"
-    }
-}
 function reset_instance_modal () {
     for(const param in defaults.params) {
         const el = document.getElementById(param);

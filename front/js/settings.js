@@ -1,5 +1,4 @@
 const particles_limit = 10000;
-let settings = {};
 let valueranges;
 const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
 'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
@@ -9,56 +8,12 @@ fetch_JSON(function(response) {
     valueranges = response;
  }, "valueranges.json");
 
-
 change_step (0.1);
 
 function submit () {
     if (is_bad_input()) return;
-    if ((settings.upper - settings.lower)/settings.step > particles_limit) {
-        alert("Entered data is too large for the server to"+
-        " calculate it properly.\nMaximum amount of particles is " + particles_limit+
-        "\nEntered amount is " + (settings.upper - settings.lower)/settings.step + ".");
-        return;
-    }
-
     $("#instance_modal").modal('hide');
     create_instance(get_settings_JSON());
-}
-
-// probably not neccesary
-function set_settings (s) {
-    settings = {};
-    settings.lower = parseFloat(s.lower);
-    settings.upper = parseFloat(s.upper);
-    settings.step = parseFloat(s.step);
-    settings.energy = parseFloat(s.lower);
-
-    settings.altitude = parseFloat(s.alt);
-    settings.longitude = parseFloat(s.lon);
-    settings.latitude = parseFloat(s.lat);
-    settings.station = isStation(settings.latitude, settings.longitude);
-
-    settings.model = get_model_by_id(s.model).name;
-
-    settings.dublicate = function dublicate() {
-        // js doesn't really have some sort of a method to copy objects, so we have to do it ourselves
-        // also settings.clone "is not a function" so i had to rename it to "dublicate" (probably jquery's fault)
-        settings_clone = {};
-        settings_clone.lower = settings.lower;
-        settings_clone.upper = settings.upper;
-        settings_clone.step = settings.step;
-        settings_clone.energy = settings.energy;
-
-        settings_clone.longitude = settings.longitude;
-        settings_clone.latitude = settings.latitude;
-        settings_clone.station = settings.station;
-        settings_clone.altitude = settings.altitude;
-
-        settings_clone.model = settings.model;
-        return settings_clone;
-    }
-
-    limit_energy_input ();
 }
 
 function limit_energy_input () {
@@ -150,34 +105,29 @@ function change_step (value) {
 }
 
 function change_energy (value) {
-    if (value < settings.lower || value > settings.upper || isNaN(value)) {
-        console.log("invalid energy")
-        return;
-    }
-    settings.energy = parseFloat(value);
-    document.getElementById('energy').value = settings.energy;
-    fetch_trace(settings.energy);
-    document.getElementById("trace-spinner").style = "visibility:visible;";
+    penumbras.forEach((penumbra) => {
+        penumbra.set_energy(value);
+    });
 }
 
 function get_settings_JSON () {
-    let object = {};
+    let settings = {};
     params.forEach (function (param) {
         const el = document.getElementById(param);
 		if (param == "step") {
-			object[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
+			settings[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
 		} else if (param == "model") {
-			object[param] = get_model_by_name(el.innerHTML).id;
+			settings[param] = get_model_by_name(el.innerHTML).id;
 		} else if (param == "date") {
-            object[param] = front_to_back_date(el.value);
+            settings[param] = front_to_back_date(el.value);
         } else if (param == "time") {
             // handle . and :
-            object[param] = front_to_back_time(el.value);
+            settings[param] = front_to_back_time(el.value);
         }
 		else {
-			object[param] = el.value;
+			settings[param] = el.value;
 		}
     });
 
-	return JSON.stringify(object);
+	return JSON.stringify(settings);
 }
