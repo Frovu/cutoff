@@ -28,19 +28,14 @@ function is_bad_value (param, value) {
     const el = document.getElementById(param);
 
     value = value.replace(/\s/g, ''); // removing spaces
-    if (value == "") {
+    if(value == "")
         return true;
-    }
-
-    if (param == "date") {
+    if(param == "date")
         return !is_valid_date(value);
-    }
-
-    if (param == "time") {
+    if(param == "time")
         return !is_valid_time(value);
-    }
 
-    if (param != "model" && param != "step") {
+    if(param != "model" && param != "step") {
         // if param is numeric, then we check it for having any letters
         if (!/^-?\d*\.?\d*$/.test(value)) {
             return true;
@@ -73,7 +68,7 @@ function is_bad_input() {
             if (param == "time") {
                 feedback.innerHTML = "Correct format: HH:MM:SS";
             } else if (param == "date") {
-                feedback.innerHTML = "Correct format: YYYY.MM.DD";
+                feedback.innerHTML = "Correct format: YYYY-MM-DD";
             } else {
                 feedback.innerHTML = "Correct range: " + valueranges[param].min + " to " + valueranges[param].max;
             }
@@ -106,22 +101,39 @@ function change_step (value) {
 
 function get_settings_JSON () {
     let settings = {};
-    params.forEach (function (param) {
+    params.forEach(param => {
         const el = document.getElementById(param);
 		if (param == "step") {
 			settings[param] = parseFloat(parse_sentence_for_number(el.innerHTML));
 		} else if (param == "model") {
 			settings[param] = get_model_by_name(el.innerHTML).id;
 		} else if (param == "date") {
-            settings[param] = front_to_back_date(el.value);
         } else if (param == "time") {
-            // handle . and :
-            settings[param] = front_to_back_time(el.value);
-        }
-		else {
+            const d = new Date(`${document.getElementById("date").value}T${el.value}`);
+            console.log(`${document.getElementById("date")}T${el.value}`)
+            console.log(d.toISOString())
+            settings.date = d - d.getTimezoneOffset()*60000;
+        } else {
 			settings[param] = el.value;
 		}
     });
 
 	return JSON.stringify(settings);
+}
+
+// Validates that the input string is a valid date formatted as "mm/dd/yyyy"
+function is_valid_date(dateString) {
+    if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateString))
+        return false;
+    return Date.parse(dateString);
+};
+
+function is_valid_time(timeString) {
+    const t = timeString.match(/^\d{1,2}\:\d{1,2}\:\d{1,2}$/);
+    return !t || Date.parse('1970-01-01T' + timeString)
+};
+
+function parse_sentence_for_number(sentence){
+   var matches = sentence.match(/(\+|-)?((\d+(\.\d+)?)|(\.\d+))/);
+   return matches && matches[0] || null;
 }

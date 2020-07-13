@@ -116,7 +116,7 @@ async function fetch_instance(id) {
     			}
 				add_penumbra(instances[id]);
             }
-            
+
             return resp;
         } else {
             show_error("Instance not found on server or access forbidden");
@@ -227,7 +227,7 @@ function reset_instance_modal () {
         else
             el.value = defaults.params[param];
     }
-    d = new Date().toISOString().replace(/\..*/,'').replace(/-/g,'.').split('T');
+    d = new Date().toISOString().replace(/\..*/,'').split('T');
     document.getElementById("date").value = d[0];
     document.getElementById("time").value = d[1];
 }
