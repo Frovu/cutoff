@@ -112,7 +112,6 @@ async function fetch_instance(id) {
         		clone.model = this.model;
         		return clone;
     		}
-
 			add_penumbra(instances[id]);
             return resp;
         } else {

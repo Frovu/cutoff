@@ -1,13 +1,10 @@
-//const canvas = $('#penumbra')[0];
-//const ctx = canvas.getContext("2d");
+const primary_font = "bold 16px TextBook";
+const secondary_font = "12px Arial";
 
 let peek_energy;
-//let cursor_present = false;
 let penumbras = [];
 let step = 0.1;
 
-let lower_edge = 0;
-let upper_edge = 0;
 let viewport_position = 1;
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
@@ -16,8 +13,6 @@ const max_lines_onscreen = Math.floor(800.0 / line_width);
 
 let time_min, time_max;
 
-const primary_font = "bold 16px TextBook";
-const secondary_font = "12px Arial";
 
 let Penumbra = (function(instance, canvas) {
     // prob better to have single "instance" variable (or not)
@@ -27,6 +22,26 @@ let Penumbra = (function(instance, canvas) {
     this.canvas = canvas,
     this.ctx = canvas.getContext("2d"),
     this.cursor_present = false,
+    this.lower_edge = 0,
+    this.upper_edge = 0,
+
+
+    this.set_edges = function () {
+        const arrow_left = document.getElementById("arrow_left");
+        const arrow_right = document.getElementById("arrow_right");
+        arrow_left.style.visibility = "visible";
+        arrow_right.style.visibility = "visible";
+
+        this.lower_edge = Math.round(max_lines_onscreen*(viewport_position-1));
+        this.upper_edge = Math.round(max_lines_onscreen*viewport_position);
+
+        // TODO add penumbra sizes(step) conflict fix
+
+        if (this.lower_edge < 0) this.lower_edge = 0;
+        if (this.upper_edge > this.data.particles.length) this.upper_edge = this.data.particles.length
+        if (Math.ceil(viewport_position) == 1) arrow_left.style.visibility = "hidden";
+        if (this.lower_edge >= this.data.particles.length - max_lines_onscreen) arrow_right.style.visibility = "hidden";
+    }
 
     // draws any text in (x, y) and offsets x if it is outside canvas
     this.draw_energy_text = function (text, x, y) {
@@ -54,28 +69,19 @@ let Penumbra = (function(instance, canvas) {
         this.ctx.fillText(text, x, y);
     }
 
-    this.set_energy = function (value) {
-        if (value < this.settings.lower || value > this.settings.upper || isNaN(value)) {
-            show_error("Invalid energy value");
-            return;
-        }
-
-        this.settings.energy = parseFloat(value);
-    }
-
     this.x_to_energy = function (x) {
         if (x <= 1) return;
         this.settings.lower = parseFloat(this.settings.lower);
         this.settings.upper = parseFloat(this.settings.upper);
         this.settings.step = parseFloat(this.settings.step);
-        return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*this.settings.step + lower_edge*this.settings.step + this.settings.lower + this.settings.step, this.settings.step);
+        return float_to_step_precision(Math.round(x-line_width/2.0)/line_width*this.settings.step + this.lower_edge*this.settings.step + this.settings.lower + this.settings.step, this.settings.step);
     }
 
     this.energy_to_x = function (energy) {
         this.settings.lower = parseFloat(this.settings.lower);
         this.settings.upper = parseFloat(this.settings.upper);
         this.settings.step = parseFloat(this.settings.step);
-        return Math.round(float_to_step_precision (energy-this.settings.lower, this.settings.step) / this.settings.step + this.settings.step) * line_width - lower_edge * line_width - line_width;
+        return Math.round(float_to_step_precision (energy-this.settings.lower, this.settings.step) / this.settings.step + this.settings.step) * line_width - this.lower_edge * line_width - line_width;
     }
 });
 
@@ -95,9 +101,8 @@ function add_penumbra (instance) {
     if (temp_time_min < time_min) time_min = temp_time_min;
     if (temp_time_max > time_max) time_max = temp_time_max;
 
-    console.log(penumbra);
-    set_penumbra_edges(penumbra);
     add_event_listeners(penumbra);
+    penumbra.set_edges();
     penumbras.push(penumbra);
 
     draw_penumbra(penumbra);
@@ -106,7 +111,6 @@ function add_penumbra (instance) {
 function add_event_listeners (penumbra) {
     penumbra.canvas.addEventListener('click', function(event) {
         //if (get_trace_at(peek_energy) != null) return;
-        change_energy(peek_energy);
         fetch_trace(penumbra, peek_energy);
         draw_penumbra(penumbra);
     }, false);
@@ -125,30 +129,6 @@ function add_event_listeners (penumbra) {
     }, false);
 }
 
-function set_penumbra_edges(penumbra) {
-    const arrow_left = document.getElementById("arrow_left");
-    const arrow_right = document.getElementById("arrow_right");
-    arrow_left.style.visibility = "visible";
-    arrow_right.style.visibility = "visible";
-
-    lower_edge = Math.round(max_lines_onscreen*(viewport_position-1));
-    upper_edge = Math.round(max_lines_onscreen*viewport_position);
-
-    if (lower_edge < 0) {
-        lower_edge = 0;
-    }
-    if (upper_edge > penumbra.data.particles.length) {
-        upper_edge = penumbra.data.particles.length
-    } 
-
-    if (Math.ceil(viewport_position) == 1) {
-        arrow_left.style.visibility = "hidden";
-    }
-
-    if (lower_edge >= penumbra.data.particles.length - max_lines_onscreen) {
-        arrow_right.style.visibility = "hidden";
-    }
-}
 
 // confusion with settings flight time. change name?
 function get_max_flight_time (penumbra) {
@@ -161,7 +141,6 @@ function get_max_flight_time (penumbra) {
 
 function get_min_flight_time (penumbra) {
     let min = Infinity;
-    console.log(penumbra);
     for (let i = 0; i < penumbra.data.particles.length; i++) {
         if (penumbra.data.particles[i][2] < min) min = penumbra.data.particles[i][2];
     }
@@ -176,7 +155,7 @@ function move_penumbra_left () {
     viewport_position -= move_value;
 
     penumbras.forEach((penumbra) => {
-        set_penumbra_edges(penumbra);
+        penumbra.set_edges();
         draw_penumbra(penumbra);
     });
 }
@@ -185,11 +164,10 @@ function move_penumbra_right () {
     viewport_position += move_value;
 
     penumbras.forEach((penumbra) => {
-        set_penumbra_edges(penumbra);
+        penumbra.set_edges();
         draw_penumbra(penumbra);
     });
 }
-
 
 function draw_penumbra (penumbra) {
     const ctx = penumbra.ctx;
@@ -198,7 +176,7 @@ function draw_penumbra (penumbra) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    canvas.width = canvas.style.width = (upper_edge - lower_edge) * line_width;
+    canvas.width = canvas.style.width = (penumbra.upper_edge - penumbra.lower_edge) * line_width;
     ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
@@ -207,22 +185,22 @@ function draw_penumbra (penumbra) {
 
     ctx.font = primary_font;
 
-    for (let i = 0; i < upper_edge - lower_edge; i++) {
-        if (lower_edge + i >= data.particles.length) {
+    for (let i = 0; i < penumbra.upper_edge - penumbra.lower_edge; i++) {
+        if (penumbra.lower_edge + i >= data.particles.length) {
             break;
         }
-        const particle = data.particles[lower_edge + i];
+        const particle = data.particles[penumbra.lower_edge + i];
         let height = 30;
         if (particle[0] == peek_energy && penumbra.cursor_present) height = 45;
         let color = particle[1] == 0 ? "gray" : "black";
         
-        const drawn_trace = get_trace_at(particle[0]);
+        const drawn_trace = get_trace_at(penumbra, particle[0]);
         if (drawn_trace != null) {
             height = 45;
             ctx.fillStyle = drawn_trace.color;
             ctx.font = primary_font;
             // TODO penumbra.settings.energy is wrong; must be the same variable because there is only one energy selected
-            penumbra.draw_energy_text (drawn_trace.penumbra.settings.energy + "GV", penumbra.energy_to_x(drawn_trace.penumbra.settings.energy), 23);
+            penumbra.draw_energy_text (drawn_trace.energy + "GV", penumbra.energy_to_x(drawn_trace.energy), 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
 
@@ -295,9 +273,9 @@ function draw_time () {
 }
 
 // strange 
-function get_trace_at (energy) {
+function get_trace_at (penumbra, energy) {
     for (let i = 0; i < traces.length; i++) {
-        if (traces[i].penumbra.settings.energy == energy) return traces[i];
+        if (traces[i].energy == energy && traces[i].penumbra == penumbra) return traces[i];
     }
     return null;
 }
