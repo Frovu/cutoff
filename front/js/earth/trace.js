@@ -5,8 +5,9 @@ let current_trace;
 let traces = [];
 let timeouts = [];
 
-function Trace (penumbra, color, mesh, time) {
+function Trace (penumbra, energy, color, mesh, time) {
     this.penumbra = penumbra;
+    this.energy = energy;
     this.color = color;
     this.mesh = mesh;
     this.time = time;
@@ -26,7 +27,7 @@ async function fetch_trace (penumbra, energy) {
         if (response.ok) {
         	stop_spinner();
             const data = await response.json();
-            add_trace(penumbra, data);
+            add_trace(penumbra, energy, data);
         } else {
             switch (response.status) {
                 case 102: // processing
@@ -66,7 +67,7 @@ function get_free_color () {
 	return "#ffffff";
 }
 
-function add_trace (penumbra, data) {
+function add_trace (penumbra, energy, data) {
 	if (traces.length > max_traces-1) return;
 	stop_timeouts();
 
@@ -81,7 +82,7 @@ function add_trace (penumbra, data) {
 
 	const time = data[data.length-1][0];
 	//const trace = new Trace(settings.dublicate(), color, line, time);
-	const trace = new Trace(penumbra, color, line, time);
+	const trace = new Trace(penumbra, energy, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
 	current_trace = trace;
@@ -148,12 +149,13 @@ function delete_all_traces () {
 }
 
 function delete_trace (index) {
-	if (traces[index] == current_trace) {
-		stop_timeouts(traces[index])
+	const trace = traces[index];
+	if (trace == current_trace) {
+		stop_timeouts(trace)
 	}
-	draw_penumbra(traces[index].penumbra);
-	scene.remove(traces[index].mesh);
+	scene.remove(trace.mesh);
 	traces.splice(index, 1);
+	draw_penumbra(trace.penumbra);
 	update_info();
 }
 
@@ -166,8 +168,8 @@ function update_info () {
 		let trace = traces[i];
 		const s = trace.penumbra.settings;
 		const location = s.station ? s.station : "Lat: " + s.lat + "; Lon: " + s.lon;
-		const altitude = s.altitude + " km";
-		const energy = s.energy + " GV";
+		const altitude = s.alt + " km";
+		const energy = trace.energy + " GV";
 		const time = trace.time + " sec";
 		const model = get_model_by_id(s.model).name;
 		// TODO rewrite string

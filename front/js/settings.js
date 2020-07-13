@@ -104,12 +104,6 @@ function change_step (value) {
     document.getElementById("step").innerHTML = text;
 }
 
-function change_energy (value) {
-    penumbras.forEach((penumbra) => {
-        penumbra.set_energy(value);
-    });
-}
-
 function get_settings_JSON () {
     let settings = {};
     params.forEach (function (param) {
