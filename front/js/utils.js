@@ -133,3 +133,23 @@ function remove_elements_by_class(className) {
         elements[0].parentNode.removeChild(elements[0]);
     }
 }
+
+async function fetch_JSON (callback, path) {
+    const response = await fetch(path, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json" },
+    }).catch ((error) => {
+        show_error(error);
+    });;
+
+    if (response != undefined) {
+        if (response.ok) {
+            const json = await response.json();
+            callback(json);
+        } else {
+            show_error("Failed loading JSON: HTTP " + response.status);
+        }
+    } else {
+        show_error(path + " didn't found on server");
+    }
+}

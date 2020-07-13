@@ -11,6 +11,46 @@ function Trace (settings, color, mesh, time) {
     this.time = time;
 }
 
+async function fetch_trace (energy) {
+    start_spinner();
+
+    const response = await fetch('instance/' + current_instance_id + "/" + energy, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json" },
+    }).catch ((error) => {
+        show_error(error);
+    });;
+
+    if (response != undefined) {
+        if (response.ok) {
+            const json = await response.json();
+            stop_spinner();
+            start_trace(json);
+        } else {
+            switch (response.status) {
+                case 102: // processing
+                    setTimeout(function (){
+                        fetch_trace(energy);
+                    }, update_interval_ms);
+                    break;
+                case 404:
+                    show_error("Instance is not found on server");
+                    break;
+
+                case 500:
+                    show_error("Instance has failed to calculate");
+                    break;
+
+                default:
+                    console.log(response.status);
+                    break;
+            }
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+}
+
 function get_free_color () {
 	for (let j = 0; j < colors.length; j++) {
 		let free = false;
@@ -56,6 +96,15 @@ function start_trace (trace_data) {
   		}, (i/step+1)*interval_ms);
 	}
 }
+
+function start_spinner () {
+    document.getElementById("trace-spinner").style = "visibility:visible;";
+}
+
+function stop_spinner () {
+    document.getElementById("trace-spinner").style = "visibility:hidden;";
+}
+
 
 function stop_timeouts () {
 	// removing from the end of array with pop() for performance
