@@ -3,9 +3,9 @@ const model_params = [params[2], params[3], params[4], params[5], params[6], par
 const models = [
     new Model('Dipole', '00', []),
     new Model('IGRF', '10', []),
-    new Model('T89_Kp', '89', [params[8]]),
-    new Model('T96_01', '96', [params[2], params[3], params[4], params[5]]),
-    new Model('T01_01', '01', [params[2], params[3], params[4], params[5], params[6], params[7]])
+    new Model('IGRF+T89', '89', [params[8]]),
+    new Model('IGRF+T96', '96', [params[2], params[3], params[4], params[5]]),
+    new Model('IGRF+T01', '01', [params[2], params[3], params[4], params[5], params[6], params[7]])
 ];
 
 function Model (name, id, params) {

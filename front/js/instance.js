@@ -98,21 +98,25 @@ async function fetch_instance(id) {
                 show_error("Some critical error occurred during calculations");
 
 			instances[id] = resp;
-			instances[id].id = id;	// k
-			instances[id].settings.dublicate = function () {
-        		clone = {};
-        		clone.lower = this.lower;
-        		clone.upper = this.upper;
-        		clone.step = this.step;
-        		clone.energy = this.energy;
-        		clone.longitude = this.longitude;
-        		clone.latitude = this.latitude;
-        		clone.station = this.station;
-        		clone.altitude = this.altitude;
-        		clone.model = this.model;
-        		return clone;
-    		}
-			add_penumbra(instances[id]);
+
+            if(resp.status == "completed") {
+            	instances[id].id = id;	// k
+				instances[id].settings.dublicate = function () {
+        			clone = {};
+        			clone.lower = this.lower;
+        			clone.upper = this.upper;
+        			clone.step = this.step;
+        			clone.energy = this.energy;
+        			clone.longitude = this.longitude;
+        			clone.latitude = this.latitude;
+        			clone.station = this.station;
+        			clone.altitude = this.altitude;
+        			clone.model = this.model;
+        			return clone;
+    			}
+				add_penumbra(instances[id]);
+            }
+            
             return resp;
         } else {
             show_error("Instance not found on server or access forbidden");
