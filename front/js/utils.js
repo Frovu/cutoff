@@ -12,8 +12,8 @@ function decimalPlaces(float) {
     return float.toString().split(".")[1].length || 0;  //some bug with , ?
 }
 
-function float_to_step_precision (float) {
-    return float.toFixed(decimalPlaces(settings.step));
+function float_to_step_precision (float, step) {
+    return float.toFixed(decimalPlaces(step));
 }
 
 function on_map (lat, lon) {
@@ -152,4 +152,9 @@ async function fetch_JSON (callback, path) {
     } else {
         show_error(path + " didn't found on server");
     }
+}
+
+// value normalization
+function normalize (value, min, max) {
+    return (value - min)/(max - min);
 }
