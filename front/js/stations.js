@@ -152,10 +152,6 @@ $('#stationDd').find('.dropdown-menu a').click(function(){
 });
 
 function isStation (lat, lon) {
-	for(s of stations){
-		if(lat == s.latitude && lon == s.longitude) {
-			return s.name;
-		}
-	}
-	return undefined;
+	const st = stations.find(s => lat === s.latitude && lon === s.longitude);
+	return st ? st.name : null;
 }
