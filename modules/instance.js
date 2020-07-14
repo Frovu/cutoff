@@ -76,11 +76,13 @@ module.exports.create = function(ini, user, callback) {
 			log(err);
 			callback(false);
 		}
+		delete ini.name;
 		instances[id] = {
 			status: 'processing',
 			created: new Date(),
 			owner: user,
-			settings: ini
+			settings: ini,
+			name: ini.name
 		};
 		let instance = spawnCutoff(id, null, async(code, signal, initxt) => {
 			delete running[id];
@@ -109,6 +111,7 @@ ${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.r
 						return false;
 				    }
 				}
+				delete instances[id].settings.name;
 			} else {
 				instances[id].status = 'failed';
 				instances[id].completed = new Date();
