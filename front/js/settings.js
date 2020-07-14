@@ -116,6 +116,9 @@ function get_settings_JSON () {
 		}
     });
 
+    settings.name = document.getElementById("name").value;
+    
+    console.log(JSON.stringify(settings))
 	return JSON.stringify(settings);
 }
 

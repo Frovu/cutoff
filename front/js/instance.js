@@ -170,6 +170,7 @@ async function update_instance_list() {
 
 		const name_item = document.createElement("h5");
 		name_item.className = "mb-1";
+        console.log(instance.name)
         name_item.innerHTML = instance.name ||
             (isStation(instance.settings.lat, instance.settings.lon) || `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`);
 
@@ -226,6 +227,24 @@ function reset_instance_modal () {
     d = new Date().toISOString().replace(/\..*/,'').split('T');
     document.getElementById("date").value = d[0];
     document.getElementById("time").value = d[1];
+}
+
+async function rename (id, name) {
+    const response = await fetch(`instance/${id}/${name}`, {
+        method: 'POST',
+    }).catch ((error) => {
+        show_error(error);
+    });
+    if(response) {
+        if(response.ok) {
+            return true;
+        } else {
+            show_error("Error renaming instance");
+        }
+    } else {
+        show_error("Server didn't respond");
+    }
+    return false;
 }
 
 // what?

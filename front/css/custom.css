@@ -53,10 +53,6 @@ html, body {
   background-color: black;
 }
 
-legend {
-    margin-top: 15px;
-}
-
 .scrollable-menu {
     height: auto;
     max-height: 200px;
@@ -76,9 +72,8 @@ legend {
 #stationSearchButton:focus {outline: 3px solid #ddd;}
 
 legend {
-	margin-top: 26px;
+  margin-top: 25px;
 	margin-bottom: 0px;
-	font-size: 22px;
 }
 
 canvas {
