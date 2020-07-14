@@ -39,8 +39,12 @@ async function fetch_trace (penumbra, energy) {
                     show_error("Trace failed to calculate");
                     stop_spinner();
                     break;
+                case 404:
+                	show_error("Trace or instance not found");
+                	stop_spinner();
+                	break;
                 default:
-                    console.log(response.status);
+                    show_error(response.status);
                     stop_spinner();
                     break;
             }
@@ -81,7 +85,6 @@ function add_trace (penumbra, energy, data) {
 	);
 
 	const time = data[data.length-1][0];
-	//const trace = new Trace(settings.dublicate(), color, line, time);
 	const trace = new Trace(penumbra, energy, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
@@ -91,7 +94,7 @@ function add_trace (penumbra, energy, data) {
 	draw_penumbra(penumbra);
 
 	for (let i = step; i < data.length; i+=step) {
-		timeouts[i] = setTimeout(function draw() {
+		timeouts[i] = setTimeout(function () {
   			draw_trace_frame(data, step, i, color);
   		}, (i/step+1)*interval_ms);
 	}
@@ -167,13 +170,13 @@ function update_info () {
 	for (let i = 0; i < traces.length; i++) {
 		let trace = traces[i];
 		const s = trace.penumbra.settings;
-		const location = s.station ? s.station : "Lat: " + s.lat + "; Lon: " + s.lon;
+		const station = isStation(s.lat, s.lon);
+		const location = station ? station : "Lat: " + s.lat + "; Lon: " + s.lon;
 		const altitude = s.alt + " km";
 		const energy = trace.energy + " GV";
 		const time = trace.time + " sec";
 		const model = get_model_by_id(s.model).name;
-		// TODO rewrite string
-		info.innerHTML += "<a onclick='delete_trace(" + i +")'>[ X ]</a>  <span style='color: " + trace.color + "'> " + model + "<br>" + location + ", " + altitude + "<br>" + energy + "<br>" + time +"</span>";
+		info.innerHTML += `<a onclick='delete_trace(${i})'>[ X ]</a>  <span style='color: ${trace.color}'> ${model}<br>${location}, ${altitude}<br>${energy}<br>${time}</span>`;
 		info.innerHTML += '<br><br>';
 	}
 

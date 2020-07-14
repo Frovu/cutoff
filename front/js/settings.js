@@ -120,15 +120,15 @@ function get_settings_JSON () {
 }
 
 // Validates that the input string is a valid date formatted as "mm/dd/yyyy"
-function is_valid_date(dateString) {
-    if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateString))
+function is_valid_date(date_string) {
+    if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(date_string))
         return false;
-    return Date.parse(dateString);
+    return Date.parse(date_string);
 };
 
-function is_valid_time(timeString) {
-    const t = timeString.match(/^\d{1,2}\:\d{1,2}\:\d{1,2}$/);
-    return !t || Date.parse('1970-01-01T' + timeString)
+function is_valid_time(time_string) {
+    const t = time_string.match(/^\d{1,2}\:\d{1,2}\:\d{1,2}$/);
+    return !t || Date.parse('1970-01-01T' + time_string)
 };
 
 function parse_sentence_for_number(sentence){

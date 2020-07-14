@@ -232,17 +232,12 @@ function reset_instance_modal () {
     document.getElementById("time").value = d[1];
 }
 
+// what?
 function show_instance (id) {
 
 }
 
 function new_instance () {
-	/*
-	if (!logged_in_as_user) {
-		show_login_modal ();
-	} else {
-		show_instance_modal ();
-	}*/
 	show_instance_modal ();
 }
 
