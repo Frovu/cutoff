@@ -171,11 +171,8 @@ async function update_instance_list() {
 
 		const name_item = document.createElement("h5");
 		name_item.className = "mb-1";
-		if (instance.name != null) {
-			name_item.innerHTML = instance.name;
-		} else {
-			name_item.innerHTML = isStation(parseFloat(instance.settings.lat), parseFloat(instance.settings.lon));
-		}
+        name_item.innerHTML = instance.name ||
+            (isStation(instance.settings.lat, instance.settings.lon) || `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`);
 
 		const model_item = document.createElement("small");
 		model_item.className = "text-muted";
