@@ -37,14 +37,17 @@ async function fetch_trace (penumbra, energy) {
                     break;
                 case 500:
                     show_error("Trace failed to calculate");
+                    stop_spinner();
                     break;
                 default:
                     console.log(response.status);
+                    stop_spinner();
                     break;
             }
         }
     } else {
         show_error("Server didn't respond");
+        stop_spinner();
     }
 }
 
