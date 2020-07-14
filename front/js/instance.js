@@ -160,6 +160,7 @@ async function update_instance_list() {
 	progressBars = {};
 	document.getElementById("instances-list").innerHTML = "";
 	for(const instance of json.instances) {
+        instance.settings.datetime = new Date(instance.settings.datetime);
 		const id = instance.id;
 		instances[id] = instance;
 
@@ -178,14 +179,13 @@ async function update_instance_list() {
 
 		const model_item = document.createElement("small");
 		model_item.className = "text-muted";
-		model_item.innerHTML = get_model_by_id(instance.settings.model).name;	// TODO: get instance status through  GET /instance/:id
+		model_item.innerHTML = `${instance.settings.vertical}°/${instance.settings.azimutal}°,    ${get_model_by_id(instance.settings.model).name}`;
 
 		const description_item = document.createElement("p");
 		description_item.className = "mb-1";
-		description_item.innerHTML
-		 = instance.settings.lower + " - " + instance.settings.upper + "GV<br>" + instance.settings.date + "</i>";	// instance.date time energy range
+		description_item.innerHTML = `${instance.settings.lower.toFixed(2)}-${instance.settings.upper.toFixed(2)} GV    /${instance.settings.step}<br>${instance.settings.datetime.toISOString().replace(/\..*/, '')}`;
 
-		const progress_item = document.createElement("div");
+	    const progress_item = document.createElement("div");
 		progress_item.className = "progress";
 
 		const progressbar_item = document.createElement("div");

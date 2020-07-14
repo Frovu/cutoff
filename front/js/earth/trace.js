@@ -35,11 +35,8 @@ async function fetch_trace (penumbra, energy) {
                         fetch_trace(energy);
                     }, update_interval_ms);
                     break;
-                case 404:
-                    show_error("Instance is not found on server");
-                    break;
                 case 500:
-                    show_error("Instance has failed to calculate");
+                    show_error("Trace failed to calculate");
                     break;
                 default:
                     console.log(response.status);
