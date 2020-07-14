@@ -96,6 +96,7 @@
             <a><img src="arrow_left.png" class="arrow" id="arrow_left" style="visibility:hidden" onclick="move_penumbra_left()"></a>
             <a><img src="arrow_right.png" class="arrow" id="arrow_right" style="visibility:hidden" onclick="move_penumbra_right()"></a>
             <div id="penumbras-container"></div>
+            <canvas class="center" id="time_graph"></canvas>
 
             <!--
             <small class="mt-2 form-text center" style="color: white">
@@ -115,9 +116,8 @@
     <div class="modal-content">
         <div class="row">
             <div class="col-md-2" style="min-width: 900px; padding-top: 35px">
-                <div class="mt-2 row ml-1">
+                <div class="mt-2 row">
                     <div class="col-md-3">
-
                         <div class="dropdown" id="modelDd">
                             <button class="btn btn-outline-secondary dropdown-toggle btn-block rounded" type="button" id="model" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Geomagnetic Field Model</button>
@@ -277,11 +277,11 @@
                                     <button type="button" class="btn btn-secondary btn-block rounded" onclick="makeGif();">Start recording</button>
                                 </div>
                             </div>-->
-
+                            <!--
                             <div class="col-md-3">
                                 <label class="col-form-label" for="energy">Energy</label>
                                 <input class="form-control rounded" type="number" id="energy" value="0" onchange="change_energy(this.value)">
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                 </div>

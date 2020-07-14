@@ -14,8 +14,8 @@ window.addEventListener('resize', function(event){
 });
 
 function resize () {
-	canvas_el.style.width ='70%';
-	canvas_el.style.height ='70%';
+	canvas_el.style.width ='100%';
+	canvas_el.style.height ='60%';
 	let width = canvas_el.clientWidth;
     let height = canvas_el.clientHeight;
     if (canvas_el.width != width || canvas_el.height != height) {
