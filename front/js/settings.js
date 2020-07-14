@@ -110,9 +110,7 @@ function get_settings_JSON () {
 		} else if (param == "date") {
         } else if (param == "time") {
             const d = new Date(`${document.getElementById("date").value}T${el.value}`);
-            console.log(`${document.getElementById("date")}T${el.value}`)
-            console.log(d.toISOString())
-            settings.date = d - d.getTimezoneOffset()*60000;
+            settings.datetime = d - d.getTimezoneOffset()*60000;
         } else {
 			settings[param] = el.value;
 		}

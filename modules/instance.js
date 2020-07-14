@@ -34,10 +34,23 @@ else // clear lost instances
 const iniOrder = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
+function serializeIni(ini, trace) {
+	console.log(ini)
+	// parse datetime
+	const d = new Date(ini.datetime);
+	const date = `${d.getDate()>9?'':0}${d.getDate()}.${d.getMonth()>8?'':0}${d.getMonth()+1}.${d.getFullYear()}`;
+	const time = d.toISOString().split('T')[1].replace(/\..*/, '');
+	return  `
+${date}\n${time}
+${iniOrder.slice(2, -4).map(i => ini[i]).join('\n')}
+${trace||(ini.lower!=0?ini.lower:ini.step)}
+${trace||ini.upper}
+${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+}
+
 function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].settings;
-	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
-${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+	const initxt = serializeIni(ini, trace);
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
 	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
@@ -84,8 +97,10 @@ module.exports.create = function(ini, user, callback) {
 				const owner = instances[id].owner;
 				if(owner) {
 					try {
-						const q = `insert into instances(id, owner, settings, created, completed) values(?,?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
-				        await query(q, [id, owner, initxt, instances[id].created.getTime(), Date.now()]);
+						const q = `insert into instances(id, owner, created, completed, datetime,
+${iniOrder.slice(2).join()}) values(?,?${',FROM_UNIXTIME(?/1000)'.repeat(3)+',?'.repeat(iniOrder.length-3)});`;
+				        await query(q, [id, owner, instances[id].created.getTime(), Date.now()]
+							.concat(Object.values(instances[id].settings).slice(1)));
 					} catch(e) {
 				        log(e)
 						return false;
@@ -114,7 +129,7 @@ module.exports.getOwned = async function(user) {
 			list.push({id: id, created: instances[id].created});
 	}
 	// set ini's, restore if needed
-	for(const i in list) {
+	/*for(const i in list) {
 		const id = list[i].id;
 		if(instances[id] && instances[id].status == 'processing') {
 			list[i].settings = instances[id].settings;
@@ -124,7 +139,7 @@ module.exports.getOwned = async function(user) {
 			for(const j in iniOrder)
 				list[i].settings[iniOrder[j]] = ini[j];
 		}
-	}
+	}*/
 	//console.log(list)
 	return list;
 };

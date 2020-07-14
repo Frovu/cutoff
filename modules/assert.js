@@ -4,22 +4,18 @@ const ranges = require('../'+config.valueRanges);
 module.exports = function(ini) {
 	// check value ranges
 	for(const param of Object.keys(ranges)) {
-		if(typeof ini[param] === 'undefined') { // parameter was not specified
+		if(!ini[param]) { // parameter was not specified
 			// fail if param is needed for every model or for current model
-			if((typeof ranges[param].for === 'undefined') ||
-			 		(ranges[param].for.includes(ini.model)) )
+			if(!ranges[param].for || ranges[param].for.includes(ini.model))
 				return false;
 		}
-		if(typeof ranges[param].range !== 'undefined') {
+		if(ranges[param].range) {
 			if(!ranges[param].range.includes(ini[param]))
 				return false;
-		}
-		else
+		} else {
+			ini[param] = parseFloat(ini[param]);
 			if(ini[param] > ranges[param].max || ini[param] < ranges[param].min)
 				return false;
-		// round of needed
-		if(ranges[param].int === true) {
-			ini[param] = String(Math.trunc(ini[param]));
 		}
 	}
 	// additional checks
@@ -30,7 +26,6 @@ module.exports = function(ini) {
 	(parseFloat(ini.upper) - parseFloat(ini.lower)) /  parseFloat(ini.step)
 	 								> (ini.model==='01'?4000:8000))
 		return false;
-
 	// all checks passed
 	return true;
 };
