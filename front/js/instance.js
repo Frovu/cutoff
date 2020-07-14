@@ -72,7 +72,9 @@ async function delete_instance(id) {
         if(response.ok) {
 			delete instances[id];
 			return true;
-		} else {
+		} else if(response.status == 401) {
+            show_login_modal();
+        }  else {
 			show_error("Calculation instance is not found on server");
 		}
     } else {
@@ -117,11 +119,13 @@ async function fetch_instance(id) {
             }
 
             return resp;
+        } else if(response.status == 401) {
+            show_login_modal();
         } else {
             show_error("Instance not found on server or access forbidden");
         }
-    }
-    show_error("Server didn't respond or some error occurred");
+    } else
+        show_error("Server didn't respond or some error occurred");
     return null;
 }
 
@@ -192,10 +196,11 @@ async function update_instance_list() {
 
 		const delete_item = document.createElement("a");
 		delete_item.className = "mb-1 text-danger";
-		delete_item.onclick = function(event) {
-			event.stopPropagation();
-			delete_instance(id);
-			document.getElementById("instances-list").removeChild(list_group_item);
+		delete_item.onclick = async e => {
+			e.stopPropagation();
+            const ok = await delete_instance(id);
+			if(ok)
+                document.getElementById("instances-list").removeChild(list_group_item);
 		};
 		delete_item.innerHTML = "Delete";	// instance.date time energy range
 
