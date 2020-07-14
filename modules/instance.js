@@ -96,10 +96,14 @@ module.exports.create = function(ini, user, callback) {
 				const owner = instances[id].owner;
 				if(owner) {
 					try {
+						let vals = [id, owner, instances[id].created.getTime(),
+							Date.now(), instances[id].settings.datetime].concat(
+							Object.values(instances[id].settings).slice(1));
+						if(ini.name)
+							vals.push(ini.name)
 						const q = `insert into instances(id, owner, created, completed, datetime,
-${iniOrder.join()}) values(?,?${',FROM_UNIXTIME(?/1000)'.repeat(3)+',?'.repeat(iniOrder.length)});`;
-				        await query(q, [id, owner, instances[id].created.getTime(), Date.now(), instances[id].settings.datetime]
-							.concat(Object.values(instances[id].settings).slice(1)));
+${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.repeat(3)+',?'.repeat(iniOrder.length+(ini.name?1:0))});`;
+				        await query(q, vals);
 					} catch(e) {
 				        log(e)
 						return false;
