@@ -1,3 +1,5 @@
+//const time_canvas = 
+
 const primary_font = "bold 16px TextBook";
 const secondary_font = "12px Arial";
 
@@ -92,7 +94,7 @@ function add_penumbra (instance) {
     const canvas = document.createElement("canvas");
     canvas.classList = "center penumbra";
     const parent = document.getElementById("penumbras-container");
-    parent.appendChild(canvas);
+    parent.prepend(canvas);
     let penumbra = new Penumbra(instance, canvas);
 
     //viewport_position = 1;
@@ -177,10 +179,11 @@ function draw_penumbra (penumbra) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = canvas.style.width = (penumbra.upper_edge - penumbra.lower_edge) * line_width;
+    canvas.height = canvas.style.width = 100;
     ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
-    ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 170);
+    ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 60);
     ctx.fill();
 
     ctx.font = primary_font;
@@ -199,13 +202,14 @@ function draw_penumbra (penumbra) {
             height = 45;
             ctx.fillStyle = drawn_trace.color;
             ctx.font = primary_font;
-            // TODO penumbra.settings.energy is wrong; must be the same variable because there is only one energy selected
             penumbra.draw_energy_text (drawn_trace.energy + "GV", penumbra.energy_to_x(drawn_trace.energy), 23);
             if (drawn_trace.color != "#ffffff") color = drawn_trace.color;
         }
 
+        /*
         ctx.fillStyle = 'black';
         ctx.font = secondary_font;
+
         if (particle[0] == data.lower && data.lower != penumbra.settings.lower) {
             height = 45;
             penumbra.draw_energy_text ("R low", penumbra.energy_to_x(particle[0]) - ctx.measureText("R low").width - 3, 72);
@@ -219,7 +223,7 @@ function draw_penumbra (penumbra) {
         if (particle[0] == data.effective && data.effective != penumbra.settings.lower && data.effective != penumbra.settings.upper) {
             height = 45;
             penumbra.draw_energy_text ("eff", penumbra.energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 3 , 84 + 3);
-        }
+        }*/
 
         ctx.beginPath();
         ctx.moveTo(i * ctx.lineWidth+line_width/2.0, 30);

@@ -39,6 +39,10 @@ async function fetch_trace (penumbra, energy) {
                     show_error("Trace failed to calculate");
                     stop_spinner();
                     break;
+                case 401:
+                	show_login_modal();
+                	stop_spinner();
+                	break;
                 case 404:
                 	show_error("Trace or instance not found");
                 	stop_spinner();
@@ -162,6 +166,23 @@ function delete_trace (index) {
 	update_info();
 }
 
+function solo_trace (index) {
+	/*
+	for (let i = 0; i < traces.length; i++) {
+		if (i == index) continue;
+		traces[i].mesh.visible = false;
+	}
+	*/
+}
+
+function unsolo_trace (index) {
+	/*
+	for (let i = 0; i < traces.length; i++) {
+		traces[i].mesh.visible = true;
+	}
+	*/
+}
+
 // we need to do some preparations of settings data (set model and station)
 function update_info () {
 	const info = document.getElementById('info');
@@ -176,7 +197,7 @@ function update_info () {
 		const energy = trace.energy + " GV";
 		const time = trace.time + " sec";
 		const model = get_model_by_id(s.model).name;
-		info.innerHTML += `<a onclick='delete_trace(${i})'>[ X ]</a>  <span style='color: ${trace.color}'> ${model}<br>${location}, ${altitude}<br>${energy}<br>${time}</span>`;
+		info.innerHTML += `<div style="display: inline-block; color: ${trace.color}" onmouseover='solo_trace(${i})' onmouseleave='unsolo_trace(${i})'>${model}<br>${location}, ${altitude}<br>${energy}<br>${time}</div> <br><a onclick='delete_trace(${i})'>[ X ]</a>  `;
 		info.innerHTML += '<br><br>';
 	}
 

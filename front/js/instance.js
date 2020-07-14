@@ -1,6 +1,5 @@
 const progress_update_interval_ms = 500;
 let instances = {};			// instances at the dashboard
-let active_instances = [];	// instances with penumbras on screen
 let progressBars = {};
 const defaults = {
     areHtml: ['model', 'step'],
@@ -48,7 +47,7 @@ async function create_instance(settings) {
                     show_error("Bad settings");
                     break;
                 case 401:
-                    show_error("Please, log in to use Cutoff Visualiser");
+                    show_login_modal();
                     break;
                 case 500:
                     show_error("Internal server error");
@@ -230,14 +229,9 @@ function reset_instance_modal () {
 }
 
 // what?
-function show_instance (id) {
-
-}
-
 function new_instance () {
 	show_instance_modal ();
 }
-
 
 async function show_instance_modal () {
 	const resp = await get_login_info();
@@ -245,8 +239,8 @@ async function show_instance_modal () {
  		show_login_modal();
 	} else {
 		reset_instance_modal();
-	    $("#instance_modal").modal('toggle');
-		$("#login_modal").modal('hide');
-		$("#register_modal").modal('hide');
+        $("#instance_modal").modal('toggle');
+        $("#login_modal").modal('hide');
+        $("#register_modal").modal('hide');
 	}
 }
