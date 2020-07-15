@@ -12,7 +12,7 @@ let viewport_position = 1;
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
 const line_width = 7;
-const max_lines_onscreen = Math.floor(800.0 / line_width);
+const max_lines_onscreen = Math.floor(600.0 / line_width);
 
 let time_min = 1000;
 let time_max = 0;
@@ -84,11 +84,41 @@ let Penumbra = (function(instance, canvas) {
 
 // INIT PART START
 function add_penumbra (instance) {
+    /*
+    <div class="row">
+        <div class="col-sm">
+    */
+    console.log(instance);
+
+    const row = document.createElement("div");
+    row.classList = "row align-items-center";
+    const text_col = document.createElement("div");
+    text_col.style = "pointer-events: none;";
+    text_col.classList = "col-sm pr-0";
+    //text_col.style = "padding-right: 0px;"
+    row.appendChild(text_col);
+
+    const text = document.createElement("p");
+    text.classList = "text-white text-right noselect h6";
+    text.innerHTML = `<br><br>${get_model_by_id(instance.settings.model).name}<br>lower: ${instance.data.lower}GV<br>upper: ${instance.data.upper}GV<br>effective: ${instance.data.effective}GV`;
+    text_col.appendChild(text);
+
+    const canvas_col = document.createElement("div");
+    canvas_col.classList = "col-sm";
+    row.appendChild(canvas_col);
+
     const canvas = document.createElement("canvas");
     canvas.classList = "center penumbra";
+    canvas_col.appendChild(canvas);
+
+    const stuff_col = document.createElement("div");
+    stuff_col.classList = "col-sm";
+    row.appendChild(stuff_col);
+
+
     const parent = document.getElementById("penumbras-container");
     //parent.prepend(canvas);
-    parent.appendChild(canvas);
+    parent.appendChild(row);
     let penumbra = new Penumbra(instance, canvas);
 
     
@@ -149,7 +179,7 @@ function get_min_flight_time (penumbra) {
 
 
 function hide_penumbra (penumbra) {
-    penumbra.canvas.remove();
+    penumbra.canvas.parentElement.parentElement.remove();   // just works
     for (const trace of penumbra.traces) {
         delete_trace(traces.indexOf(trace));
     }
