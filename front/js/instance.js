@@ -68,6 +68,19 @@ async function create_instance(settings) {
     }
 }
 
+function select_instance (id) {
+    if (active_instances[id]) return;
+    active_instances[id] = true;
+    update_instance_list();
+}
+
+function unselect_instance (id) {
+    if (!active_instances[id]) return;
+    hide_penumbra(instancePenumbras[id]);
+    delete active_instances[id];
+    update_instance_list();
+}
+
 async function delete_instance(id) {
     const response = await fetch(`instance/${id}/kill`, {
         method: 'POST',
@@ -76,8 +89,9 @@ async function delete_instance(id) {
     });
     if(response) {
         if(response.ok) {
-            console.log("Deleting instance. Penumbra: " + instancePenumbras[id])
-            if (instancePenumbras[id] != undefined) hide_penumbra(instancePenumbras[id]);
+            //if (active_instances[id]) hide_penumbra(instancePenumbras[id]);
+            //delete active_instances[id];
+            if (active_instances[id]) unselect_instance (id);   // TODO if(instances[id].active)
 			delete instances[id];
 			return true;
 		} else if(response.status == 401) {
@@ -168,98 +182,94 @@ async function update_instance_list() {
 	});
     if (!response || !response.ok)
         return show_error("Server didn't respond or some error occurred");
-
 	const json = await response.json();
+
+    instances = {};
+    progressBars = {};
+
     json.instances.sort(function(a, b){
-        // Turn your strings into dates, and then subtract them
-        // to get a value that is either negative, positive, or zero.
         return new Date(b.created) - new Date(a.created);
     });
 
-	instances = {};
-	progressBars = {};
 	document.getElementById("instances-list").innerHTML = "";
 	for(const instance of json.instances) {
-        instance.settings.datetime = new Date(instance.settings.datetime);
-		const id = instance.id;
-        let penumbra;
-		instances[id] = instance;
-
-		const list_group_item = document.createElement("a");
-		list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
-		const header_item = document.createElement("div");
-		header_item.className = "d-flex w-100 justify-content-between";
-
-		const name_item = document.createElement("h5");
-		name_item.className = "mb-1";
-        name_item.innerHTML = instance.name ||
-            (isStation(instance.settings.lat, instance.settings.lon) || `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`);
-
-		const model_item = document.createElement("small");
-		model_item.className = "text-muted";
-		model_item.innerHTML = `${instance.settings.vertical}°/${instance.settings.azimutal}°,    ${get_model_by_id(instance.settings.model).name}`;
-
-		const description_item = document.createElement("p");
-		description_item.className = "mb-1";
-		description_item.innerHTML = `${instance.settings.lower.toFixed(2)}-${instance.settings.upper.toFixed(2)} GV    /${instance.settings.step}<br>${instance.settings.datetime.toISOString().replace(/\..*/, '')}`;
-
-	    const progress_item = document.createElement("div");
-		progress_item.className = "progress";
-
-		const progressbar_item = document.createElement("div");
-		progressbar_item.className = "progress-bar";
-		progressbar_item.setAttribute("role", "progressbar");
-		progressbar_item.setAttribute("style", `width: ${instance.completed?100:0}%`);
-		progressBars[id] = progressbar_item;
-
-		const delete_item = document.createElement("a");
-		delete_item.className = "mb-1 text-danger";
-		delete_item.onclick = async e => {
-			e.stopPropagation();
-            const ok = await delete_instance(id);
-			if(ok)
-                document.getElementById("instances-list").removeChild(list_group_item);
-		};
-		delete_item.innerHTML = "Delete";	// instance.date time energy range
-
-		header_item.appendChild(name_item);
-		header_item.appendChild(model_item);
-		list_group_item.appendChild(header_item);
-		progress_item.appendChild(progressbar_item);
-		list_group_item.appendChild(progress_item);
-		list_group_item.appendChild(description_item);
-		list_group_item.appendChild(delete_item);
-
-		list_group_item.onclick = async() => {
-            if (instancePenumbras[id]) {   // in other words, if this instance is clicked. TODO(?) refactor
-                hide_penumbra(instancePenumbras[id]);
-                delete active_instances[id];
-                update_instance_list();
-            } else {
-                active_instances[id] = true;
-                await fetch_instance(id);
-                update_instance_list();
-            }
-		};
-
-        if (active_instances[id]) {
-            list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start active";
-            description_item.className = "mb-1 text-white";
-            name_item.className = "mb-1 text-white";
-            model_item.className = "text-light";
-            progressbar_item.className = "progress-bar border border-white";
-            delete_item.className = "mb-1 text-danger bg-light ";
-        } else {
-            list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start";
-            description_item.className = "mb-1";
-            name_item.className = "mb-1";
-            model_item.className = "text-muted";
-            progressbar_item.className = "progress-bar";
-            delete_item.className =  "mb-1 text-danger";
-        }
-
-		document.getElementById("instances-list").appendChild(list_group_item);
+        add_instance_element(instance);
 	}
+}
+
+function add_instance_element (instance) {
+    instance.settings.datetime = new Date(instance.settings.datetime);
+    const id = instance.id;
+    let penumbra;
+    instances[id] = instance;
+
+    const instance_item = document.createElement("a");
+    instance_item.className = "list-group-item list-group-item-action flex-column align-items-start ";
+
+    const header_item = document.createElement("div");
+    header_item.className = "d-flex w-100 justify-content-between";
+
+    const name_item = document.createElement("h5");
+    name_item.innerHTML = instance.name ||
+        (isStation(instance.settings.lat, instance.settings.lon) || `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`);
+
+    const model_item = document.createElement("small");
+    model_item.innerHTML = `${instance.settings.vertical}°/${instance.settings.azimutal}°,    ${get_model_by_id(instance.settings.model).name}`;
+
+    const description_item = document.createElement("p");
+    description_item.innerHTML = `${instance.settings.lower.toFixed(2)}-${instance.settings.upper.toFixed(2)} GV    /${instance.settings.step}<br>${instance.settings.datetime.toISOString().replace(/\..*/, '')}`;
+
+    const progress_item = document.createElement("div");
+    progress_item.className = "progress";
+
+    const progressbar_item = document.createElement("div");
+    progressbar_item.setAttribute("role", "progressbar");
+    progressbar_item.setAttribute("style", `width: ${instance.completed?100:0}%`);
+    progressBars[id] = progressbar_item;
+
+    const delete_item = document.createElement("a");
+    delete_item.onclick = async e => {
+        e.stopPropagation();
+        const ok = await delete_instance(id);
+        if(ok)
+            document.getElementById("instances-list").removeChild(instance_item);
+    };
+    delete_item.innerHTML = "Delete";   // instance.date time energy range
+
+    header_item.appendChild(name_item);
+    header_item.appendChild(model_item);
+    instance_item.appendChild(header_item);
+    progress_item.appendChild(progressbar_item);
+    instance_item.appendChild(progress_item);
+    instance_item.appendChild(description_item);
+    instance_item.appendChild(delete_item);
+
+    instance_item.onclick = async() => {
+        if (active_instances[id]) {
+            unselect_instance(id);
+        } else {
+            select_instance(id);
+            await fetch_instance(id);
+        }
+    };
+
+    if (active_instances[id]) {
+        instance_item.className = "list-group-item list-group-item-action flex-column align-items-start active";
+        description_item.className = "mb-1 text-white";
+        name_item.className = "mb-1 text-white";
+        model_item.className = "text-light";
+        progressbar_item.className = "progress-bar border border-white";
+        delete_item.className = "mb-1 text-danger bg-light ";
+    } else {
+        instance_item.className = "list-group-item list-group-item-action flex-column align-items-start";
+        description_item.className = "mb-1";
+        name_item.className = "mb-1";
+        model_item.className = "text-muted";
+        progressbar_item.className = "progress-bar";
+        delete_item.className =  "mb-1 text-danger";
+    }
+
+    document.getElementById("instances-list").appendChild(instance_item);
 }
 
 function reset_instance_modal () {
