@@ -194,7 +194,7 @@ function draw_penumbra (penumbra) {
     ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
-    ctx.rect(0, 27, data.particles.length * ctx.lineWidth, 60);
+    ctx.rect(0, 28, data.particles.length * ctx.lineWidth, 76);
     ctx.fill();
 
     ctx.font = primary_font;
@@ -272,8 +272,7 @@ function draw_time (penumbra) {
     time_ctx.rect(0, 0, time_canvas.width, time_canvas.height);
     time_ctx.fill();
 
-    if (!penumbra.cursor_present) return;
-
+    //if (!penumbra.cursor_present) return;
     //penumbra.canvas.after(time_canvas); // experimental
 
     time_ctx.fillStyle = 'black';
@@ -281,21 +280,27 @@ function draw_time (penumbra) {
     time_ctx.lineWidth = 1;
 
     const max_height = 50;   // maximum time graph height, in pixels
-    for (let i = 1; i < penumbra.upper_edge - penumbra.lower_edge; i++) {
-        if (penumbra.lower_edge + i >= penumbra.data.particles.length) {
-            break;
+    for (let p of penumbras) {
+        for (let i = 1; i < p.upper_edge - p.lower_edge; i++) {
+            if (p.lower_edge + i >= p.data.particles.length) {
+                break;
+            }
+            
+            const height = normalize(p.data.particles[p.lower_edge + i][2], time_min, time_max) * max_height; 
+            const previous_height = normalize(p.data.particles[p.lower_edge + i-1][2], time_min, time_max) * max_height;
+            //console.log(normalize(penumbra.data.particles[penumbra.lower_edge + i][2], time_min, time_max));
+            
+            time_ctx.beginPath();
+            time_ctx.moveTo(i* line_width + line_width/2.0, 60-height);
+            time_ctx.lineTo((i-1) * line_width + line_width/2.0, 60-previous_height);
+            if (p == penumbra && p.cursor_present) time_ctx.strokeStyle = "black";
+            else time_ctx.strokeStyle = "lightgray";
+            time_ctx.stroke();
         }
-
-        const height = normalize(penumbra.data.particles[penumbra.lower_edge + i][2], time_min, time_max) * max_height; 
-        const previous_height = normalize(penumbra.data.particles[penumbra.lower_edge + i-1][2], time_min, time_max) * max_height;
-        //console.log(normalize(penumbra.data.particles[penumbra.lower_edge + i][2], time_min, time_max));
-
-        time_ctx.beginPath();
-        time_ctx.moveTo(i* line_width + line_width/2.0, 60-height);
-        time_ctx.lineTo((i-1) * line_width + line_width/2.0, 60-previous_height);
-        time_ctx.strokeStyle = "black";
-        time_ctx.stroke();
     }
+    
+
+    
 
 
     const peek_particle = get_peek_particle(penumbra);
