@@ -1,5 +1,5 @@
 const max_traces = 6;
-const colors = ['#ffffff', '#ffd966', '#ff4d67', '#8efc69', '#71f4f4', '#8f7fff'];
+const colors = ['#ffffff', '#ffd952', '#ff4d67', '#9eea60', '#91d4ff', '#ef8bb8'];
 const update_interval_ms = 200;
 let current_trace;
 let traces = [];
