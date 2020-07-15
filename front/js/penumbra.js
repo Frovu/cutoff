@@ -1,4 +1,5 @@
-//const time_canvas = 
+const time_canvas = document.getElementById("time_graph");
+const time_ctx = time_canvas.getContext("2d");
 
 const primary_font = "bold 16px TextBook";
 const secondary_font = "12px Arial";
@@ -13,7 +14,8 @@ const move_value = 0.3;    // 1.0 - moving every trace off screen
 const line_width = 5;
 const max_lines_onscreen = Math.floor(800.0 / line_width);
 
-let time_min, time_max;
+let time_min = 1000;
+let time_max = 0;
 
 
 let Penumbra = (function(instance, canvas) {
@@ -63,15 +65,6 @@ let Penumbra = (function(instance, canvas) {
         this.ctx.fillText(text, x, y);
     }
 
-    this.draw_time_text = function (text, x, y) {
-        const width = this.ctx.measureText(text).width;
-        if (x > canvas.width - width) x -= width + 18;
-        this.ctx.fillStyle = "white";
-        this.ctx.fillRect(x - 6, y - 15, width + 10, 22);
-        this.ctx.fillStyle = "black";
-        this.ctx.fillText(text, x, y);
-    }
-
     this.x_to_energy = function (x) {
         if (x <= 1) return;
         this.settings.lower = parseFloat(this.settings.lower);
@@ -98,6 +91,7 @@ function add_penumbra (instance) {
     parent.appendChild(canvas);
     let penumbra = new Penumbra(instance, canvas);
 
+    
     const temp_time_min = get_min_flight_time (penumbra);
     const temp_time_max = get_max_flight_time (penumbra);
     if (temp_time_min < time_min) time_min = temp_time_min;
@@ -160,8 +154,14 @@ function hide_penumbra (penumbra) {
         delete_trace(traces.indexOf(trace));
     }
 
-    delete instancePenumbras[penumbra.id];  // TODO fix fix fix fix
-    delete penumbras[penumbras.indexOf(penumbra)];
+    delete instancePenumbras[penumbra.id];  // TODO remove remove remove remove
+    //penumbras.splice(penumbras.indexOf(penumbra.id), 1);
+    penumbras.splice(penumbras.indexOf(penumbra), 1);
+
+    if (penumbras.length == 0) {
+        time_ctx.clearRect(0, 0, time_canvas.width, time_canvas.height);
+        return;
+    }
 }
 
 function move_penumbra_left () {
@@ -190,7 +190,7 @@ function draw_penumbra (penumbra) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = canvas.style.width = (penumbra.upper_edge - penumbra.lower_edge) * line_width;
-    canvas.height = canvas.style.width = 100;
+    canvas.height = canvas.style.height = 76;
     ctx.lineWidth = line_width;
 
     ctx.fillStyle = 'white';
@@ -260,37 +260,60 @@ function draw_penumbra (penumbra) {
     penumbra.draw_energy_text(float_to_step_precision((penumbra.lower_edge + 1) * penumbra.settings.step + penumbra.settings.lower, penumbra.settings.step) + "GV", 8, 50);  
     penumbra.draw_energy_text(float_to_step_precision(penumbra.upper_edge * penumbra.settings.step + penumbra.settings.lower, penumbra.settings.step) + "GV", penumbra.canvas.width - 8, 50);  
 
-    //draw_time();
+    draw_time(penumbra);
 }
 
 
-function draw_time () {
-    if (!active) return;
+function draw_time (penumbra) {
+    time_canvas.height = time_canvas.style.height = 76;
+    time_canvas.width = time_canvas.style.width = (penumbra.upper_edge - penumbra.lower_edge) * line_width;
 
-    ctx.lineWidth = 1;
-    
-    const max_height = 60;   // maximum time graph height, in pixels
-    for (let i = 1; i < upper_edge - lower_edge; i++) {
-        if (lower_edge + i >= data.particles.length) {
+    time_ctx.fillStyle = 'white';
+    time_ctx.rect(0, 0, time_canvas.width, time_canvas.height);
+    time_ctx.fill();
+
+    if (!penumbra.cursor_present) return;
+
+    //penumbra.canvas.after(time_canvas); // experimental
+
+    time_ctx.fillStyle = 'black';
+    time_ctx.font = primary_font;
+    time_ctx.lineWidth = 1;
+
+    const max_height = 50;   // maximum time graph height, in pixels
+    for (let i = 1; i < penumbra.upper_edge - penumbra.lower_edge; i++) {
+        if (penumbra.lower_edge + i >= penumbra.data.particles.length) {
             break;
         }
 
-        const height = normalize(data.particles[lower_edge + i][2], time_min, time_max) * max_height; 
-        const previous_height = normalize(data.particles[lower_edge + i-1][2], time_min, time_max) * max_height;
+        const height = normalize(penumbra.data.particles[penumbra.lower_edge + i][2], time_min, time_max) * max_height; 
+        const previous_height = normalize(penumbra.data.particles[penumbra.lower_edge + i-1][2], time_min, time_max) * max_height;
+        //console.log(normalize(penumbra.data.particles[penumbra.lower_edge + i][2], time_min, time_max));
 
-        ctx.beginPath();
-        ctx.moveTo(i* line_width + line_width/2.0, 155-height);
-        ctx.lineTo((i-1) * line_width + line_width/2.0, 155-previous_height);
-        ctx.strokeStyle = "black";
-        ctx.stroke();
+        time_ctx.beginPath();
+        time_ctx.moveTo(i* line_width + line_width/2.0, 60-height);
+        time_ctx.lineTo((i-1) * line_width + line_width/2.0, 60-previous_height);
+        time_ctx.strokeStyle = "black";
+        time_ctx.stroke();
     }
 
-    const peek_particle = get_peek_particle();
-    if (peek_particle != undefined && cursor_present) {
+
+    const peek_particle = get_peek_particle(penumbra);
+    if (peek_particle != undefined && penumbra.cursor_present) {
         const height = normalize(peek_particle[2], time_min, time_max) * max_height;
-        draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-height + 5)
-        ctx.fillRect(energy_to_x(peek_energy), 155-height - 2.5, 5, 5);   
+        draw_time_text(peek_particle[2] + "s", penumbra.energy_to_x(peek_energy) + 10, 60-height + 5)
+        time_ctx.fillRect(penumbra.energy_to_x(peek_energy), 60-height - 2.5, 5, 5);   
     }
+}
+
+
+function draw_time_text(text, x, y) {
+    const width = time_ctx.measureText(text).width;
+    if (x > time_canvas.width - width) x -= width + 18;
+    time_ctx.fillStyle = "white";
+    time_ctx.fillRect(x - 6, y - 15, width + 10, 22);
+    time_ctx.fillStyle = "black";
+    time_ctx.fillText(text, x, y);
 }
 
 // strange 
@@ -301,6 +324,6 @@ function get_trace_at (penumbra, energy) {
     return null;
 }
 
-function get_peek_particle () {
-    return data.particles[Math.round(peek_energy / step) - 1];
+function get_peek_particle (penumbra) {
+    return penumbra.data.particles[Math.round(peek_energy / penumbra.settings.step) - 1];
 }
