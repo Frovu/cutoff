@@ -6,6 +6,7 @@ const defaults = {
     params: {
         //date: "2020.01.01",
     	//time: "12:00:00",
+        name: "",
     	swdp: "0.5",
     	dst: "-30.0",
     	imfBy: "-7.8",
