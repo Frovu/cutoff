@@ -49,9 +49,9 @@ function init() {
     const earthMaterial = new THREE.MeshLambertMaterial( { map: earthTexture } );
 	const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 	// rotating the earth by some magic numbers so traces will be drawn as they should
-	earthMesh.rotation.x = (23.44 / 2) * (Math.PI/180);
-	earthMesh.rotation.y = 0;
-	earthMesh.rotation.z = (-23.44) * (Math.PI/180);
+	//earthMesh.rotation.x = (23.44 / 2) * (Math.PI/180);
+	//earthMesh.rotation.y = 0;
+	earthMesh.rotation.z = (23.44) * (Math.PI/180);
 	camera.up = new THREE.Vector3(0, 1, 0);
 	camera.position.z = 9;
 	camera.position.y = 5;
@@ -69,6 +69,7 @@ function render(now) {
 	context.viewport(0, 0, context.canvas.width, context.canvas.height);
 	if (!isNaN($("#cameraSpeed").val()))
 		controls.autoRotateSpeed = $("#cameraSpeed").val() / 6.0;
+		controls.autoRotateSpeed = 0;
     renderer.render(scene, camera);
 	controls.update();
 	record_gif ();
