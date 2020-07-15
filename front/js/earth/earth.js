@@ -69,7 +69,6 @@ function render(now) {
 	context.viewport(0, 0, context.canvas.width, context.canvas.height);
 	if (!isNaN($("#cameraSpeed").val()))
 		controls.autoRotateSpeed = $("#cameraSpeed").val() / 6.0;
-		controls.autoRotateSpeed = 0;
     renderer.render(scene, camera);
 	controls.update();
 	record_gif ();
