@@ -243,7 +243,7 @@ function add_instance_element (instance) {
     instance_item.onclick = async() => {
         if (active_instances[id]) {
             unselect_instance(id);
-        } else {
+        } else if (instance.completed) {
             select_instance(id);
             await fetch_instance(id);
         }

@@ -11,7 +11,7 @@ let step = 0.1;
 let viewport_position = 1;
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
-const line_width = 5;
+const line_width = 7;
 const max_lines_onscreen = Math.floor(800.0 / line_width);
 
 let time_min = 1000;
