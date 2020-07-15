@@ -43,8 +43,6 @@ async function create_instance(settings) {
     });
     if(response) {
         if (response.ok) {
-            //const json = await response.json();
-            //fetch_instance(json.id);
             console.log("creating instance");
             update_instance_list();
         } else {
@@ -89,8 +87,6 @@ async function delete_instance(id) {
     });
     if(response) {
         if(response.ok) {
-            //if (active_instances[id]) hide_penumbra(instancePenumbras[id]);
-            //delete active_instances[id];
             if (active_instances[id]) unselect_instance (id);   // TODO if(instances[id].active)
 			delete instances[id];
 			return true;
@@ -259,7 +255,7 @@ function add_instance_element (instance) {
         name_item.className = "mb-1 text-white";
         model_item.className = "text-light";
         progressbar_item.className = "progress-bar border border-white";
-        delete_item.className = "mb-1 text-danger bg-light ";
+        delete_item.className = "mb-1 text-white";
     } else {
         instance_item.className = "list-group-item list-group-item-action flex-column align-items-start";
         description_item.className = "mb-1";
