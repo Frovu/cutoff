@@ -76,7 +76,6 @@ module.exports.create = function(ini, user, callback) {
 			log(err);
 			callback(false);
 		}
-		delete ini.name;
 		instances[id] = {
 			status: 'processing',
 			created: new Date(),
@@ -131,7 +130,7 @@ module.exports.getOwned = async function(user) {
 	// append running instances
 	for(const id in instances) {
 		if(instances[id].owner == user && instances[id].status == 'processing')
-			list.push({id: id, settings: instances[id].settings, created: instances[id].created});
+			list.push({id: id, name: instances[id].name, settings: instances[id].settings, created: instances[id].created});
 	}
 	for(const i of result) {
 		delete i.owner;

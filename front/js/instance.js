@@ -174,7 +174,6 @@ async function update_instance_list() {
 
 		const name_item = document.createElement("h5");
 		name_item.className = "mb-1";
-        console.log(instance.name)
         name_item.innerHTML = instance.name ||
             (isStation(instance.settings.lat, instance.settings.lon) || `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`);
 
