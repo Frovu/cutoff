@@ -1,6 +1,9 @@
 const progress_update_interval_ms = 500;
-let instances = {};			// instances at the dashboard
+
+let instances = {};
 let progressBars = {};
+let instancePenumbras = {}; // TODO huge workaround; use penumbra.js penumbras instead
+
 const defaults = {
     areHtml: ['model', 'step'],
     params: {
@@ -71,6 +74,8 @@ async function delete_instance(id) {
     });
     if(response) {
         if(response.ok) {
+            console.log("Deleting instance. Penumbra: " + instancePenumbras[id])
+            if (instancePenumbras[id] != undefined) hide_penumbra(instancePenumbras[id]);
 			delete instances[id];
 			return true;
 		} else if(response.status == 401) {
@@ -116,7 +121,7 @@ async function fetch_instance(id) {
         			clone.model = this.model;
         			return clone;
     			}
-				add_penumbra(instances[id]);
+                instancePenumbras[id] = add_penumbra(instances[id]);
             }
 
             return resp;
@@ -166,6 +171,7 @@ async function update_instance_list() {
 	for(const instance of json.instances) {
         instance.settings.datetime = new Date(instance.settings.datetime);
 		const id = instance.id;
+        let penumbra;
 		instances[id] = instance;
 
 		const list_group_item = document.createElement("a");

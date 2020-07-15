@@ -26,6 +26,7 @@ let Penumbra = (function(instance, canvas) {
     this.cursor_present = false,
     this.lower_edge = 0,
     this.upper_edge = 0,
+    this.traces = [];
 
 
     this.set_edges = function () {
@@ -88,7 +89,6 @@ let Penumbra = (function(instance, canvas) {
 });
 
 
-
 // INIT PART START
 function add_penumbra (instance) {
     const canvas = document.createElement("canvas");
@@ -97,7 +97,6 @@ function add_penumbra (instance) {
     parent.prepend(canvas);
     let penumbra = new Penumbra(instance, canvas);
 
-    //viewport_position = 1;
     const temp_time_min = get_min_flight_time (penumbra);
     const temp_time_max = get_max_flight_time (penumbra);
     if (temp_time_min < time_min) time_min = temp_time_min;
@@ -108,6 +107,8 @@ function add_penumbra (instance) {
     penumbras.push(penumbra);
 
     draw_penumbra(penumbra);
+
+    return penumbra;
 }
 
 function add_event_listeners (penumbra) {
@@ -152,6 +153,13 @@ function get_min_flight_time (penumbra) {
 // INIT PART END
 
 
+function hide_penumbra (penumbra) {
+    penumbra.canvas.remove();
+    for (const trace of penumbra.traces) {
+        delete_trace(traces.indexOf(trace));
+    }
+    delete penumbras[penumbras.indexOf(penumbra)];
+}
 
 function move_penumbra_left () {
     viewport_position -= move_value;

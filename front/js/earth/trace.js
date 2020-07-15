@@ -92,6 +92,8 @@ function add_trace (penumbra, energy, data) {
 	const trace = new Trace(penumbra, energy, color, line, time);
 	scene.add(trace.mesh);
 	traces.push(trace);
+	penumbra.traces.push(trace);
+
 	current_trace = trace;
 
 	update_info();
@@ -155,8 +157,13 @@ function delete_all_traces () {
 	}
 }
 
+//TODO pass trace object, not index
 function delete_trace (index) {
 	const trace = traces[index];
+	if (!trace) {
+		console.log("Trying to delete non-existent trace (ok)");
+		return;
+	}
 	if (trace == current_trace) {
 		stop_timeouts(trace)
 	}
@@ -197,9 +204,9 @@ function update_info () {
 		const energy = trace.energy + " GV";
 		const time = trace.time + " sec";
 		const model = get_model_by_id(s.model).name;
-		info.innerHTML += `<div style="display: inline-block; color: ${trace.color}" onmouseover='solo_trace(${i})' onmouseleave='unsolo_trace(${i})'>${model}<br>${location}, ${altitude}<br>${energy}<br>${time}</div> <br><a onclick='delete_trace(${i})'>[ X ]</a>  `;
+		info.innerHTML += `<div style="display: inline-block; color: ${trace.color}" onmouseover='solo_trace(${i})' onmouseleave='unsolo_trace(${i})'><a>${model}<br>${location}, ${altitude}<br>${energy}<br>${time}</a></div> <br><a onclick='delete_trace(${i})'>[ X ]</a>  `;
 		info.innerHTML += '<br><br>';
 	}
-
+	
 	if (traces.length > 1) info.innerHTML += "<a onclick='delete_all_traces()'>[ Clear ]";
 }
