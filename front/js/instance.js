@@ -1,5 +1,6 @@
 const progress_update_interval_ms = 500;
 
+let active_instances = {};
 let instances = {};
 let progressBars = {};
 let instancePenumbras = {}; // TODO huge workaround; use penumbra.js penumbras instead
@@ -42,8 +43,9 @@ async function create_instance(settings) {
     });
     if(response) {
         if (response.ok) {
-            const json = await response.json();
-            fetch_instance(json.id);
+            //const json = await response.json();
+            //fetch_instance(json.id);
+            console.log("creating instance");
             update_instance_list();
         } else {
             switch (response.status) {
@@ -90,8 +92,8 @@ async function delete_instance(id) {
 }
 
 async function fetch_instance(id) {
-	if(instances[id] && instances[id].data)
-		return instances[id];
+	//if(instances[id] && instances[id].data)
+	//	return instances[id];
     const response = await fetch('instance/' + id, {
         method: 'GET'
     }).catch((error) => {
@@ -121,6 +123,9 @@ async function fetch_instance(id) {
         			clone.model = this.model;
         			return clone;
     			}
+
+                active_instances[id] = true;
+                update_instance_list();
                 instancePenumbras[id] = add_penumbra(instances[id]);
             }
 
@@ -165,6 +170,12 @@ async function update_instance_list() {
         return show_error("Server didn't respond or some error occurred");
 
 	const json = await response.json();
+    json.instances.sort(function(a, b){
+        // Turn your strings into dates, and then subtract them
+        // to get a value that is either negative, positive, or zero.
+        return new Date(b.created) - new Date(a.created);
+    });
+
 	instances = {};
 	progressBars = {};
 	document.getElementById("instances-list").innerHTML = "";
@@ -220,8 +231,32 @@ async function update_instance_list() {
 		list_group_item.appendChild(delete_item);
 
 		list_group_item.onclick = async() => {
-			await fetch_instance(id);
+            if (instancePenumbras[id]) {   // in other words, if this instance is clicked. TODO(?) refactor
+                hide_penumbra(instancePenumbras[id]);
+                delete active_instances[id];
+                update_instance_list();
+            } else {
+                active_instances[id] = true;
+                await fetch_instance(id);
+                update_instance_list();
+            }
 		};
+
+        if (active_instances[id]) {
+            list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start active";
+            description_item.className = "mb-1 text-white";
+            name_item.className = "mb-1 text-white";
+            model_item.className = "text-light";
+            progressbar_item.className = "progress-bar border border-white";
+            delete_item.className = "mb-1 text-danger bg-light ";
+        } else {
+            list_group_item.className = "list-group-item list-group-item-action flex-column align-items-start";
+            description_item.className = "mb-1";
+            name_item.className = "mb-1";
+            model_item.className = "text-muted";
+            progressbar_item.className = "progress-bar";
+            delete_item.className =  "mb-1 text-danger";
+        }
 
 		document.getElementById("instances-list").appendChild(list_group_item);
 	}

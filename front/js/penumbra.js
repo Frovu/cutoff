@@ -94,7 +94,8 @@ function add_penumbra (instance) {
     const canvas = document.createElement("canvas");
     canvas.classList = "center penumbra";
     const parent = document.getElementById("penumbras-container");
-    parent.prepend(canvas);
+    //parent.prepend(canvas);
+    parent.appendChild(canvas);
     let penumbra = new Penumbra(instance, canvas);
 
     const temp_time_min = get_min_flight_time (penumbra);
@@ -158,6 +159,8 @@ function hide_penumbra (penumbra) {
     for (const trace of penumbra.traces) {
         delete_trace(traces.indexOf(trace));
     }
+
+    delete instancePenumbras[penumbra.id];  // TODO fix fix fix fix
     delete penumbras[penumbras.indexOf(penumbra)];
 }
 
@@ -246,6 +249,17 @@ function draw_penumbra (penumbra) {
         penumbra.draw_peek_energy_text (peek_energy + "GV", penumbra.energy_to_x(peek_energy) + 12 , 75)
     }
 
+    ctx.fillStyle = 'white';
+    ctx.font = secondary_font;
+
+    //shit
+    penumbra.settings.lower = parseFloat(penumbra.settings.lower);
+    penumbra.settings.upper = parseFloat(penumbra.settings.upper);
+    penumbra.settings.step = parseFloat(penumbra.settings.step);
+
+    penumbra.draw_energy_text(float_to_step_precision((penumbra.lower_edge + 1) * penumbra.settings.step + penumbra.settings.lower, penumbra.settings.step) + "GV", 8, 50);  
+    penumbra.draw_energy_text(float_to_step_precision(penumbra.upper_edge * penumbra.settings.step + penumbra.settings.lower, penumbra.settings.step) + "GV", penumbra.canvas.width - 8, 50);  
+
     //draw_time();
 }
 
@@ -277,11 +291,6 @@ function draw_time () {
         draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 155-height + 5)
         ctx.fillRect(energy_to_x(peek_energy), 155-height - 2.5, 5, 5);   
     }
-
-    ctx.fillStyle = 'white';
-    ctx.font = secondary_font;
-    draw_energy_text(float_to_step_precision((lower_edge + 1) * settings.step + settings.lower) + "GV", 8, 50);  
-    draw_energy_text(float_to_step_precision(upper_edge * settings.step + settings.lower) + "GV", canvas.width - 8, 50);  
 }
 
 // strange 
