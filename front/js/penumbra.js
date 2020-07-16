@@ -205,11 +205,13 @@ function hide_penumbra(id) {
 
 function move_penumbra_left () {
     pos.e -= pos.move_val;
+    if(pos.e < pos.e_min) pos.e = pos.e_min;
     move_penumbras();
 }
 
 function move_penumbra_right () {
     pos.e += pos.move_val;
+    if(pos.e + pos.len*pos.step > pos.e_max) pos.e = pos.e_max-pos.len*pos.step;
     move_penumbras();
 }
 
@@ -319,11 +321,14 @@ function draw_time() {
             const peek_particle = p.particles.find(e => e && e[0] === peek_energy);
             if(!peek_particle) continue;
             const height = normalize(peek_particle[2], pos.time_min, pos.time_max) * max_height;
-            let x = energy_to_x(peek_energy) + 10;
-            const y = 60 - height + 5;
             const text = peek_particle[2] + "s";
+            const w = time_ctx.measureText(text).width;
+
+            let x = energy_to_x(peek_energy) + 7;
+            if (x + w > pos.len * line_width) x -= w + 13;
+            const y = 60 - height + 5;
             time_ctx.fillStyle = "white";
-            time_ctx.fillRect(x - 6, y - 15, time_ctx.measureText(text).width + 10, 22);
+            time_ctx.fillRect(x, y - 13, w + 10, 13);
             time_ctx.fillStyle = "black";
             time_ctx.fillText(text, x, y);
 
