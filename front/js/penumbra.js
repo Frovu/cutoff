@@ -194,8 +194,11 @@ function hide_penumbra(id) {
         delete_trace(traces.indexOf(trace));
     penumbras.splice(penumbras.indexOf(penumbra), 1);
 
-    if (penumbras.length == 0)
+    if(penumbras.length == 0) {
         time_ctx.clearRect(0, 0, time_canvas.width, time_canvas.height);
+        pos.e = 0;
+        pos.e_max = 0;
+    }
 
     init_penumbras(); // reinit penumbras (in case if max step changed or smh)
 }
