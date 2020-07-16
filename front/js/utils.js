@@ -88,5 +88,5 @@ async function fetch_JSON (callback, path) {
 
 // value normalization
 function normalize (value, min, max) {
-    return (value - min)/(max - min);
+    return max === min ? 0 : (value - min) / (max - min);
 }

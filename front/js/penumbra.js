@@ -35,7 +35,7 @@ function energy_to_x(energy) {
     return Math.round((energy - pos.e) / pos.step * line_width);
 }
 
-let Penumbra = (function(instance, canvas) {
+let Penumbra = function(instance, canvas) {
     this.id = instance.id;
     this.data = instance.data;
     this.settings = instance.settings;
@@ -60,7 +60,7 @@ let Penumbra = (function(instance, canvas) {
         this.ctx.fillText(text, x, y);
         this.ctx.fillText(text, x, y);
     }
-});
+};
 
 function add_penumbra(instance) {
     const row = document.createElement("div");
@@ -107,6 +107,7 @@ function init_penumbras() {
     const p0 = penumbras[0];
     pos.step = p0.settings.step;
     pos.step_changed = false;
+    pos.len = 0;
     pos.e_min = p0.data.particles[0][0];
     pos.e_max = p0.data.particles[p0.data.particles.length-1][0];
 
@@ -121,7 +122,7 @@ function init_penumbras() {
     for(const p of penumbras) {
         if(pos.len < max_len) {
             let l = p.data.particles.length;
-            l *= pos.step / p.settings.step;
+            l /= pos.step / p.settings.step;
             if(l > pos.len) pos.len = l > max_len ? max_len : l;
         }
         let em = p.data.particles[0][0];
@@ -132,11 +133,13 @@ function init_penumbras() {
     // move the frame so the R eff of the first penumbra will be in the middle
     // do this only if the effective is truly determined
     if(p0.data.lower > pos.e_min)
-        pos.e = p0.data.effective - (pos.step * max_len/2); // TODO: round
+        pos.e = Math.round((p0.data.effective - (pos.step * max_len/2))*10000)/10000;
     if(pos.e < pos.e_min)
         pos.e = pos.e_min;
-    pos.move_val = pos.step * Math.ceil(max_len * move_value);
+    // round up to step
+    pos.e = pos.step * Math.ceil(pos.e/pos.step);
 
+    pos.move_val = pos.step * Math.ceil(max_len * move_value);
     move_penumbras();
 }
 
@@ -154,11 +157,12 @@ function move_penumbras() {
             e = Math.round(e*10000)/10000;
             const particle = p.data.particles.find(p => p[0] === e);
             p.particles.push(particle || null);
-            if(particle[2] > pos.time_max) pos.time_max = particle[2];
-            if(particle[2] < pos.time_min) pos.time_min = particle[2];
+            if(particle && particle[2] > pos.time_max) pos.time_max = particle[2];
+            if(particle && particle[2] < pos.time_min) pos.time_min = particle[2];
         }
-        draw_penumbra(p);
     }
+    for(const p of penumbras)
+        draw_penumbra(p);
 }
 
 function add_event_listeners (penumbra) {
@@ -191,6 +195,8 @@ function hide_penumbra(id) {
 
     if (penumbras.length == 0)
         time_ctx.clearRect(0, 0, time_canvas.width, time_canvas.height);
+        
+    init_penumbras(); // reinit penumbras (in case if max step changed or smh)
 }
 
 function move_penumbra_left () {
@@ -203,7 +209,7 @@ function move_penumbra_right () {
     move_penumbras();
 }
 
-function draw_penumbra (penumbra) {
+function draw_penumbra(penumbra) {
     const ctx = penumbra.ctx;
     const canvas = penumbra.canvas;
     const data = penumbra.data;
@@ -244,12 +250,10 @@ function draw_penumbra (penumbra) {
             height = 45;
             penumbra.draw_energy_text ("R low", energy_to_x(particle[0]) - ctx.measureText("R low").width - 3, 72);
         }
-
         if (particle[0] == data.upper && data.upper != penumbra.settings.upper) {
             height = 45;
             penumbra.draw_energy_text ("R upp", energy_to_x(particle[0]) + 7, 72);
         }
-
         /*if (particle[0] == data.effective && data.effective != penumbra.settings.lower && data.effective != penumbra.settings.upper) {
             height = 45;
             penumbra.draw_energy_text ("eff", energy_to_x(particle[0]) - ctx.measureText("eff").width / 2 + 3 , 72);
@@ -261,28 +265,21 @@ function draw_penumbra (penumbra) {
         ctx.strokeStyle = color;
         ctx.stroke();
     }
+
     ctx.fillStyle = 'black';
     ctx.font = primary_font;
-    if (penumbra.cursor_present) {
-        penumbra.draw_peek_energy_text (peek_energy + "GV", energy_to_x(peek_energy) + 12 , 75)
-    }
+    if (penumbra.cursor_present)
+        penumbra.draw_peek_energy_text(peek_energy + "GV", energy_to_x(peek_energy) + 12 , 75)
 
     ctx.fillStyle = 'white';
     ctx.font = secondary_font;
-
-    //shit
-    penumbra.settings.lower = parseFloat(penumbra.settings.lower);
-    penumbra.settings.upper = parseFloat(penumbra.settings.upper);
-    penumbra.settings.step = parseFloat(penumbra.settings.step);
-
     penumbra.draw_energy_text(pos.e + "GV", 8, 50);
-    penumbra.draw_energy_text(pos.e + pos.len*pos.step + "GV", penumbra.canvas.width - 8, 50);
-
-    draw_time(penumbra);
+    penumbra.draw_energy_text(penumbra.particles[penumbra.particles.length-1][0] + "GV", penumbra.canvas.width - 8, 50);
+    draw_time();
 }
 
 
-function draw_time (penumbra) {
+function draw_time() {
     time_canvas.height = time_canvas.style.height = 76;
     time_canvas.width = time_canvas.style.width = pos.len * line_width;
 
@@ -306,24 +303,22 @@ function draw_time (penumbra) {
             time_ctx.strokeStyle = p.cursor_present ? "black" : "gray";
             time_ctx.stroke();
         }
+        if(p.cursor_present) {
+            const peek_particle = p.particles.find(e => e && e[0] === peek_energy);
+            //console.log(peek_energy, peek_particle)
+            if(!peek_particle) continue;
+            const height = normalize(peek_particle[2], pos.time_min, pos.time_max) * max_height;
+            let x = energy_to_x(peek_energy) + 10;
+            const y = 60 - height + 5;
+            const text = peek_particle[2] + "s";
+            time_ctx.fillStyle = "white";
+            time_ctx.fillRect(x - 6, y - 15, time_ctx.measureText(text).width + 10, 22);
+            time_ctx.fillStyle = "black";
+            time_ctx.fillText(text, x, y);
+
+            time_ctx.fillRect(energy_to_x(peek_energy), 60 - height - 2.5, 5, 5);
+        }
     }
-
-    if(penumbra.cursor_present) {
-        const peek_particle = penumbra.particles.find(e => e[0] === peek_energy);
-        const height = normalize(peek_particle[2], pos.time_min, pos.time_max) * max_height;
-        draw_time_text(peek_particle[2] + "s", energy_to_x(peek_energy) + 10, 60-height + 5)
-        time_ctx.fillRect(energy_to_x(peek_energy), 60-height - 2.5, 5, 5);
-    }
-}
-
-
-function draw_time_text(text, x, y) {
-    const width = time_ctx.measureText(text).width;
-    if (x > time_canvas.width - width) x -= width + 18;
-    time_ctx.fillStyle = "white";
-    time_ctx.fillRect(x - 6, y - 15, width + 10, 22);
-    time_ctx.fillStyle = "black";
-    time_ctx.fillText(text, x, y);
 }
 
 // strange

@@ -195,7 +195,6 @@ async function update_instance_list() {
 function add_instance_element (instance) {
     instance.settings.datetime = new Date(instance.settings.datetime);
     const id = instance.id;
-    let penumbra;
     instances[id] = instance;
 
     const instance_item = document.createElement("a");
