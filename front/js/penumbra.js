@@ -154,7 +154,7 @@ function move_penumbras() {
     for(const p of penumbras) {
         // initialize data so it will draw fast cause only needed particles left
         p.particles = [];
-        for(let e = pos.e; e < pos.e + pos.step * pos.len; e+=pos.step) {
+        for(let e = pos.e; e <= Math.round((pos.e+pos.step*(pos.len-1))*10000)/10000; e+=pos.step) {
             e = Math.round(e*10000)/10000;
             const particle = p.data.particles.find(p => p[0] === e);
             p.particles.push(particle || null);
@@ -278,9 +278,9 @@ function draw_penumbra(penumbra) {
     let last = null;
     for(let i=penumbra.particles.length-1; !last && i>0; --i)
         last = penumbra.particles[i];
+    penumbra.draw_energy_text(pos.e + "GV", 5, 50);
+    last && penumbra.draw_energy_text(last[0] + "GV", (last[0] - pos.e) / pos.step * line_width - ctx.measureText(last[0] + "GV").width, 50);
 
-    penumbra.draw_energy_text(pos.e + "GV", 8, 50);
-    last && penumbra.draw_energy_text(last[0] + "GV", penumbra.canvas.width - 8, 50);
     draw_time();
 }
 
@@ -298,7 +298,10 @@ function draw_time() {
     time_ctx.lineWidth = 1;
 
     const max_height = 50;   // maximum time graph height, in pixels
-    for (const p of penumbras) {
+
+    const sorted = penumbras.filter(p => !p.cursor_present)
+        .concat(penumbras.filter(p => p.cursor_present)); // very shitty workaround for highlighted time line to be abouve others
+    for (const p of sorted) {
         for (let i = 1; i < pos.len; i++) {
             if(!p.particles[i] || !p.particles[i-1]) continue;
             const height = normalize(p.particles[i][2], pos.time_min, pos.time_max) * max_height;
@@ -311,7 +314,6 @@ function draw_time() {
         }
         if(p.cursor_present) {
             const peek_particle = p.particles.find(e => e && e[0] === peek_energy);
-            //console.log(peek_energy, peek_particle)
             if(!peek_particle) continue;
             const height = normalize(peek_particle[2], pos.time_min, pos.time_max) * max_height;
             let x = energy_to_x(peek_energy) + 10;
