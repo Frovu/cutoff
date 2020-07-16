@@ -1,3 +1,5 @@
+// maybe we will use this someday
+
 /*
 const progress = document.getElementById('progress');
 let processing = false;

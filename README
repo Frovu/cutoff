@@ -102,12 +102,29 @@ SQL TABLES:
     ) ENGINE=InnoDB;
 
     CREATE TABLE IF NOT EXISTS `instances` (
-      `id` VARCHAR(36) NOT NULL,
+      `id` CHAR(36) NOT NULL,
       `owner` int NOT NULL,
       `name` varchar(255),
-      `settings` varchar(255) NOT NULL,
       `created` DATETIME NOT NULL,
       `completed` DATETIME NOT NULL,
+      `datetime` DATETIME NOT NULL,
+      `swdp` FLOAT,
+      `dst` FLOAT,
+      `imfBy` FLOAT,
+      `imfBz` FLOAT,
+      `g1` FLOAT,
+      `g2` FLOAT,
+      `kp` FLOAT,
+      `model` CHAR(2),
+      `alt` FLOAT,
+      `lat` FLOAT,
+      `lon` FLOAT,
+      `vertical` FLOAT,
+      `azimutal` FLOAT,
+      `lower` FLOAT,
+      `upper` FLOAT,
+      `step` FLOAT,
+      `flightTime` FLOAT,
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB;
 

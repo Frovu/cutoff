@@ -31,13 +31,25 @@ else // clear lost instances
 		}
 	}, config.time / 4));*/
 
-const iniOrder = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
+const iniOrder = ['swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
+
+function serializeIni(ini, trace) {
+	// parse datetime
+	const d = new Date(ini.datetime);
+	const date = `${d.getDate()>9?'':0}${d.getDate()}.${d.getMonth()>8?'':0}${d.getMonth()+1}.${d.getFullYear()}`;
+	const time = d.toISOString().split('T')[1].replace(/\..*/, '');
+	return  `
+${date}\n${time}
+${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
+${trace||(ini.lower!=0?ini.lower:ini.step)}
+${trace||ini.upper}
+${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+}
 
 function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].settings;
-	const initxt = `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
-${trace||(parseFloat(ini.lower)!=0?ini.lower:ini.step)}\n${trace||ini.upper}\n${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+	const initxt = serializeIni(ini, trace);
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
 	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
 	cutoff.on('exit', (code, signal)=>{
@@ -68,7 +80,8 @@ module.exports.create = function(ini, user, callback) {
 			status: 'processing',
 			created: new Date(),
 			owner: user,
-			settings: ini
+			settings: ini,
+			name: ini.name
 		};
 		let instance = spawnCutoff(id, null, async(code, signal, initxt) => {
 			delete running[id];
@@ -84,13 +97,20 @@ module.exports.create = function(ini, user, callback) {
 				const owner = instances[id].owner;
 				if(owner) {
 					try {
-						const q = `insert into instances(id, owner, settings, created, completed) values(?,?,?,FROM_UNIXTIME(?/1000),FROM_UNIXTIME(?/1000))`;
-				        await query(q, [id, owner, initxt, instances[id].created.getTime(), Date.now()]);
+						let vals = [id, owner, instances[id].created.getTime(),
+							Date.now(), instances[id].settings.datetime].concat(
+							Object.values(instances[id].settings).slice(1));
+						if(ini.name)
+							vals.push(ini.name)
+						const q = `insert into instances(id, owner, created, completed, datetime,
+${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.repeat(3)+',?'.repeat(iniOrder.length+(ini.name?1:0))});`;
+				        await query(q, vals);
 					} catch(e) {
 				        log(e)
 						return false;
 				    }
 				}
+				delete instances[id].settings.name;
 			} else {
 				instances[id].status = 'failed';
 				instances[id].completed = new Date();
@@ -106,26 +126,24 @@ module.exports.create = function(ini, user, callback) {
 
 module.exports.getOwned = async function(user) {
 	let list = [];
-	const result = await query(`select id, name, settings, created, completed from instances where owner=?`, [user]);
-	list = list.concat(result.map(r => Object.assign({}, r)));
+	const result = await query(`select * from instances where owner=?`, [user]);
 	// append running instances
 	for(const id in instances) {
 		if(instances[id].owner == user && instances[id].status == 'processing')
-			list.push({id: id, created: instances[id].created});
+			list.push({id: id, name: instances[id].name, settings: instances[id].settings, created: instances[id].created});
 	}
-	// set ini's, restore if needed
-	for(const i in list) {
-		const id = list[i].id;
-		if(instances[id] && instances[id].status == 'processing') {
-			list[i].settings = instances[id].settings;
-		} else {
-			const ini = list[i].settings.split('\n').slice(1);
-			list[i].settings = {};
-			for(const j in iniOrder)
-				list[i].settings[iniOrder[j]] = ini[j];
+	for(const i of result) {
+		delete i.owner;
+		const a = {};
+		a.settings = {};
+		for(const p in i) {
+			if(iniOrder.includes(p) || p == 'datetime')
+				a.settings[p] = i[p];
+			else
+				a[p] = i[p];
 		}
+		list.push(a);
 	}
-	//console.log(list)
 	return list;
 };
 
@@ -141,12 +159,11 @@ module.exports.exist = async function(id) {
 				created: new Date(result[0].created),
 				completed: new Date(result[0].completed),
 				owner: result[0].owner,
-				status: 'completed',
-				settings: {}
+				status: 'completed'
 			};
-			const ini = result[0].settings.split('\n').slice(1);
-			for(const i in iniOrder)
-				instances[id].settings[iniOrder[i]] = ini[i];
+			instances[id].settings = {datetime: result[0].datetime}
+			for(const i of iniOrder)
+				instances[id].settings[i] = result[0][i];
 			log(`Restored instance: ${id}`);
 		} else {
 			delete instances[id];

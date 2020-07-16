@@ -14,8 +14,8 @@ window.addEventListener('resize', function(event){
 });
 
 function resize () {
-	canvas_el.style.width ='70%';
-	canvas_el.style.height ='70%';
+	canvas_el.style.width ='65%';
+	canvas_el.style.height ='65%';
 	let width = canvas_el.clientWidth;
     let height = canvas_el.clientHeight;
     if (canvas_el.width != width || canvas_el.height != height) {
@@ -49,9 +49,9 @@ function init() {
     const earthMaterial = new THREE.MeshLambertMaterial( { map: earthTexture } );
 	const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 	// rotating the earth by some magic numbers so traces will be drawn as they should
-	earthMesh.rotation.x = (23.44 / 2) * (Math.PI/180);
-	earthMesh.rotation.y = 0;
-	earthMesh.rotation.z = (-23.44) * (Math.PI/180);
+	//earthMesh.rotation.x = (23.44 / 2) * (Math.PI/180);
+	//earthMesh.rotation.y = 0;
+	earthMesh.rotation.z = (23.44) * (Math.PI/180);
 	camera.up = new THREE.Vector3(0, 1, 0);
 	camera.position.z = 9;
 	camera.position.y = 5;
