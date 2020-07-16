@@ -148,7 +148,7 @@ function move_penumbras() {
     // hide arroews if needed
     const arrow_left = document.getElementById("arrow_left");
     const arrow_right = document.getElementById("arrow_right");
-    arrow_left.style.visibility = pos.e > pos.e_min ? "visible" : "hidden";
+    arrow_left.style.visibility = pos.e > pos.e_min && pos.e > pos.step ? "visible" : "hidden";
     arrow_right.style.visibility = pos.e + pos.step*pos.len < pos.e_max ? "visible" : "hidden";
     pos.time_min = 9999; pos.time_max = 0; // readjust time graph scale
     for(const p of penumbras) {
