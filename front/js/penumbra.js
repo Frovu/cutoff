@@ -12,7 +12,8 @@ let viewport_position = 1;
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
 const line_width = 7;
-const max_lines_onscreen = Math.floor(600.0 / line_width);
+const max_penumbra_width = 600.0;
+const max_lines_onscreen = Math.floor(max_penumbra_width / line_width);
 
 let time_min = 1000;
 let time_max = 0;
@@ -84,22 +85,16 @@ let Penumbra = (function(instance, canvas) {
 
 // INIT PART START
 function add_penumbra (instance) {
-    /*
-    <div class="row">
-        <div class="col-sm">
-    */
-
     const row = document.createElement("div");
     row.classList = "row align-items-center";
     const text_col = document.createElement("div");
-    text_col.style = "pointer-events: none;";
+    text_col.style = "pointer-events: none; position: relative; top: 14px;";
     text_col.classList = "col-sm pr-0";
-    //text_col.style = "padding-right: 0px;"
     row.appendChild(text_col);
 
     const text = document.createElement("p");
-    text.classList = "text-white text-right noselect h6";
-    text.innerHTML = `<br><br><b>${instance.name || (isStation(instance.settings.lat, instance.settings.lon) ||
+    text.classList = "text-white text-right noselect h6 mb-0";
+    text.innerHTML = `<b>${instance.name || (isStation(instance.settings.lat, instance.settings.lon) ||
 `( ${instance.settings.lat.toFixed(2)}°, ${instance.settings.lon.toFixed(2)}° )`)}</b>. ${instance.settings.vertical}°/${instance.settings.azimutal}°, ${get_model_by_id(instance.settings.model).name}<br>lower: ${instance.data.lower} GV<br>upper: ${instance.data.upper} GV<br>effective: <b>${instance.data.effective} GV</b>`;
     text_col.appendChild(text);
 
@@ -115,12 +110,15 @@ function add_penumbra (instance) {
     stuff_col.classList = "col-sm";
     row.appendChild(stuff_col);
 
-
     const parent = document.getElementById("penumbras-container");
     //parent.prepend(canvas);
     parent.appendChild(row);
     let penumbra = new Penumbra(instance, canvas);
 
+    // experimental  experimental  experimental  experimental  experimental  experimental 
+    viewport_position = Math.floor(penumbra.energy_to_x(instance.data.effective) / max_penumbra_width)+1;
+    if (viewport_position < 1) viewport_position = 1;
+    // experimental  experimental  experimental  experimental  experimental  experimental 
 
     const temp_time_min = get_min_flight_time (penumbra);
     const temp_time_max = get_max_flight_time (penumbra);
@@ -301,7 +299,6 @@ function draw_time (penumbra) {
     time_ctx.rect(0, 0, time_canvas.width, time_canvas.height);
     time_ctx.fill();
 
-    //if (!penumbra.cursor_present) return;
     //penumbra.canvas.after(time_canvas); // experimental
 
     time_ctx.fillStyle = 'black';
@@ -323,7 +320,7 @@ function draw_time (penumbra) {
             time_ctx.moveTo(i* line_width + line_width/2.0, 60-height);
             time_ctx.lineTo((i-1) * line_width + line_width/2.0, 60-previous_height);
             if (p == penumbra && p.cursor_present) time_ctx.strokeStyle = "black";
-            else time_ctx.strokeStyle = "gray";
+            else time_ctx.strokeStyle = "lightgray";
             time_ctx.stroke();
         }
     }
