@@ -144,6 +144,7 @@ function init_penumbras() {
 }
 
 function move_penumbras() {
+    pos.e = Math.round(pos.e*10000)/10000; // a bit crunchy, huh
     // hide arroews if needed
     const arrow_left = document.getElementById("arrow_left");
     const arrow_right = document.getElementById("arrow_right");
@@ -195,7 +196,7 @@ function hide_penumbra(id) {
 
     if (penumbras.length == 0)
         time_ctx.clearRect(0, 0, time_canvas.width, time_canvas.height);
-        
+
     init_penumbras(); // reinit penumbras (in case if max step changed or smh)
 }
 
@@ -273,8 +274,13 @@ function draw_penumbra(penumbra) {
 
     ctx.fillStyle = 'white';
     ctx.font = secondary_font;
+    // find last not null
+    let last = null;
+    for(let i=penumbra.particles.length-1; !last && i>0; --i)
+        last = penumbra.particles[i];
+
     penumbra.draw_energy_text(pos.e + "GV", 8, 50);
-    penumbra.draw_energy_text(penumbra.particles[penumbra.particles.length-1][0] + "GV", penumbra.canvas.width - 8, 50);
+    last && penumbra.draw_energy_text(last[0] + "GV", penumbra.canvas.width - 8, 50);
     draw_time();
 }
 
@@ -294,7 +300,7 @@ function draw_time() {
     const max_height = 50;   // maximum time graph height, in pixels
     for (const p of penumbras) {
         for (let i = 1; i < pos.len; i++) {
-            if(!p.particles[i]) continue;
+            if(!p.particles[i] || !p.particles[i-1]) continue;
             const height = normalize(p.particles[i][2], pos.time_min, pos.time_max) * max_height;
             const previous_height = normalize(p.particles[i-1][2], pos.time_min, pos.time_max) * max_height;
             time_ctx.beginPath();
