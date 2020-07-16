@@ -3,7 +3,6 @@ const progress_update_interval_ms = 500;
 let active_instances = {};
 let instances = {};
 let progressBars = {};
-let instancePenumbras = {}; // TODO huge workaround; use penumbra.js penumbras instead
 
 const defaults = {
     areHtml: ['model', 'step'],
@@ -74,7 +73,7 @@ function select_instance (id) {
 
 function unselect_instance (id) {
     if (!active_instances[id]) return;
-    hide_penumbra(instancePenumbras[id]);
+    hide_penumbra(id);
     delete active_instances[id];
     update_instance_list();
 }
@@ -136,7 +135,7 @@ async function fetch_instance(id) {
 
                 active_instances[id] = true;
                 update_instance_list();
-                instancePenumbras[id] = add_penumbra(instances[id]);
+                add_penumbra(instances[id]);
             }
 
             return resp;
