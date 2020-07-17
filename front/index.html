@@ -62,19 +62,23 @@
                         <li class="nav-item">
                           <a class="nav-link" href="#">Link</a>
                       </li>-->
-                      <li class="nav-item dropdown">
-                          <a class="nav-link" onclick="show_login_modal()" id="navbarLoginButton" role="button">
+                        <a class="nav-link" onclick="show_help_modal()" id="navbarHelpButton" role="button">
+                            <svg class="t7 text-muted" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="#7C7C7D" focusable="false"><path fill="none" d="M0 0h24v24H0z"></path><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"></path></svg>
+                            Help
+                        </a>
+                        <a class="nav-link" onclick="show_login_modal()" id="navbarLoginButton" role="button">
                             Log in
                         </a>
-                        <a class="nav-link dropdown-toggle" id="navbarUsernameDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display:none">
-                            Logged in as .
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarUsernameDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display:none">
+                            Logged in as .</a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                             <!--<div class="dropdown-divider"></div>-->
                             <a class="dropdown-item" onclick="logout();">Logout</a>
                         </div>
-                    </li>
-                </ul>
+                      </li>
+                  </ul>
             </div>
         </nav>
 
