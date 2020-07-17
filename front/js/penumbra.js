@@ -14,6 +14,9 @@ const line_width = 5;
 const max_penumbra_width = 600.0;
 const max_len = Math.floor(max_penumbra_width / line_width);
 
+const time_max_min = 1;
+const time_min_max = 0.5;
+
 // position and other parameters of penumbras viewport(s)
 let pos = {
     e: 0,      // current energy at the left edge
@@ -38,7 +41,7 @@ function init_warning_text () {
     warning_text_col.classList = "col-3 align-self-center text-danger mx-auto";
     warning_text_col.id = "warning_text";
     warning_text_col.innerHTML = "Warning: you have selected instances with different energy step, the data is trimed for comparison.";
-    warning_row.appendChild(warning_text_col); 
+    warning_row.appendChild(warning_text_col);
     warning_text_element = warning_row;
 }
 
@@ -135,10 +138,10 @@ function init_penumbras() {
 
     // find the max step
     for(const p of penumbras) {
-        if(p.settings.step > pos.step) {
+        if(p.settings.step > pos.step)
             pos.step = p.settings.step;
+        if(p.settings.step != pos.step)
             pos.step_changed = true;
-        }
     }
     // adjust len and min/max energy
     for(const p of penumbras) {
@@ -196,6 +199,8 @@ function move_penumbras() {
             if(particle && particle[2] < pos.time_min) pos.time_min = particle[2];
         }
     }
+    if(pos.time_min > time_min_max) pos.time_min = time_min_max;
+    if(pos.time_max < time_max_min) pos.time_max = time_max_min;
     for(const p of penumbras)
         draw_penumbra(p);
 }
@@ -374,7 +379,7 @@ function draw_time() {
     const flight_time_text = "flight time, s";
     time_ctx.fillText(flight_time_text, time_canvas.width - time_ctx.measureText(flight_time_text).width - 4, time_canvas.height - 4);
 
-    const scale_text = `scale, s: ${(pos.time_max-pos.time_min).toFixed(3)}`;
+    const scale_text = `scale: ${(pos.time_max).toFixed(1)} s`;
     time_ctx.fillText(scale_text, 4, time_canvas.height - 4);
 }
 
