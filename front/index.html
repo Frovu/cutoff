@@ -349,6 +349,100 @@
         </div>
     </div>
 </div>
+
+<!-- help modal -->
+<div class="modal fade" id="help_modal" tabindex="-1" role="dialog" aria-labelledby="help" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-body">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link" id="settings_help_tab" onclick="select_help_tab('settings');" href="#">1. Settings</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="instances_help_tab" onclick="select_help_tab('instances');" href="#">2. Calculations</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rigidities_help_tab" onclick="select_help_tab('rigidities');" href="#">3. Rigidities</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="trajectories_help_tab" onclick="select_help_tab('trajectories');" href="#">4. Trajectories</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-info" id="advices_help_tab" onclick="select_help_tab('advices');" href="#"><i>Advices</i></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-info" id="physics_help_tab" onclick="select_help_tab('physics');" href="#"><i>Physics</i></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-info" id="credit_help_tab" onclick="select_help_tab('credit');" href="#"><i>Credit</i></a>
+          </li>
+        </ul>
+        <br>
+        <span id="startup_help_text">
+        First, <b>log in</b> or create a new account with your <i>e-mail</i> and <i>password.</i><br>Then, view this manual in order, clicking on tabs on top.
+        </span>
+
+        <span id="settings_help_text">
+        <h4>Calculation Settings</h4>
+        Click on the <b>Create New Calculation...</b> button. A window with your <b>calculation settings</b> will pop-up. For a quick test you can select a station from the list and click <b>Calculate</b> button.<br><br>
+
+        When choosing different magnetosphere models, new settings may appear. You can also give a <b>name</b> to the calculation for recognition. <br><br>Some advices about rigidity range setting practice are given in the <i><span class="text-info">Advices</span></i> section.
+        </span>
+
+        <span id="instances_help_text">
+        <h4>Calculations</h4>
+        After clicking <b>Calculate</b> button your calculation will appear on the list on the left. You can observe it's progress until it's completed. <br><br>
+
+        When the calculation is complete it will be automatically <b>selected</b>. You can manually <i>select</i> and <i>unselect</i> calculations by <b>clicking</b> on their card.<br><br>
+
+        If you've made a mistake or the calculation is not useful anymore, you can press <b>Delete</b> button on it's card.
+        </span>
+
+        <span id="rigidities_help_text">
+        <h4>Rigidities and time graph</h4>
+        For all selected calculations <b>time graph</b> and <b>rigidity ranges</b> will be drawn under the earth. Their ranges may not include all resulting rigidities. You can move viewed range by clicking on the <b>arrows</b>.<br><br><b>Hover your mouse</b> over the rigidity range. It will highlight pointed particle <b>energy</b> and it's <b>flight time.</b>
+        </span>
+
+        <span id="trajectories_help_text">
+        <h4>Particle trajectories</h4>
+        Clicking on the particles will draw their flying <b>trajectory.</b><br><br>Drawn traces are listed on the left. Click on the <i>[X]</i> to erase one. Hover your mouse over trace description, and other traces will be hidden.<br><br>
+
+        You can mouse scroll to zoom, or mouse drag to rotate the earth.
+        </span>
+
+        <span id="advices_help_text">
+        <h4>User advices</h4>
+        Current host is not the fastest machine, so it's better to remember that higher models (+T96, +T02) can take a lot of time to calculate, so we encourage you to use precise step (0.001 GV) on a smaller ranges of rigidities that are more interesting, such as edges of allowed range, and before it use a bigger step for getting general picture.
+        </span>
+
+        <span id="physics_help_text">
+        <h4>Physics</h4>
+        <a href="Belov_cutoff2050_17jul.pdf" target="_blank" rel="noopener noreferrer">NMDB@Home Symposium presentation (pdf)</a>
+        </span>
+
+        <span id="credit_help_text">
+        <h4>Credit</h4>
+            Email for feedback and technical support: <b>cutoff@izmiran.ru</b><br><br>
+
+            frontend: <b>Zobnin Georgii</b><br>
+            backend: <b>Belov Semyon</b><br><br>
+
+            calculations: <b>Gvozdevsky Boris</b><br><br>
+
+            Pushkov Institute of Terrestrial Magnetism, Ionosphere and Radio Wave Propagation, 
+            IZMIRAN, Kaluzhskoe Hwy 4, Troitsk, Moscow, Russia<br><br>
+
+            2019-2020
+        </span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 
 <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
@@ -370,4 +464,5 @@
 <script src="./js/earth/recorder.js"></script>
 <script src="./js/earth/trace.js"></script>
 <script src="./js/earth/earth.js"></script>
+<script src="./js/help.js"></script>
 </html>

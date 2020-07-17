@@ -6,12 +6,16 @@ const secondary_font = "12px Arial";
 
 let peek_energy;
 let penumbras = [];
+let warning_text_element;
 
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
 const line_width = 5;
 const max_penumbra_width = 600.0;
 const max_len = Math.floor(max_penumbra_width / line_width);
+
+const time_max_min = 1;
+const time_min_max = 0.5;
 
 // position and other parameters of penumbras viewport(s)
 let pos = {
@@ -24,6 +28,17 @@ let pos = {
     move_val: 2, // move val in energy
     step_changed: false,
     len: 0 // number of particles on the screen
+}
+
+init_warning_text ();
+
+function init_warning_text () {
+    const warning_text = document.createElement("div");
+    warning_text.style = "pointer-events: none;";
+    warning_text.classList = "col-3 align-self-center text-warning mx-auto pt-2 text-center";
+    warning_text.id = "warning_text";
+    warning_text.innerHTML = "some data is trimmed for comparison purposes";
+    warning_text_element = warning_text;
 }
 
 // x in range of 0 - max_penumbra_width
@@ -65,10 +80,13 @@ let Penumbra = function(instance, canvas) {
 function add_penumbra(instance) {
     const row = document.createElement("div");
     row.classList = "row align-items-center";
+    row.style = "margin-left: 0px !important;"
     const text_col = document.createElement("div");
     text_col.style = "pointer-events: none; position: relative; top: 14px;";
-    text_col.classList = "col-sm pr-0";
+    text_col.classList = "col pr-0";
     row.appendChild(text_col);
+
+
 
     const text = document.createElement("p");
     text.classList = "text-white text-right noselect h6 mb-0";
@@ -77,20 +95,24 @@ function add_penumbra(instance) {
     text_col.appendChild(text);
 
     const canvas_col = document.createElement("div");
-    canvas_col.classList = "col-sm";
+    canvas_col.classList = "col";
     row.appendChild(canvas_col);
 
     const canvas = document.createElement("canvas");
     canvas.classList = "center penumbra";
     canvas_col.appendChild(canvas);
 
+    // TODO useless, if we don't want anything to show on the right (but we want)
     const stuff_col = document.createElement("div");
-    stuff_col.classList = "col-sm";
+    stuff_col.classList = "col";
     row.appendChild(stuff_col);
+
+
 
     const parent = document.getElementById("penumbras-container");
     //parent.prepend(canvas);
     parent.appendChild(row);
+
     let penumbra = new Penumbra(instance, canvas);
 
     add_event_listeners(penumbra);
@@ -113,10 +135,10 @@ function init_penumbras() {
 
     // find the max step
     for(const p of penumbras) {
-        if(p.settings.step > pos.step) {
-            pos.step = p.settings.step;
+        if (p.settings.step !== pos.step)
             pos.step_changed = true;
-        }
+        if (p.settings.step > pos.step)
+            pos.step = p.settings.step;
     }
     // adjust len and min/max energy
     for(const p of penumbras) {
@@ -140,6 +162,16 @@ function init_penumbras() {
     pos.e = pos.step * Math.ceil(pos.e/pos.step);
 
     pos.move_val = pos.step * Math.ceil(max_len * move_value);
+
+    
+    if (pos.step_changed) {
+        const parent = document.getElementById("penumbras-container");
+        parent.appendChild(warning_text_element);
+        $("#warning_text").show();
+    } else {
+        $("#warning_text").hide();
+    }
+
     move_penumbras();
 }
 
@@ -162,6 +194,8 @@ function move_penumbras() {
             if(particle && particle[2] < pos.time_min) pos.time_min = particle[2];
         }
     }
+    if(pos.time_min > time_min_max) pos.time_min = time_min_max;
+    if(pos.time_max < time_max_min) pos.time_max = time_max_min;
     for(const p of penumbras)
         draw_penumbra(p);
 }
@@ -291,7 +325,7 @@ function draw_penumbra(penumbra) {
 
 
 function draw_time() {
-    time_canvas.height = time_canvas.style.height = 76;
+    time_canvas.height = time_canvas.style.height = 84;
     time_canvas.width = time_canvas.style.width = pos.len * line_width;
 
     time_ctx.fillStyle = 'white';
@@ -335,6 +369,13 @@ function draw_time() {
             time_ctx.fillRect(energy_to_x(peek_energy), 60 - height - 2.5, 5, 5);
         }
     }
+
+    time_ctx.fillStyle = "black";
+    const flight_time_text = "flight time, s";
+    time_ctx.fillText(flight_time_text, time_canvas.width - time_ctx.measureText(flight_time_text).width - 4, time_canvas.height - 4);
+
+    const scale_text = `scale: ${(pos.time_max).toFixed(1)} s`;
+    time_ctx.fillText(scale_text, 4, time_canvas.height - 4);
 }
 
 // strange
