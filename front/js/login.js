@@ -93,7 +93,7 @@ async function register () {
         document.getElementById("reg-email").classList.add('is-invalid');
         const feedback = document.createElement('div');
         feedback.className = "invalid-feedback";
-        feedback.innerHTML = "Doesn't seem like valid email";
+        feedback.innerHTML = "Email is not valid";
         document.getElementById("reg-email").parentNode.appendChild(feedback);
         return;
     }
