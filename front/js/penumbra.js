@@ -33,16 +33,12 @@ let pos = {
 init_warning_text ();
 
 function init_warning_text () {
-    const warning_row = document.createElement("div");
-    warning_row.classList = "row align-items-center";
-    warning_row.id = "warning_text_row";
-    const warning_text_col = document.createElement("div");
-    warning_text_col.style = "pointer-events: none;";
-    warning_text_col.classList = "col-3 align-self-center text-danger mx-auto";
-    warning_text_col.id = "warning_text";
-    warning_text_col.innerHTML = "Warning: you have selected instances with different energy step, the data is trimed for comparison.";
-    warning_row.appendChild(warning_text_col);
-    warning_text_element = warning_row;
+    const warning_text = document.createElement("div");
+    warning_text.style = "pointer-events: none;";
+    warning_text.classList = "col-3 align-self-center text-warning mx-auto pt-2 text-center";
+    warning_text.id = "warning_text";
+    warning_text.innerHTML = "some data is trimmed for comparison purposes";
+    warning_text_element = warning_text;
 }
 
 // x in range of 0 - max_penumbra_width
@@ -84,9 +80,10 @@ let Penumbra = function(instance, canvas) {
 function add_penumbra(instance) {
     const row = document.createElement("div");
     row.classList = "row align-items-center";
+    row.style = "margin-left: 0px !important;"
     const text_col = document.createElement("div");
     text_col.style = "pointer-events: none; position: relative; top: 14px;";
-    text_col.classList = "col-sm pr-0";
+    text_col.classList = "col pr-0";
     row.appendChild(text_col);
 
 
@@ -98,7 +95,7 @@ function add_penumbra(instance) {
     text_col.appendChild(text);
 
     const canvas_col = document.createElement("div");
-    canvas_col.classList = "col-sm";
+    canvas_col.classList = "col";
     row.appendChild(canvas_col);
 
     const canvas = document.createElement("canvas");
@@ -107,7 +104,7 @@ function add_penumbra(instance) {
 
     // TODO useless, if we don't want anything to show on the right (but we want)
     const stuff_col = document.createElement("div");
-    stuff_col.classList = "col-sm";
+    stuff_col.classList = "col";
     row.appendChild(stuff_col);
 
 
@@ -138,10 +135,10 @@ function init_penumbras() {
 
     // find the max step
     for(const p of penumbras) {
-        if(p.settings.step > pos.step)
-            pos.step = p.settings.step;
-        if(p.settings.step != pos.step)
+        if (p.settings.step !== pos.step)
             pos.step_changed = true;
+        if (p.settings.step > pos.step)
+            pos.step = p.settings.step;
     }
     // adjust len and min/max energy
     for(const p of penumbras) {
@@ -166,17 +163,15 @@ function init_penumbras() {
 
     pos.move_val = pos.step * Math.ceil(max_len * move_value);
 
-    /*
+    
     if (pos.step_changed) {
-        console.log("step changed");
         const parent = document.getElementById("penumbras-container");
         parent.appendChild(warning_text_element);
-        $("warning_text").show();
+        $("#warning_text").show();
+    } else {
+        $("#warning_text").hide();
     }
-    else {
-        console.log("step not changed");
-        $("warning_text").hide();
-    }*/
+
     move_penumbras();
 }
 
