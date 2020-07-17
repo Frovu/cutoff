@@ -6,6 +6,7 @@ const secondary_font = "12px Arial";
 
 let peek_energy;
 let penumbras = [];
+let warning_text_element;
 
 const move_value = 0.3;    // 1.0 - moving every trace off screen
 
@@ -24,6 +25,21 @@ let pos = {
     move_val: 2, // move val in energy
     step_changed: false,
     len: 0 // number of particles on the screen
+}
+
+init_warning_text ();
+
+function init_warning_text () {
+    const warning_row = document.createElement("div");
+    warning_row.classList = "row align-items-center";
+    warning_row.id = "warning_text_row";
+    const warning_text_col = document.createElement("div");
+    warning_text_col.style = "pointer-events: none;";
+    warning_text_col.classList = "col-3 align-self-center text-danger mx-auto";
+    warning_text_col.id = "warning_text";
+    warning_text_col.innerHTML = "Warning: you have selected instances with different energy step, the data is trimed for comparison.";
+    warning_row.appendChild(warning_text_col); 
+    warning_text_element = warning_row;
 }
 
 // x in range of 0 - max_penumbra_width
@@ -70,6 +86,8 @@ function add_penumbra(instance) {
     text_col.classList = "col-sm pr-0";
     row.appendChild(text_col);
 
+
+
     const text = document.createElement("p");
     text.classList = "text-white text-right noselect h6 mb-0";
     text.innerHTML = `<b>${instance.name || (isStation(instance.settings.lat, instance.settings.lon) ||
@@ -84,13 +102,17 @@ function add_penumbra(instance) {
     canvas.classList = "center penumbra";
     canvas_col.appendChild(canvas);
 
+    // TODO useless, if we don't want anything to show on the right (but we want)
     const stuff_col = document.createElement("div");
     stuff_col.classList = "col-sm";
     row.appendChild(stuff_col);
 
+
+
     const parent = document.getElementById("penumbras-container");
     //parent.prepend(canvas);
     parent.appendChild(row);
+
     let penumbra = new Penumbra(instance, canvas);
 
     add_event_listeners(penumbra);
@@ -140,6 +162,18 @@ function init_penumbras() {
     pos.e = pos.step * Math.ceil(pos.e/pos.step);
 
     pos.move_val = pos.step * Math.ceil(max_len * move_value);
+
+    /*
+    if (pos.step_changed) {
+        console.log("step changed");
+        const parent = document.getElementById("penumbras-container");
+        parent.appendChild(warning_text_element);
+        $("warning_text").show();
+    }
+    else {
+        console.log("step not changed");
+        $("warning_text").hide();
+    }*/
     move_penumbras();
 }
 
@@ -291,7 +325,7 @@ function draw_penumbra(penumbra) {
 
 
 function draw_time() {
-    time_canvas.height = time_canvas.style.height = 76;
+    time_canvas.height = time_canvas.style.height = 84;
     time_canvas.width = time_canvas.style.width = pos.len * line_width;
 
     time_ctx.fillStyle = 'white';
@@ -335,6 +369,13 @@ function draw_time() {
             time_ctx.fillRect(energy_to_x(peek_energy), 60 - height - 2.5, 5, 5);
         }
     }
+
+    time_ctx.fillStyle = "black";
+    const flight_time_text = "flight time, s";
+    time_ctx.fillText(flight_time_text, time_canvas.width - time_ctx.measureText(flight_time_text).width - 4, time_canvas.height - 4);
+
+    const scale_text = `scale, s: ${(pos.time_max-pos.time_min).toFixed(3)}`;
+    time_ctx.fillText(scale_text, 4, time_canvas.height - 4);
 }
 
 // strange
