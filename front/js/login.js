@@ -86,7 +86,18 @@ async function logout () {
 }
 
 async function register () {
-    if (document.getElementById("reg-password").value != document.getElementById("reg-confirm-password").value) {
+    const email = document.getElementById("reg-email").value;
+    const pass = document.getElementById("reg-password").value;
+
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById("reg-email").classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = "invalid-feedback";
+        feedback.innerHTML = "Doesn't seem like valid email";
+        document.getElementById("reg-email").parentNode.appendChild(feedback);
+        return;
+    }
+    if (document.getElementById("reg-password").value !== document.getElementById("reg-confirm-password").value) {
         document.getElementById("reg-confirm-password").classList.add('is-invalid');
         const feedback = document.createElement('div');
         feedback.className = "invalid-feedback";
@@ -94,9 +105,15 @@ async function register () {
         document.getElementById("reg-confirm-password").parentNode.appendChild(feedback);
         return;
     }
+    if (pass.length < 6) {
+        document.getElementById("reg-password").classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = "invalid-feedback";
+        feedback.innerHTML = "Password is too short";
+        document.getElementById("reg-password").parentNode.appendChild(feedback);
+        return;
+    }
 
-    const email = document.getElementById("reg-email").value;
-    const pass = document.getElementById("reg-password").value;
     const response = await fetch('user', {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
