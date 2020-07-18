@@ -51,7 +51,7 @@ app.use(require('compression')({ level: 9 }));
 app.use(bodyParser.json()); // for parsing application/json
 
 // TODO: remove on production
-app.use(express.static('./front/'));
+//app.use(express.static('./front/'));
 
 // clear cookie if not logged in
 app.use(async (req, res, next) => {
