@@ -116,7 +116,7 @@ async function fetch_instance(id) {
                 show_error("Some critical error occurred during calculations");
 
 			instances[id] = resp;
-
+console.log(instances[id])
             if(resp.status == "completed") {
             	instances[id].id = id;	// k
 				instances[id].settings.dublicate = function () {
@@ -188,6 +188,7 @@ async function update_instance_list() {
 
 	document.getElementById("instances-list").innerHTML = "";
 	for(const instance of json.instances) {
+if (!instance.settings) instance.settings = instance;
         add_instance_element(instance);
 	}
 }
