@@ -1,7 +1,7 @@
 const particles_limit = 10000;
 let valueranges;
-const params = ['date', 'time', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2',
-'kp', 'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
+const params = ['date', 'time', 'kp', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'g3',
+'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper',
 'step', 'flightTime'];
 
 fetch_JSON(function(response) {

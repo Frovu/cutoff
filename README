@@ -114,6 +114,7 @@ SQL TABLES:
       `imfBz` FLOAT,
       `g1` FLOAT,
       `g2` FLOAT,
+      `g3` FLOAT,
       `kp` FLOAT,
       `model` CHAR(2),
       `alt` FLOAT,

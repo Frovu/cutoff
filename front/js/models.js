@@ -1,11 +1,12 @@
-const model_params = [params[2], params[3], params[4], params[5], params[6], params[7], params[8]];
+const model_params = [params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9]];
 
 const models = [
     new Model('Dipole', '00', []),
     new Model('IGRF', '10', []),
-    new Model('IGRF+T89', '89', [params[8]]),
-    new Model('IGRF+T96', '96', [params[2], params[3], params[4], params[5]]),
-    new Model('IGRF+T01', '01', [params[2], params[3], params[4], params[5], params[6], params[7]])
+    new Model('IGRF+T89', '89', [params[2]]),
+    new Model('IGRF+T96', '96', [params[3], params[4], params[5], params[6]]),
+    new Model('IGRF+T01', '01', [params[3], params[4], params[5], params[6], params[7], params[8]]),
+    new Model('IGRF+T01_S', '03', [params[3], params[4], params[5], params[6], params[7], params[8], params[9]])
 ];
 
 function Model (name, id, params) {

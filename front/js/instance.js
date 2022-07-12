@@ -16,6 +16,7 @@ const defaults = {
     	imfBz: "-2.9",
     	g1: "1.8",
     	g2: "7.0",
+    	g3: "10.0",
     	kp: "2",
     	model: "IGRF",
     	alt: "20.0",

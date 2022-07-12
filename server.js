@@ -40,7 +40,7 @@ process.on('unhandledRejection', error => {
 const app = express();
 app.use(session({
 	key: 'session_id',
-	secret: '',
+	secret: process.env.SECRET,
 	resave: false,
 	saveUninitialized: true,
 	cookie: { maxAge: 7*24*3600000, sameSite: true }
@@ -52,7 +52,7 @@ app.use(require('compression')({ level: 9 }));
 app.use(bodyParser.json()); // for parsing application/json
 
 // TODO: remove on production
-//app.use(express.static('./front/'));
+app.use(express.static('./front/'));
 
 // clear cookie if not logged in
 app.use(async (req, res, next) => {
@@ -66,7 +66,7 @@ app.use('/instance', require('./routes/instance.js'));
 app.use('/user', require('./routes/user.js'));
 
 // handle error
-app.use((err, req, res)=>{
+app.use((err, req, res, next)=>{
 	global.log(`Error hadling request: ${err.stack}`);
 	res.status(500).json({message: 'some error occured'});
 });

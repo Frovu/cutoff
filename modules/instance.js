@@ -32,7 +32,7 @@ else // clear lost instances
 		}
 	}, config.time / 4));*/
 
-const iniOrder = ['swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'kp',
+const iniOrder = ['kp', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'g3',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
 function serializeIni(ini, trace) {
