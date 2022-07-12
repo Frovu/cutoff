@@ -1,5 +1,5 @@
 // assert Cutoff.ini values
-const ranges = require('../'+config.valueRanges);
+const ranges = require('../'+global.config.valueRanges);
 
 module.exports = function(ini) {
 	// check value ranges
@@ -24,7 +24,7 @@ module.exports = function(ini) {
 	// forbid calculations that are about to take really much time
 	if(['96', '01'].includes(ini.model) &&
 	(parseFloat(ini.upper) - parseFloat(ini.lower)) /  parseFloat(ini.step)
-	 								> (ini.model==='01'?4000:8000))
+									> (ini.model==='01'?4000:8000))
 		return false;
 	// all checks passed
 	return true;

@@ -38,11 +38,11 @@ router.get('/', async(req, res) => {
 // request instance status/data
 router.get('/:id', (req, res) => {
 	const resp = instance.get(req.id);
-    const status = resp.status;
-    if(status === 'processing')
-        resp.percentage = instance.percentage(req.id);
-    else if(status === 'completed') {
-        resp.data = instance.data(req.id);
+	const status = resp.status;
+	if(status === 'processing')
+		resp.percentage = instance.percentage(req.id);
+	else if(status === 'completed') {
+		resp.data = instance.data(req.id);
 		if(!resp.data)
 			resp.status = 'zombie';
 	}
@@ -52,12 +52,12 @@ router.get('/:id', (req, res) => {
 // request trace data
 router.get('/:id/:trace', (req, res) => {
 	if(instance.available(req.id)) {
-        instance.trace(req.id, req.params.trace, (data) => {
-            if(data)
-                res.status(200).json(data);
-            else
-                res.status(500).json({message: 'failed'});
-        });
+		instance.trace(req.id, req.params.trace, (data) => {
+			if(data)
+				res.status(200).json(data);
+			else
+				res.status(500).json({message: 'failed'});
+		});
 	} else
 		res.status(102).json({message: 'instance is procesing'});
 });
@@ -65,7 +65,7 @@ router.get('/:id/:trace', (req, res) => {
 // set instance name
 router.post('/:id/name', async(req, res) => {
 	if(await instance.setName(req.id, req.body.name))
-    	res.status(200).json({message: 'renamed'});
+		res.status(200).json({message: 'renamed'});
 	else
 		res.status(500).json({message: 'failed'});
 });
@@ -73,14 +73,14 @@ router.post('/:id/name', async(req, res) => {
 // kill running process
 router.post('/:id/kill', async(req, res) => {
 	await instance.kill(req.id);
-    res.status(200).json({message: 'killed'});
+	res.status(200).json({message: 'killed'});
 });
 
 router.param('id', async(req, res, next, id) => {
-    if(!(await instance.exist(id)))
-        return res.status(404).json({message: 'instance not found'});
-    if(!instance.hasAccess(id, req.session.userId, req.session.guest))
-        return res.status(403).json({message: 'access forbidden'});
+	if(!(await instance.exist(id)))
+		return res.status(404).json({message: 'instance not found'});
+	if(!instance.hasAccess(id, req.session.userId, req.session.guest))
+		return res.status(403).json({message: 'access forbidden'});
 	req.id = id;
 	next();
 });

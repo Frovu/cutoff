@@ -4,6 +4,7 @@ const uuid = require('uuid/v4');
 const path = require('path');
 const { spawn } = require('child_process');
 
+const config = global.config, log = global.log, query = global.query;
 let instances = {};
 let running = {};
 // create instances directory if not exists
@@ -11,7 +12,7 @@ if(!fs.existsSync(config.instancesDir))
 	fs.mkdirSync(config.instancesDir);
 else // clear lost instances
 	fs.readdir(path.join(config.instancesDir), async(err, files) => {
-        const result = await query(`select id from instances`);
+		const result = await query('select id from instances');
 		const stored = result.map(i => i.id); let i=0;
 		for(const f of files) {
 			if(!stored.includes(f)) {
@@ -19,8 +20,8 @@ else // clear lost instances
 				++i;
 			}
 		}
-		log(`Removed ${i} unowned instances`);;
-});
+		log(`Removed ${i} unowned instances`);
+	});
 
 /*setInterval(() =>
 	Object.keys(instances).forEach(el => {
@@ -51,10 +52,10 @@ function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].settings;
 	const initxt = serializeIni(ini, trace);
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)})
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)});
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
-		onExit(code, signal, initxt);
+		onExit(code, signal);
 	});
 	return running[id] = {
 		type: trace?'trace':'instance',
@@ -83,9 +84,9 @@ module.exports.create = function(ini, user, callback) {
 			settings: ini,
 			name: ini.name
 		};
-		let instance = spawnCutoff(id, null, async(code, signal, initxt) => {
+		let instance = spawnCutoff(id, null, async(code, signal) => {
 			delete running[id];
-			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawned)/1000} seconds`)
+			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawned)/1000} seconds`);
 			if(code === null) {
 				return;	// process killed by signal
 			} else if(code === 0) {
@@ -101,14 +102,14 @@ module.exports.create = function(ini, user, callback) {
 							Date.now(), instances[id].settings.datetime].concat(
 							Object.values(instances[id].settings).slice(1));
 						if(ini.name)
-							vals.push(ini.name)
+							vals.push(ini.name);
 						const q = `insert into instances(id, owner, created, completed, datetime,
 ${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.repeat(3)+',?'.repeat(iniOrder.length+(ini.name?1:0))});`;
-				        await query(q, vals);
+						await query(q, vals);
 					} catch(e) {
-				        log(e)
+						log(e);
 						return false;
-				    }
+					}
 				}
 				delete instances[id].settings.name;
 			} else {
@@ -117,7 +118,7 @@ ${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.r
 			}
 		});
 		log(`Spawned instance of owner (${user}): ${id}`);
-		instance.cutoff.stdout.on('data', data => {
+		instance.cutoff.stdout.on('data', () => {
 			instance.linesGot++;
 		});
 		callback(id);
@@ -126,7 +127,7 @@ ${iniOrder.join()}${ini.name?',name':''}) values(?,?${',FROM_UNIXTIME(?/1000)'.r
 
 module.exports.getOwned = async function(user) {
 	let list = [];
-	const result = await query(`select * from instances where owner=?`, [user]);
+	const result = await query('select * from instances where owner=?', [user]);
 	// append running instances
 	for(const id in instances) {
 		if(instances[id].owner == user && instances[id].status == 'processing')
@@ -149,11 +150,11 @@ module.exports.getOwned = async function(user) {
 
 // cache instance if not cached since this is callen before any other action
 module.exports.exist = async function(id) {
-	if(instances.hasOwnProperty(id))
+	if (id in instances)
 		return true;
-    try {
+	try {
 		if(!fs.existsSync(config.instancesDir, id)) return false;
-        const result = await query(`select * from instances where id=?`, [id]);
+		const result = await query('select * from instances where id=?', [id]);
 		if(result.length > 0) {
 			instances[id] = {
 				created: new Date(result[0].created),
@@ -161,18 +162,18 @@ module.exports.exist = async function(id) {
 				owner: result[0].owner,
 				status: 'completed'
 			};
-			instances[id].settings = {datetime: result[0].datetime}
+			instances[id].settings = {datetime: result[0].datetime};
 			for(const i of iniOrder)
 				instances[id].settings[i] = result[0][i];
 			log(`Restored instance: ${id}`);
 		} else {
 			delete instances[id];
 		}
-        return result.length > 0;
-    } catch(e) {
-        log(e)
+		return result.length > 0;
+	} catch(e) {
+		log(e);
 		return false;
-    }
+	}
 };
 
 module.exports.data = function(id) {
@@ -197,7 +198,7 @@ module.exports.data = function(id) {
 };
 
 module.exports.available = function(id) {
-	return id ? !running.hasOwnProperty(id) : Object.keys(running).length < config.maxRunningInstances;
+	return id ? !running[id] : Object.keys(running).length < config.maxRunningInstances;
 };
 
 module.exports.hasAccess = function(id, user, guest) {
@@ -205,7 +206,7 @@ module.exports.hasAccess = function(id, user, guest) {
 };
 
 module.exports.get = function(id) {
-	const obj = Object.assign({}, instances[id])
+	const obj = Object.assign({}, instances[id]);
 	delete obj.owner;
 	return obj;
 };
@@ -221,7 +222,7 @@ module.exports.trace = function(id, energy, callback) {
 
 module.exports.setName = async function(id, name) {
 	try {
-		await query(`update instances set name=? where id=?`, [name, id]);
+		await query('update instances set name=? where id=?', [name, id]);
 	} catch (e) {
 		return false;
 	}
@@ -235,9 +236,9 @@ module.exports.kill = async function(id) {
 	} catch(e) {
 		log(e);
 	}
-	await query(`delete from instances where id=?`, [id]);
+	await query('delete from instances where id=?', [id]);
 	const toKill = running[id];
 	if(toKill)
 		toKill.cutoff.kill('SIGHUP');
 	log(`Deleted instance: ${id}`);
-}
+};
