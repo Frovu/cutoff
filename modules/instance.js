@@ -76,7 +76,7 @@ function spawnCutoff(id, trace, onExit) {
 async function runCones(id) {
 	const start = new Date();
 	const instance = instances[id];
-	const rigidities = [999, 100, 50, 10]; // FIXME
+	const rigidities = [999, 100, 50, 30, 40, 20, 10]; // FIXME
 	const settings = serializeIni(instance.settings, false, true) + '\n' + rigidities.join('\n');
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniCones), settings);
 	const cones = spawn('wine', [path.join(process.cwd(), config.execCones)],
@@ -221,14 +221,14 @@ module.exports.data = function(id) {
 	}
 	try {
 		const text = fs.readFileSync(path.join(config.instancesDir, id, config.datCones));
-		const lines = text.split(/\r?\n/).slice(1);
+		const lines = text.toString().split(/\r?\n/).slice(1, -1);
 		instances[id].data.cones = lines.map(l => {
-			const sp = l.split(/\s+/);
+			const sp = l.split(/\s\s+/);
 			const rig = Number(sp[0]);
 			if (l.indexOf(',') > 0) return [rig, null, null];
 			return [rig, Number(sp[1]), Number(sp[2])];
 		});
-	} catch(e) { } // eslint-disable-line
+	} catch(e) { console.log(e); }
 	return instances[id].data;
 };
 

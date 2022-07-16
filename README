@@ -40,8 +40,10 @@ API REFERENCE:
             200 {
                 status,
                 ?percentage,
+                ?cones, // 'ok' or 'failed'
                 ?data: { // can be null if something breaks
-                    particles: [[energy, status, time], ...],
+                    ?cones: [[rigidity, lat, lon]]
+                    particles: [[rigidity, status, time], ...],
                     lower,
                     upper,
                     effective
