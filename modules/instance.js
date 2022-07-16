@@ -73,10 +73,29 @@ function spawnCutoff(id, trace, onExit) {
 	};
 }
 
-async function runCones(id) {
+function conesRigidities(cutoffRigidity) {
+	let rig = Math.ceil(cutoffRigidity * 10) / 10, res = [ rig ];
+	while (rig < Math.ceil(cutoffRigidity) + 1)
+		res.push(rig += .1);
+	while (rig < 12)
+		res.push(rig += .5);
+	while (rig < 20)
+		res.push(rig += 1.);
+	while (rig < 20)
+		res.push(rig += 1.);
+	while (rig < 75)
+		res.push(rig += 5.);
+	while (rig < 200)
+		res.push(rig += 25);
+	while (rig < 500)
+		res.push(rig += 100);
+	res.push(999.99);
+	return res;
+}
+
+async function runCones(id, rigidities) {
 	const start = new Date();
 	const instance = instances[id];
-	const rigidities = [999, 100, 50, 30, 40, 20, 10]; // FIXME
 	const settings = serializeIni(instance.settings, false, true) + '\n' + rigidities.join('\n');
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniCones), settings);
 	const cones = spawn('wine', [path.join(process.cwd(), config.execCones)],
@@ -113,13 +132,14 @@ module.exports.create = function newInstance(ini, user, callback) {
 				return; // process killed by signal
 			} else if(code === 0) {
 				instances[id].completed = new Date();
-				instances[id].status = 'completed';
 				// rename .dat file so it won't be overwritten by trace calculation
 				fs.renameSync(path.join(dir, config.datFilename), path.join(dir, 'data.dat'));
 
-				// const data = module.exports.data(id); // must be ran before cones
-				const conesStatus = await runCones(id);
+				const data = module.exports.data(id, true); // must be ran before cones
+				const rigidities = conesRigidities(data.effective);
+				const conesStatus = await runCones(id, rigidities);
 				instances[id].cones = conesStatus;
+				instances[id].status = 'completed';
 				// save instance in db
 				const owner = instances[id].owner;
 				if(owner) {
@@ -202,9 +222,7 @@ module.exports.exist = async function(id) {
 	}
 };
 
-module.exports.data = function(id) {
-	if (instances[id].data)
-		return instances[id].data;
+module.exports.data = function(id, noCones) {
 	instances[id].data = {};
 	try {
 		const text = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
@@ -219,11 +237,12 @@ module.exports.data = function(id) {
 	} catch(e) {
 		return instances[id].data = null;
 	}
+	if (noCones) return instances[id].data;
 	try {
 		const text = fs.readFileSync(path.join(config.instancesDir, id, config.datCones));
 		const lines = text.toString().split(/\r?\n/).slice(1, -1);
 		instances[id].data.cones = lines.map(l => {
-			const sp = l.split(/\s\s+/);
+			const sp = l.trim().split(/\s+/);
 			const rig = Number(sp[0]);
 			if (l.indexOf(',') > 0) return [rig, null, null];
 			return [rig, Number(sp[1]), Number(sp[2])];
