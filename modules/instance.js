@@ -40,14 +40,15 @@ function serializeIni(ini, trace, cones=false) {
 	const d = new Date(ini.datetime);
 	const date = `${d.getDate()>9?'':0}${d.getDate()}.${d.getMonth()>8?'':0}${d.getMonth()+1}.${d.getFullYear()}`;
 	const time = d.toISOString().split('T')[1].replace(/\..*/, '');
-	let text = `\n${date}\n${time}
-${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}`;
-	if (cones) {
-		text += '\n0\n-180. 180.'; // TODO: choose coordinate system (GEO [0], GSE [1] or GSM [2])
+	let text = `\n${date}\n${time}`;
+	if (cones) { // TODO: choose coordinate system (GEO [0], GSE [1] or GSM [2])
+		text += `\n${iniOrder.slice(0, -8).map(i => ini[i]).join('\n')}
+0\n-180. 180.\n#\n${iniOrder.slice(-8, -4).map(i => ini[i]).join(' ')} =\n#`;
 	} else {
-		text += `\n${trace||(ini.lower!=0?ini.lower:ini.step)}
-		${trace||ini.upper}
-		${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+		text += `\n${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
+${trace||(ini.lower!=0?ini.lower:ini.step)}
+${trace||ini.upper}
+${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
 	}
 	return text;
 }

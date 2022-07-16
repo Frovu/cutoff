@@ -4,7 +4,6 @@ const ranges = require('../'+global.config.valueRanges);
 module.exports = function(ini) {
 	// check value ranges
 	for(const param of Object.keys(ranges)) {
-		console.log(param)
 		if(!ini[param]) { // parameter was not specified
 			// fail if param is needed for every model or for current model
 			if(!ranges[param].for || ranges[param].for.includes(ini.model))

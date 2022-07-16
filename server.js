@@ -16,7 +16,6 @@ const db   = mysql.createPool({
 global.query = util.promisify(db.query).bind(db);
 
 global.config = {
-	port: 3050,
 	timeToLive: 3600000,
 	maxRunningInstances: 3,
 	instancesDir: './cutoff/',
@@ -69,11 +68,12 @@ app.use('/instance', require('./routes/instance.js'));
 app.use('/user', require('./routes/user.js'));
 
 // handle error
-app.use((err, req, res, next)=>{
+app.use((err, req, res, next) => { // eslint-disable-line
 	global.log(`Error hadling request: ${err.stack}`);
 	res.status(500).json({message: 'some error occured'});
 });
 
 // start server
-app.listen(global.config.port, () =>
-	global.log(`Server is started on port ${global.config.port}...`));
+const port = process.env.PORT || 3050;
+app.listen(port, () =>
+	global.log(`Server is started on port ${port}...`));
