@@ -35,24 +35,29 @@ else // clear lost instances
 const iniOrder = ['kp', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'g3',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
-function serializeIni(ini, trace) {
+function serializeIni(ini, trace, cones=false) {
 	// parse datetime
 	const d = new Date(ini.datetime);
 	const date = `${d.getDate()>9?'':0}${d.getDate()}.${d.getMonth()>8?'':0}${d.getMonth()+1}.${d.getFullYear()}`;
 	const time = d.toISOString().split('T')[1].replace(/\..*/, '');
-	return  `
-${date}\n${time}
-${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}
-${trace||(ini.lower!=0?ini.lower:ini.step)}
-${trace||ini.upper}
-${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+	let text = `\n${date}\n${time}
+${iniOrder.slice(0, -4).map(i => ini[i]).join('\n')}`;
+	if (cones) {
+		text += '\n0\n-180. 180.'; // TODO: choose coordinate system (GEO [0], GSE [1] or GSM [2])
+	} else {
+		text += `\n${trace||(ini.lower!=0?ini.lower:ini.step)}
+		${trace||ini.upper}
+		${ini.step}\n${ini.flightTime}\n${trace?1:0}`;
+	}
+	return text;
 }
 
 function spawnCutoff(id, trace, onExit) {
 	const ini = instances[id].settings;
 	const initxt = serializeIni(ini, trace);
 	fs.writeFileSync(path.join(config.instancesDir, id, config.iniFilename), initxt);
-	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)], {cwd: path.join(process.cwd(), config.instancesDir, id)});
+	const cutoff = spawn('wine', [path.join(process.cwd(), config.execName)],
+		{cwd: path.join(process.cwd(), config.instancesDir, id)});
 	cutoff.on('exit', (code, signal)=>{
 		delete running[id];
 		onExit(code, signal);
@@ -67,8 +72,24 @@ function spawnCutoff(id, trace, onExit) {
 	};
 }
 
+async function runCones(id) {
+	const start = new Date();
+	const instance = instances[id];
+	const rigidities = [999, 100, 50, 10]; // FIXME
+	const settings = serializeIni(instance.settings, false, true) + '\n' + rigidities.join('\n');
+	fs.writeFileSync(path.join(config.instancesDir, id, config.iniCones), settings);
+	const cones = spawn('wine', [path.join(process.cwd(), config.execCones)],
+		{cwd: path.join(process.cwd(), config.instancesDir, id)});
+	return new Promise(resolve => {
+		cones.on('exit', (code, signal) => {
+			log(`cones code=${code} sg=${signal} took ${(Date.now()-start)/1000} seconds`);
+			resolve(code === 0 ? 'ok' : 'failed');
+		});
+	});
+}
+
 module.exports.spawnCutoff = spawnCutoff;
-module.exports.create = function(ini, user, callback) {
+module.exports.create = function newInstance(ini, user, callback) {
 	const id = uuid();
 	const dir = path.join(config.instancesDir, id);
 	// create instance directory
@@ -88,12 +109,16 @@ module.exports.create = function(ini, user, callback) {
 			delete running[id];
 			log(`cutoff code=${code} sg=${signal} took ${(Date.now()-instance.spawned)/1000} seconds`);
 			if(code === null) {
-				return;	// process killed by signal
+				return; // process killed by signal
 			} else if(code === 0) {
-				instances[id].status = 'completed';
 				instances[id].completed = new Date();
-				// save .dat file with another filename
+				instances[id].status = 'completed';
+				// rename .dat file so it won't be overwritten by trace calculation
 				fs.renameSync(path.join(dir, config.datFilename), path.join(dir, 'data.dat'));
+
+				// const data = module.exports.data(id); // must be ran before cones
+				const conesStatus = await runCones(id);
+				instances[id].cones = conesStatus;
 				// save instance in db
 				const owner = instances[id].owner;
 				if(owner) {
@@ -177,23 +202,32 @@ module.exports.exist = async function(id) {
 };
 
 module.exports.data = function(id) {
-	if(instances[id].data)
+	if (instances[id].data)
 		return instances[id].data;
-	try {
-		var data = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
-	} catch(e) {
-		//log(e.stack);
-		return null;
-	}
 	instances[id].data = {};
-	// на первый взгляд спагетти, но если знать формат, то нормально
-	let arr = data.toString().split(/\r?\n/);
-	let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
-	instances[id].data.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
-	arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
-	instances[id].data.lower = arr[0];
-	instances[id].data.upper = arr[1];
-	instances[id].data.effective = arr[2];
+	try {
+		const text = fs.readFileSync(path.join(config.instancesDir, id, 'data.dat'));
+		// на первый взгляд спагетти, но если знать формат, то нормально
+		let arr = text.toString().split(/\r?\n/);
+		let arr_ = arr.splice(0, arr.indexOf('Cutoff rigidities:'));
+		instances[id].data.particles = arr_.map(el => el.trim().split(/\s+/).map(e => Number(e)));
+		arr = arr.slice(1, 4).map(el => Number(el.trim().split(/\s+/)[1]));
+		instances[id].data.lower = arr[0];
+		instances[id].data.upper = arr[1];
+		instances[id].data.effective = arr[2];
+	} catch(e) {
+		return instances[id].data = null;
+	}
+	try {
+		const text = fs.readFileSync(path.join(config.instancesDir, id, config.datCones));
+		const lines = text.split(/\r?\n/).slice(1);
+		instances[id].data.cones = lines.map(l => {
+			const sp = l.split(/\s+/);
+			const rig = Number(sp[0]);
+			if (l.indexOf(',') > 0) return [rig, null, null];
+			return [rig, Number(sp[1]), Number(sp[2])];
+		});
+	} catch(e) { } // eslint-disable-line
 	return instances[id].data;
 };
 

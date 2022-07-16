@@ -23,6 +23,9 @@ global.config = {
 	execName: 'Cutoff2050.exe',
 	iniFilename: 'CutOff.ini',
 	datFilename: 'Cutoff.dat',
+	execCones: 'Cones2050.exe',
+	iniCones: 'Cones.ini',
+	datCones: 'Cones.dat',
 	valueRanges: './front/valueranges.json'
 };
 
