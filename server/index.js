@@ -1,11 +1,11 @@
 import express from 'express';
-import session from 'session';
+import session from 'express-session';
 import fileStore from 'session-file-store';
 import { config } from 'dotenv';
 config();
 
-import logging from 'modules/logging';
-import api from 'modules/api';
+import logging from './modules/logging.js';
+import api from './modules/api.js';
 
 global.log = logging;
 
