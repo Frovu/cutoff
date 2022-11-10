@@ -10,20 +10,21 @@ function clearDeadInstances() {
 	if (!fs.existsSync(DIR))
 		return fs.mkdirSync(DIR);
 	fs.readdir(DIR, (err, files) => {
-		files.filter(file => !instances.has(file)).forEach(file => {
+		files.filter(file => !instances.get(file)).forEach(file => {
 			fs.removeSync(path.join(DIR, file));
 		});
 	});
 }
 clearDeadInstances();
 
-export function spawn(settings) {
+export function spawn(settings, owner) {
 	const id = uuid();
 	fs.mkdirSync(path.join(DIR, id));
 	instances.set(id, {
 		state: 'processing',
 		created: new Date(),
 		settings,
+		owner
 	});
 	cutoff.runCutoff(id, settings, ({ isSuccess, isFail }) => {
 		const instance = instances.get(id);

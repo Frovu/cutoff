@@ -5,9 +5,9 @@ import { config } from 'dotenv';
 config();
 
 import logging from './modules/logging.js';
+global.log = logging;
 import api from './modules/api.js';
 
-global.log = logging;
 
 const app = express();
 
@@ -15,7 +15,8 @@ app.use(session({
 	store: new (fileStore(session)),
 	secret: process.env.SECRET,
 	resave: false,
-	saveUninitialized: false
+	saveUninitialized: true,
+	cookie: {expires: new Date(253402300000000)}
 }));
 
 app.use(express.json());
