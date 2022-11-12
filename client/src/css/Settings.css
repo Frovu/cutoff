@@ -35,7 +35,19 @@ input, button, select {
 	color: inherit;
 	outline: none;
 }
+button {
+	cursor: pointer;
+	border-style: outset;
+}
+select {
+	cursor: pointer;
+}
 
 input:focus-visible, button:focus-visible, select:focus-visible {
 	border: 1px var(--color-active) solid;
+}
+
+
+button:hover, select:hover {
+	border: 1px var(--color-active) solid !important;
 }

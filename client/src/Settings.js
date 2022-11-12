@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { validateParam } from './common/validation.js';
 import stationList from './common/stations.json';
 import './css/Settings.css';
@@ -15,7 +15,7 @@ const MODEL_NAME = {
 const DEFAULT = {
 	mode: 'simple',
 	model: '10',
-	datetime: Math.floor(Date.now() / 86400_000) * 86400,
+	datetime: '2022-01-01',
 	swdp: .5,
 	alt: 20,
 	lat: 55.47,
@@ -28,62 +28,20 @@ const DEFAULT = {
 	step: .01
 };
 
-function DateInput({ datetime, callback }) {
-	const [ value, setValue ] = useState(new Date(datetime * 1e3).toISOString().replace('T', ' ').replace(/:\d\d\..*/, ''));
-	useEffect(() => {
-		let val = value.trim();
+const TRANSFORM = {
+	datetime: (text) => {
+		let val = text.trim();
 		val = (val.length < 14 ? val.split(' ')[0] + ' 00:00' : val) + 'Z';
-		val = Date.parse(val) / 1000;
-		if (val && !isNaN(val) &&  val !== datetime)
-			callback(val);
-	});
-	return (<div>
-		Date:&nbsp;
-		<div className='input'>
-			<input style={{ width: '11em' }} value={value} onChange={e => setValue(e.target.value)}></input>
-			<div className='footer'>yyyy-mm-dd hh:mm</div>
-		</div>
-	</div>);
-}
+		return Date.parse(val) / 1000;
+	},
+	mode: v => v,
+	model: v => v,
+	default: parseFloat
+};
 
-function LocationInput({ lat: iLat, lon: iLon, callback }) {
-	const [lat, setLat] = useState(iLat.toFixed(2));
-	const [lon, setLon] = useState(iLon.toFixed(2));
-	const fLat = parseFloat(lat), fLon = parseFloat(lon);
-	const station = Object.keys(stationList).find(k =>
-		stationList[k][0] === fLat && stationList[k][1] === fLon) || 'custom';
-	const latValid = !isNaN(fLat) && (fLat >= -90 && fLat <= 90);
-	const lonValid = !isNaN(fLon) && (fLon >= -180 && fLon <= 180);
-	useEffect(() => {
-		if (latValid && lonValid && (fLat !== iLat || fLon !== iLon))
-			callback(fLat, fLon);
-	});
-	return (
-		<div style={{ display: 'inline-block' }}>
-			Location:&nbsp;
-			<select value={station} onChange={(e) => {
-				const st = e.target.value;
-				setLat(stationList[st][0].toFixed(2));
-				setLon(stationList[st][1].toFixed(2));
-				callback(...stationList[st].slice(0, 2));
-			}}>
-				<option key='custom' value='custom' disabled>(custom)</option>
-				{Object.keys(stationList).map(n => <option key={n} value={n}>{n}</option>)}
-			</select>
-			&nbsp;lat=
-			<div className='input'>
-				<input style={{ width: '5em', ...(!latValid && { borderColor: 'red' }) }} type='text'
-					onChange={e => setLat(e.target.value)} value={lat}></input>
-				<div className='footer'>-90 to 90</div>
-			</div>
-			&nbsp;lon=
-			<div className='input'>
-				<input style={{ width: '5em', ...(!lonValid && { borderColor: 'red' }) }} type='text'
-					onChange={e => setLon(e.target.value)} value={lon}></input>
-				<div className='footer'>-180 to 180</div>
-			</div>
-		</div>
-	);
+function transformed(prop, value) {
+	const transform = TRANSFORM[prop] || TRANSFORM.default;
+	return transform(value);
 }
 
 export default function Settings({ callback }) {
@@ -95,16 +53,89 @@ export default function Settings({ callback }) {
 		}
 	});
 	useEffect(() => window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings)), [settings]);
+	const changeProp = (prop) => (e) => setSettings({ ...settings, [prop]: e.target.value });
+	const redIfInvalid = (prop) => !validateParam(prop, transformed(prop, settings[prop])) && ({ border: '1px red solid' });
 
+	const station = Object.keys(stationList).find(k =>
+		stationList[k][0] === parseFloat(settings.lat)
+		&& stationList[k][1] === parseFloat(settings.lon)) || 'custom';
 	return (
 		<div className='Settings'>
 			<div className='settingsLine'>
-				<LocationInput lat={settings.lat} lon={settings.lon}
-					callback={(lat, lon) => setSettings(sets => ({ ...sets, lat, lon }))}/>
-				<DateInput datetime={settings.datetime} callback={(datetime) => setSettings(sets => ({ ...sets, datetime }))}/>
+				<div>
+					Mode:&nbsp;
+					<select value={settings.mode} onChange={changeProp('mode')}>
+						<option value='simple'>simple</option>
+						<option value='advanced'>advanced</option>
+						<option value='multi'>multi</option>
+					</select>
+				</div>
+				<button style={{ color: 'var(--color-text-dark)', borderColor: 'var(--color-text-dark)', fontSize: '14px' }}
+					onClick={() => setSettings(DEFAULT)}>reset settings</button>
 			</div>
 			<div className='settingsLine'>
-				{new Date(settings.datetime * 1e3).toISOString()}
+				<div style={{ display: 'inline-block' }}>
+					Location:&nbsp;
+					<select value={station} onChange={(e) => {
+						const st = e.target.value;
+						setSettings({ ...settings, lat: stationList[st][0], lon: stationList[st][1] });
+					}}>
+						<option key='custom' value='custom' disabled>(custom)</option>
+						{Object.keys(stationList).map(n => <option key={n} value={n}>{n}</option>)}
+					</select>
+					&nbsp;lat=
+					<div className='input'>
+						<input style={{ width: '5em', ...redIfInvalid('lat') }} type='text'
+							onChange={changeProp('lat')} value={settings.lat}></input>
+						<div className='footer'>-90 to 90</div>
+					</div>
+					&nbsp;lon=
+					<div className='input'>
+						<input style={{ width: '5em', ...redIfInvalid('lon') }} type='text'
+							onChange={changeProp('lon')} value={settings.lon}></input>
+						<div className='footer'>-180 to 180</div>
+					</div>
+				</div>
+			</div>
+			<div className='settingsLine'>
+				<div>
+					Field model:&nbsp;
+					<select value={settings.model} onChange={e => setSettings({ ...settings, model: e.target.value })}>
+						{Object.entries(MODEL_NAME).map(([id, tag]) => <option key={tag} value={id}>{tag}</option>)}
+					</select>
+				</div>
+			</div>
+			<div className='settingsLine' style={{ height: '2em' }}>
+				<div>
+					Date:&nbsp;
+					<div className='input'>
+						<input style={{ width: '11em', ...redIfInvalid('datetime') }} value={settings.datetime}
+							onChange={changeProp('datetime')}></input>
+						<div className='footer'>yyyy-mm-dd hh:mm</div>
+					</div>
+				</div>
+				<div>
+					Altitude:
+					<input type='text' value={settings.alt}
+						style={{ width: '3.5em', margin: '0 6px 0 2px', ...redIfInvalid('alt') }}
+						onChange={changeProp('alt')}></input>
+					km
+				</div>
+			</div>
+			<div className='settingsLine'>
+				<div>
+					Direction:
+					vertical=
+					<input type='text' value={settings.vertical}
+						style={{ width: '3.5em', margin: '0 2px 0 2px', ...redIfInvalid('vertical') }}
+						onChange={changeProp('vertical')}></input>
+					°
+					azimuth=
+					<input type='text' value={settings.azimutal}
+						style={{ width: '3.5em', margin: '0 2px 0 2px', ...redIfInvalid('azimutal') }}
+						onChange={changeProp('azimutal')}></input>
+					°
+				</div>
 			</div>
 		</div>
 	);
