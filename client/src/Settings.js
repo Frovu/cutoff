@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { validateParam } from './common/validation.js';
 import stationList from './common/stations.json';
+import './css/Settings.css';
 
 const MODEL_NAME = {
 	'00': 'Dipole',
@@ -28,32 +29,34 @@ const DEFAULT = {
 };
 
 function LocationInput({ lat: iLat, lon: iLon, callback }) {
-	const [lat, setLat] = useState(iLat);
-	const [lon, setLon] = useState(iLon);
+	const [lat, setLat] = useState(iLat.toFixed(2));
+	const [lon, setLon] = useState(iLon.toFixed(2));
 	const fLat = parseFloat(lat), fLon = parseFloat(lon);
 	const station = Object.keys(stationList).find(k =>
 		stationList[k][0] === fLat && stationList[k][1] === fLon) || 'custom';
-	const latValid = !isNaN(fLat) && (fLat > -90 && fLat < 90);
-	const lonValid = !isNaN(fLon) && (fLon > -180 && fLon < 180);
+	const latValid = !isNaN(fLat) && (fLat >= -90 && fLat <= 90);
+	const lonValid = !isNaN(fLon) && (fLon >= -180 && fLon <= 180);
 	useEffect(() => {
 		if (latValid && lonValid && (fLat !== iLat || fLon !== iLon))
 			callback(fLat, fLon);
 	});
 	return (
 		<div style={{ display: 'inline-block' }}>
-			Location:
+			Location:&nbsp;
 			<select value={station} onChange={(e) => {
 				const st = e.target.value;
-				setLat(stationList[st][0]);
-				setLon(stationList[st][1]);
+				setLat(stationList[st][0].toFixed(2));
+				setLon(stationList[st][1].toFixed(2));
 				callback(...stationList[st].slice(0, 2));
 			}}>
 				<option key='custom' value='custom' disabled>(custom)</option>
 				{Object.keys(stationList).map(n => <option key={n} value={n}>{n}</option>)}
 			</select>
-			lat=<input style={latValid ? {} : { borderColor: 'red' }} type='text'
+			&nbsp;lat=
+			<input style={{ width: '5em', ...(!latValid && { borderColor: 'red' }) }} type='text'
 				onChange={e => setLat(e.target.value)} value={lat}></input>
-			lon=<input style={lonValid ? {} : { borderColor: 'red' }} type='text'
+			&nbsp;lon=
+			<input style={{ width: '5em', ...(!lonValid && { borderColor: 'red' }) }} type='text'
 				onChange={e => setLon(e.target.value)} value={lon}></input>
 		</div>
 	);

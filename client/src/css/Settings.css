@@ -1,0 +1,18 @@
+.Settings {
+	padding: 1em;
+}
+
+input, button, select {
+	text-align: center;
+	border: 1px var(--color-border) solid;
+	border-radius: 4px;
+	background-color: inherit;
+	font-family: inherit;
+	font-size: inherit;
+	color: inherit;
+	outline: none;
+}
+
+input:focus-visible, button:focus-visible, select:focus-visible {
+	border: 1px var(--color-active) solid;
+}
