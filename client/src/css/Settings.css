@@ -1,5 +1,28 @@
 .Settings {
 	padding: 1em;
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.settingsLine {
+	position: relative;
+	display: inline-flex;
+	gap: 2em;
+}
+
+.input {
+	display: inline-block;
+	position: relative;
+}
+
+.footer {
+	text-align: center;
+	width: 100%;
+	position: absolute;
+	bottom: -1.3em;
+	font-size: 12px;
+	color: var(--color-text-dark);
 }
 
 input, button, select {

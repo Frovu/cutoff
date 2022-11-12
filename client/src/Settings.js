@@ -28,6 +28,24 @@ const DEFAULT = {
 	step: .01
 };
 
+function DateInput({ datetime, callback }) {
+	const [ value, setValue ] = useState(new Date(datetime * 1e3).toISOString().replace('T', ' ').replace(/:\d\d\..*/, ''));
+	useEffect(() => {
+		let val = value.trim();
+		val = (val.length < 14 ? val.split(' ')[0] + ' 00:00' : val) + 'Z';
+		val = Date.parse(val) / 1000;
+		if (val && !isNaN(val) &&  val !== datetime)
+			callback(val);
+	});
+	return (<div>
+		Date:&nbsp;
+		<div className='input'>
+			<input style={{ width: '11em' }} value={value} onChange={e => setValue(e.target.value)}></input>
+			<div className='footer'>yyyy-mm-dd hh:mm</div>
+		</div>
+	</div>);
+}
+
 function LocationInput({ lat: iLat, lon: iLon, callback }) {
 	const [lat, setLat] = useState(iLat.toFixed(2));
 	const [lon, setLon] = useState(iLon.toFixed(2));
@@ -53,11 +71,17 @@ function LocationInput({ lat: iLat, lon: iLon, callback }) {
 				{Object.keys(stationList).map(n => <option key={n} value={n}>{n}</option>)}
 			</select>
 			&nbsp;lat=
-			<input style={{ width: '5em', ...(!latValid && { borderColor: 'red' }) }} type='text'
-				onChange={e => setLat(e.target.value)} value={lat}></input>
+			<div className='input'>
+				<input style={{ width: '5em', ...(!latValid && { borderColor: 'red' }) }} type='text'
+					onChange={e => setLat(e.target.value)} value={lat}></input>
+				<div className='footer'>-90 to 90</div>
+			</div>
 			&nbsp;lon=
-			<input style={{ width: '5em', ...(!lonValid && { borderColor: 'red' }) }} type='text'
-				onChange={e => setLon(e.target.value)} value={lon}></input>
+			<div className='input'>
+				<input style={{ width: '5em', ...(!lonValid && { borderColor: 'red' }) }} type='text'
+					onChange={e => setLon(e.target.value)} value={lon}></input>
+				<div className='footer'>-180 to 180</div>
+			</div>
 		</div>
 	);
 }
@@ -65,7 +89,7 @@ function LocationInput({ lat: iLat, lon: iLon, callback }) {
 export default function Settings({ callback }) {
 	const [settings, setSettings] = useState(() => {
 		try {
-			return JSON.parse(window.localStorage.getItem('cutoffCalcSettings')) || DEFAULT
+			return JSON.parse(window.localStorage.getItem('cutoffCalcSettings')) || DEFAULT;
 		} catch {
 			return DEFAULT;
 		}
@@ -74,8 +98,14 @@ export default function Settings({ callback }) {
 
 	return (
 		<div className='Settings'>
-			<LocationInput lat={settings.lat} lon={settings.lon}
-				callback={(lat, lon) => setSettings(sets => ({ ...sets, lat, lon }))}/>
+			<div className='settingsLine'>
+				<LocationInput lat={settings.lat} lon={settings.lon}
+					callback={(lat, lon) => setSettings(sets => ({ ...sets, lat, lon }))}/>
+				<DateInput datetime={settings.datetime} callback={(datetime) => setSettings(sets => ({ ...sets, datetime }))}/>
+			</div>
+			<div className='settingsLine'>
+				{new Date(settings.datetime * 1e3).toISOString()}
+			</div>
 		</div>
 	);
 }
