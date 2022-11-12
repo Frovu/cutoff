@@ -36,7 +36,7 @@ export function spawn(settings, owner) {
 		if (!settings.cones)
 			return instances.set(id, {...instance, state: 'done'});
 
-		const cutoffRigidity = data(id).effective;
+		const cutoffRigidity = data(id, false).effective;
 		cutoff.runCones(id, settings, cutoffRigidity, ({ isSuccess, isFail }) => {
 			instance.finished = new Date();
 			if (isFail)
@@ -67,7 +67,7 @@ export function status(id) {
 	};
 }
 
-export function data(id, cones=false) {
+export function data(id, cones=true) {
 	const data = {};
 	try {
 		const text = fs.readFileSync(path.join(DIR, id, 'cutoff.result'));
@@ -79,7 +79,8 @@ export function data(id, cones=false) {
 		data.lower = arr[0];
 		data.upper = arr[1];
 		data.effective = arr[2];
-		if (!cones) return data;
+		if (!cones || !fs.existsSync(path.join(DIR, id, 'cones.result')))
+			return data;
 		const conesText = fs.readFileSync(path.join(DIR, id, 'cones.result'));
 		const lines = conesText.toString().split(/\r?\n/).slice(1, -1);
 		data.cones = lines.map(l => {
