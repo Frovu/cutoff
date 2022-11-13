@@ -1,13 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, QueryClient, QueryClientProvider } from 'react-query';
 import './css/App.css';
-import Settings from './Settings.js';
+import Settings, { findStation, MODEL_NAME } from './Settings.js';
 
 const queryClient = new QueryClient();
 
-function InstanceList({ data }) {
+function InstanceCard({ id, info }) {
+	const sets = info.settings;
+	const [ state, setState ] = useState(info.state);
+	const progress = useQuery([id], async () => {
+		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id, { credentials: 'include' });
+		if (res.status !== 200)
+			return;
+		const resp = await res.json();
+		console.log(id, resp);
+		if (resp.state !== 'processing')
+			setState(resp.state);
+		return resp;
+	},
+	{
+		enabled: state === 'processing',
+		refetchInterval: 1000
+	});
+
+	const station = findStation(sets.lat, sets.lon);
+	const date = new Date(sets.datetime * 1e3).toISOString().split('T')[0];
 	return (
-		<div>{Object.keys(data).join()}</div>
+		<div className='InstanceCard'>
+			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
+				onClick={()=>{/* FIXME <u>delete</u>*/}}>&times;</span>
+			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
+			<div style={{
+				height: '4px', width: (state === 'processing' ? (progress.data?.progress ?? .33) * 100 : 100) + '%', margin: '4px 0 2px 0',
+				backgroundColor: state === 'processing' ? 'var(--color-active)' : (state === 'done' ? '#0f5' : 'red')
+			}}></div>
+			<div style={{ textAlign: 'right' }}>{state === 'processing' ? `=${progress.data?.progress ?? '??'}%` : state}</div>
+		</div>
 	);
 }
 
@@ -51,7 +79,8 @@ function App() {
 					Geomagentic Calculator
 				</div>
 				{ listQuery.error && <div style={{ color: 'red' }}>{listQuery.error?.message}</div> }
-				{ listQuery.data && <InstanceList data={listQuery.data}/>}
+				{ listQuery.data &&
+					Object.entries(listQuery.data).map(([id, info]) => <InstanceCard key={id} id={id} info={info}/>)}
 			</div>
 			<div className='TopPanel'>
 				<Settings callback={spawnMutation.mutate} setError={setError}/>

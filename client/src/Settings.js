@@ -4,7 +4,7 @@ import stationList from './common/stations.json';
 import './css/Settings.css';
 const { validateParam, validate } = validation;
 
-const MODEL_NAME = {
+export const MODEL_NAME = {
 	'00': 'Dipole',
 	'10': 'IGRF',
 	'89': 'IGRF+T89',
@@ -45,6 +45,12 @@ function transformed(prop, value) {
 	return transform(value);
 }
 
+export function findStation(lat, lon) {
+	return Object.keys(stationList).find(k =>
+		stationList[k][0] === parseFloat(lat)
+		&& stationList[k][1] === parseFloat(lon));
+}
+
 export default function Settings({ callback, setError }) {
 	const [settings, setSettings] = useState(() => {
 		try {
@@ -64,9 +70,7 @@ export default function Settings({ callback, setError }) {
 	
 	const redIfInvalid = (prop) => !validateParam(prop, transformed(prop, settings[prop])) && ({ border: '1px red solid' });
 
-	const station = Object.keys(stationList).find(k =>
-		stationList[k][0] === parseFloat(settings.lat)
-		&& stationList[k][1] === parseFloat(settings.lon)) || 'custom';
+	const station = findStation(settings.lat, settings.lon) || 'custom';
 	return (
 		<div className='Settings'>
 			<div className='settingsLine'>

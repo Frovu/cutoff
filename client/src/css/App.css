@@ -28,5 +28,28 @@
 .Menu {
   padding: 1em;
   text-align: center;
-  border-bottom: 2px var(--color-border) solid;
+  border: 2px var(--color-border) solid;
+  border-bottom-width: 4px;
+}
+
+.InstanceCard {
+  position: relative;
+  padding: 4px;
+  border: 2px transparent solid;
+  border-bottom-color: var(--color-border);
+  font-size: 14px;
+}
+
+.InstanceCard:hover {
+  border-color: var(--color-active);
+}
+
+.CloseButton {
+  color: red;
+	user-select: none;
+	cursor: pointer;
+}
+
+.CloseButton:hover {
+  color: var(--color-active);
 }
