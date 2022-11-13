@@ -50,8 +50,15 @@ export function spawn(settings, owner) {
 	return id;
 }
 
-export function kill(id) {
-	cutoff.kill(id);
+export function remove(id) {
+	try {
+		if (instances.get(id)?.state === 'processing')
+			cutoff.kill(id);
+		instances.remove(id);
+		fs.rmSync(path.join(DIR, id), {recursive: true});
+	} catch {
+		return;
+	}
 }
 
 export function status(id) {

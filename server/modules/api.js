@@ -29,6 +29,12 @@ router.get('/:id', (req, res) => {
 	});
 });
 
+router.post('/:id/delete', (req, res) => {
+	instance.remove(req.id);
+	res.sendStatus(200);
+});
+
+
 router.param('id', async(req, res, next, id) => {
 	if (!instanceStorage.get(id))
 		return res.status(404).json({error: 'Instance not found'});

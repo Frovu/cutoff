@@ -5,7 +5,7 @@ import Settings, { findStation, MODEL_NAME } from './Settings.js';
 
 const queryClient = new QueryClient();
 
-function InstanceCard({ id, info }) {
+function InstanceCard({ id, info, setError }) {
 	const sets = info.settings;
 	const [ state, setState ] = useState(info.state);
 	const progress = useQuery([id], async () => {
@@ -17,10 +17,24 @@ function InstanceCard({ id, info }) {
 		if (resp.state !== 'processing')
 			setState(resp.state);
 		return resp;
-	},
-	{
+	}, {
 		enabled: state === 'processing',
 		refetchInterval: 1000
+	});
+	const deleteMutation = useMutation(async () => {
+		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id + '/delete', {
+			method: 'POST',
+			credentials: 'include'
+		});
+		if (res.status !== 200)
+			return `HTTP: ${res.status}`;
+	}, {
+		onError: (err) => setError(err.message),
+		onSuccess: (data) => {
+			if (data)
+				return setError(data);
+			queryClient.invalidateQueries(['instances']);
+		}
 	});
 
 	const station = findStation(sets.lat, sets.lon);
@@ -28,7 +42,7 @@ function InstanceCard({ id, info }) {
 	return (
 		<div className='InstanceCard'>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
-				onClick={()=>{/* FIXME <u>delete</u>*/}}>&times;</span>
+				onClick={deleteMutation.mutate}>&times;</span>
 			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
 			<div style={{
 				height: '4px', width: (state === 'processing' ? (progress.data?.progress ?? .33) * 100 : 100) + '%', margin: '4px 0 2px 0',
@@ -80,7 +94,7 @@ function App() {
 				</div>
 				{ listQuery.error && <div style={{ color: 'red' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data &&
-					Object.entries(listQuery.data).map(([id, info]) => <InstanceCard key={id} id={id} info={info}/>)}
+					Object.entries(listQuery.data).map(([id, info]) => <InstanceCard key={id} {...{ id, info, setError }}/>)}
 			</div>
 			<div className='TopPanel'>
 				<Settings callback={spawnMutation.mutate} setError={setError}/>
