@@ -13,7 +13,7 @@ export function validateParam(key, value) {
 
 export function validate(ini) {
 	const model = ini.model;
-	if (!model || !validateParam(model, 'model', model))
+	if (!model || !validateParam('model', model))
 		return false;
 	for (const key of Object.keys(settings)) {
 		const forModels = settings[key].for;

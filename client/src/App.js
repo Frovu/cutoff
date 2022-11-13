@@ -12,7 +12,7 @@ function App() {
 				{/* <InstanceList/> */}
 			</div>
 			<div className='TopPanel'>
-				<Settings/>
+				<Settings callback={console.log}/>
 			</div>
 			<div className='BottomPanel'>
 				RESULT

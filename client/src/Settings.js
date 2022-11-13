@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { validateParam } from './common/validation.js';
+import { validateParam, validate } from './common/validation.js';
 import stationList from './common/stations.json';
 import './css/Settings.css';
 
@@ -45,6 +45,11 @@ function transformed(prop, value) {
 }
 
 export default function Settings({ callback }) {
+	const [error, setError] = useState();
+	useEffect(() => {
+		const timeout = setTimeout(() => setError(null), 3000);
+		return () => clearTimeout(timeout);
+	}, [error]);
 	const [settings, setSettings] = useState(() => {
 		try {
 			return JSON.parse(window.localStorage.getItem('cutoffCalcSettings')) || DEFAULT;
@@ -52,8 +57,14 @@ export default function Settings({ callback }) {
 			return DEFAULT;
 		}
 	});
-	useEffect(() => window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings)), [settings]);
+	const submit = () => {
+		if (!validate(settings))
+			return setError('Invalid settings');
+		window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings));
+		callback(settings);
+	};
 	const changeProp = (prop) => (e) => setSettings({ ...settings, [prop]: e.target.value });
+	
 	const redIfInvalid = (prop) => !validateParam(prop, transformed(prop, settings[prop])) && ({ border: '1px red solid' });
 
 	const station = Object.keys(stationList).find(k =>
@@ -72,6 +83,8 @@ export default function Settings({ callback }) {
 				</div>
 				<button style={{ color: 'var(--color-text-dark)', borderColor: 'var(--color-text-dark)', fontSize: '14px' }}
 					onClick={() => setSettings(DEFAULT)}>reset settings</button>
+				<button style={{ width: '8em', fontWeight: 'bold', boxShadow: '0 0 8px 2px var(--color-active)' }}
+					onClick={submit}>- Compute -</button>
 			</div>
 			<div className='settingsLine'>
 				<div style={{ display: 'inline-block' }}>
@@ -137,6 +150,10 @@ export default function Settings({ callback }) {
 					°
 				</div>
 			</div>
+			<div className='settingsLine' style={{ color: 'red' }}>
+				{error}
+			</div>
+			
 		</div>
 	);
 }
