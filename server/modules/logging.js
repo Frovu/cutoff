@@ -9,7 +9,7 @@ let currentFile, writeStream;
 
 function switchFiles() {
 	if (currentFile === filename()) return writeStream;
-	if (!existsSync(DIR)) mkdirSync(DIR);
+	if (!existsSync(path('archive'))) mkdirSync(path('archive'));
 	currentFile = filename();
 	writeStream = createWriteStream(path(currentFile), {flags: 'a'});
 	// gzip all not gziped log files except current

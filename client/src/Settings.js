@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { validateParam, validate } from './common/validation.js';
 import stationList from './common/stations.json';
 import './css/Settings.css';
@@ -44,12 +44,7 @@ function transformed(prop, value) {
 	return transform(value);
 }
 
-export default function Settings({ callback }) {
-	const [error, setError] = useState();
-	useEffect(() => {
-		const timeout = setTimeout(() => setError(null), 3000);
-		return () => clearTimeout(timeout);
-	}, [error]);
+export default function Settings({ callback, setError }) {
 	const [settings, setSettings] = useState(() => {
 		try {
 			return JSON.parse(window.localStorage.getItem('cutoffCalcSettings')) || DEFAULT;
@@ -58,10 +53,11 @@ export default function Settings({ callback }) {
 		}
 	});
 	const submit = () => {
-		if (!validate(settings))
+		const rendered = Object.fromEntries(Object.entries(settings).map(([key, val]) => [key, transformed(key, val)]));
+		if (!validate(rendered))
 			return setError('Invalid settings');
 		window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings));
-		callback(settings);
+		callback(rendered);
 	};
 	const changeProp = (prop) => (e) => setSettings({ ...settings, [prop]: e.target.value });
 	
@@ -149,11 +145,7 @@ export default function Settings({ callback }) {
 						onChange={changeProp('azimutal')}></input>
 					°
 				</div>
-			</div>
-			<div className='settingsLine' style={{ color: 'red' }}>
-				{error}
-			</div>
-			
+			</div>			
 		</div>
 	);
 }

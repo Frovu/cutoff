@@ -27,9 +27,9 @@ router.get('/:id', (req, res) => {
 
 router.param('id', async(req, res, next, id) => {
 	if (!instanceStorage.get(id))
-		return res.status(404).json({message: 'Instance not found'});
+		return res.status(404).json({error: 'Instance not found'});
 	if (instanceStorage.get(id).owner !== req.sessionID)
-		return res.status(403).json({message: 'Access forbidden'});
+		return res.status(403).json({error: 'Access forbidden'});
 	req.id = id;
 	next();
 });
