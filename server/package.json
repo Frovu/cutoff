@@ -27,7 +27,8 @@
   "nodemonConfig": {
     "ignore": [
       "sessions/*",
-      "instances/*"
+      "instances/*",
+      "instances.json"
     ]
   }
 }

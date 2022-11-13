@@ -1,6 +1,6 @@
-import settings from './validation.json';
+const settings = require('./validation.json');
 
-export function validateParam(key, value) {
+function validateParam(key, value) {
 	const req = settings[key];
 	if (req.range && !req.range.includes(value)) // not in options range
 		return false;
@@ -11,7 +11,7 @@ export function validateParam(key, value) {
 	return true;
 }
 
-export function validate(ini) {
+function validate(ini) {
 	const model = ini.model;
 	if (!model || !validateParam('model', model))
 		return false;
@@ -26,3 +26,8 @@ export function validate(ini) {
 		return false;
 	return true;
 }
+
+module.exports = {
+	validate,
+	validateParam
+};

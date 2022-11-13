@@ -14,13 +14,14 @@ function InstanceList({ data }) {
 async function spawnInstance(settings) {
 	const res = await fetch(process.env.REACT_APP_API + 'api/instance', {
 		method: 'POST',
+		credentials: 'include',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ settings })
 	});
-	const body = await res.json().catch(() => {});
+	const resp = await res.json().catch(console.log);
 	if (res.status !== 200)
-		return { error: body?.error ? `${res.status}: ${body.error}`: `HTTP: ${res.status}` };
-	return { id: body.id };
+		return { error: resp?.error ? `${res.status}: ${resp.error}`: `HTTP: ${res.status}` };
+	return { id: resp.id };
 }
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
 	});
 
 	const listQuery = useQuery(['instances'], () =>
-		fetch(process.env.REACT_APP_API + 'api/instance').then(res => res.json()));
+		fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' }).then(res => res.json()));
 	
 	return (
 		<div className='App'>

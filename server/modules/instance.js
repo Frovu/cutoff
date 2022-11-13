@@ -11,7 +11,7 @@ function clearDeadInstances() {
 		return fs.mkdirSync(DIR);
 	fs.readdir(DIR, (err, files) => {
 		files.filter(file => !instances.get(file)).forEach(file => {
-			fs.removeSync(path.join(DIR, file));
+			fs.rmSync(path.join(DIR, file), {recursive: true});
 		});
 	});
 }

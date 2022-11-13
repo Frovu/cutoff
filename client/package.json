@@ -18,6 +18,10 @@
     "extends": [
       "react-app"
     ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },    
     "rules": {
       "space-in-parens": [
         0,

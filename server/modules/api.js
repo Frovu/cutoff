@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as instanceStorage from './database.js';
 import * as instance from './instance.js';
+import validate from '../../client/src/common/validation.js';
 
 const router = Router();
 
@@ -12,9 +13,12 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-	const settings = {};
+	const settings = req.body.settings;
+	if (!settings || !validate.validate(settings))
+		return res.status(400).json({ error: 'Invalid settings' });
 	const id = instance.spawn(settings, req.sessionID);
-	res.status(200).json({ id });
+	req.session.last = id;
+	res.status(200).json({ id: id });
 });
 
 router.get('/:id', (req, res) => {
