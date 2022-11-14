@@ -6,7 +6,7 @@ import Result from './Result.js';
 
 const theQueryClient = new QueryClient();
 
-function InstanceCard({ id, info, active, setError, onClick }) {
+function InstanceCard({ id, info, active, setError, setActive }) {
 	const queryClient = useQueryClient();
 	const sets = info.settings, state = info.state;
 	const progress = useQuery([id], async () => {
@@ -21,16 +21,16 @@ function InstanceCard({ id, info, active, setError, onClick }) {
 		enabled: state === 'processing',
 		refetchInterval: 1000
 	});
-	const deleteMutation = useMutation(async () => {
+	const deleteMutation = useMutation(async (e) => {
+		e.stopPropagation();
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id + '/delete', {
 			method: 'POST',
 			credentials: 'include'
 		});
-		if (res.status !== 200)
-			return `HTTP: ${res.status}`;
+		return res.status === 200 ? '' : `HTTP: ${res.status}`;
 	}, {
 		onError: (err) => {
-			queryClient.invalidateQueries({ queryKey: ['instances'] });
+			queryClient.invalidateQueries();
 			setError(err.message);
 		},
 		onSuccess: (data) => {
@@ -43,7 +43,7 @@ function InstanceCard({ id, info, active, setError, onClick }) {
 	const date = new Date(sets.datetime * 1e3).toISOString().split('T')[0];
 	const percentage = progress.isLoading ? 0 : (progress.data?.progress != null ? (progress.data.progress * 100).toFixed(0) : null);
 	return (
-		<div className='InstanceCard' onClick={onClick} style={{ ...(active && { color: 'var(--color-active)' }) }}>
+		<div className='InstanceCard' onClick={() => setActive(id)} style={{ ...(active && { color: 'var(--color-active)' }) }}>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
 				onClick={deleteMutation.mutate}>&times;</span>
 			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
@@ -83,16 +83,19 @@ function App() {
 			queryClient.invalidateQueries();
 		},
 		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ['instances'] });
 			if (data.error)
 				return setError(data.error);
-			queryClient.invalidateQueries({ queryKey: ['instances'] });
+			setActive(data.id);
 		}
 	});
 
-	const listQuery = useQuery(['instances'], () =>
-		fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' }).then(res => res.json()));
+	const listQuery = useQuery(['instances'], async () => {
+		const res = await fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' });
+		return await res.json();
+	});
 	
-	const activeInstanceInfo =  listQuery.data?.[activeInstance];
+	const activeInstanceInfo = listQuery.data?.[activeInstance];
 	return (
 		<div className='App'>
 			<div className='LeftPanel'>
@@ -103,7 +106,7 @@ function App() {
 				{ listQuery.error && <div style={{ color: 'red', padding: '8px', borderBottom: '2px var(--color-border) solid' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data &&
 					Object.entries(listQuery.data).map(([id, info]) =>
-						<InstanceCard key={id} active={id === activeInstance} onClick={() => setActive(id)} {...{ id, info, setError }}/>)}
+						<InstanceCard key={id} active={id === activeInstance} {...{ id, info, setActive, setError }}/>)}
 			</div>
 			<div className='TopPanel'>
 				<Settings callback={spawnMutation.mutate} setError={setError}/>
