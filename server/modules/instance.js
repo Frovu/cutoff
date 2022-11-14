@@ -28,11 +28,11 @@ export function spawn(settings, owner) {
 	});
 	cutoff.runCutoff(id, settings, ({ isSuccess, isFail }) => {
 		const instance = instances.get(id);
+		if (!instance || (!isSuccess && !isFail)) // instance killed
+			return;
 		instance.finished = new Date();
 		if (isFail)
 			return instances.set(id, {...instance, state: 'failed'});
-		if (!isSuccess)
-			return;
 		if (!settings.cones)
 			return instances.set(id, {...instance, state: 'done'});
 

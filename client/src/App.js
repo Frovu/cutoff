@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useMutation, useQuery, QueryClient, QueryClientProvider } from 'react-query';
+import { useMutation, useQuery, QueryClient, QueryClientProvider, useQueryClient } from 'react-query';
 import './css/App.css';
 import Settings, { findStation, MODEL_NAME } from './Settings.js';
 
-const queryClient = new QueryClient();
+const theQueryClient = new QueryClient();
 
 function InstanceCard({ id, info, setError }) {
 	const sets = info.settings;
@@ -13,7 +13,6 @@ function InstanceCard({ id, info, setError }) {
 		if (res.status !== 200)
 			return;
 		const resp = await res.json();
-		console.log(id, resp);
 		if (resp.state !== 'processing')
 			setState(resp.state);
 		return resp;
@@ -21,6 +20,7 @@ function InstanceCard({ id, info, setError }) {
 		enabled: state === 'processing',
 		refetchInterval: 1000
 	});
+	const queryClient = useQueryClient();
 	const deleteMutation = useMutation(async () => {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id + '/delete', {
 			method: 'POST',
@@ -29,26 +29,29 @@ function InstanceCard({ id, info, setError }) {
 		if (res.status !== 200)
 			return `HTTP: ${res.status}`;
 	}, {
-		onError: (err) => setError(err.message),
+		onError: (err) => {
+			setError(err.message);
+			queryClient.invalidateQueries(['instances']);
+		},
 		onSuccess: (data) => {
 			if (data)
 				return setError(data);
 			queryClient.invalidateQueries(['instances']);
 		}
 	});
-
 	const station = findStation(sets.lat, sets.lon);
 	const date = new Date(sets.datetime * 1e3).toISOString().split('T')[0];
+	const percentage = progress.isLoading ? 0 : (progress.data?.progress != null && (progress.data.progress * 100).toFixed(0));
 	return (
 		<div className='InstanceCard'>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
 				onClick={deleteMutation.mutate}>&times;</span>
 			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
 			<div style={{
-				height: '4px', width: (state === 'processing' ? (progress.data?.progress ?? .33) * 100 : 100) + '%', margin: '4px 0 2px 0',
+				height: '4px', width: (state === 'processing' ? (percentage ?? 33) : 100) + '%', margin: '4px 0 2px 0',
 				backgroundColor: state === 'processing' ? 'var(--color-active)' : (state === 'done' ? '#0f5' : 'red')
 			}}></div>
-			<div style={{ textAlign: 'right' }}>{state === 'processing' ? `=${progress.data?.progress ?? '??'}%` : state}</div>
+			<div style={{ textAlign: 'right' }}>{state === 'processing' ? `=${percentage ?? '??'}%` : state}</div>
 		</div>
 	);
 }
@@ -72,9 +75,12 @@ function App() {
 		const timeout = setTimeout(() => setError(null), 3000);
 		return () => clearTimeout(timeout);
 	}, [error]);
-
+	const queryClient = useQueryClient();
 	const spawnMutation = useMutation(spawnInstance, {
-		onError: (err) => setError(err.message),
+		onError: (err) => {
+			setError(err.message);
+			queryClient.invalidateQueries(['instances']);
+		},
 		onSuccess: (data) => {
 			if (data.error)
 				return setError(data.error);
@@ -111,5 +117,5 @@ function App() {
 }
 
 export default function AppWrapper() {
-	return <QueryClientProvider client={queryClient}><App/></QueryClientProvider>;
+	return <QueryClientProvider client={theQueryClient}><App/></QueryClientProvider>;
 }

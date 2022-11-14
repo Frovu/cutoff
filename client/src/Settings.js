@@ -164,9 +164,9 @@ export default function Settings({ callback, setError }) {
 							style={{ width: '3em', margin: '0 6px 0 6px', ...redIfInvalid('upper') }}/>
 						GV, step=
 						<select value={settings.step} onChange={changeProp('step')}>
-							<option value='.1'>0.1</option>
-							<option value='.01'>0.01</option>
-							<option value='.001'>0.001</option>
+							<option value='0.1'>0.1</option>
+							<option value='0.01'>0.01</option>
+							<option value='0.001'>0.001</option>
 						</select>
 					</div>
 				</div>
