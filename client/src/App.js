@@ -6,21 +6,20 @@ import Settings, { findStation, MODEL_NAME } from './Settings.js';
 const theQueryClient = new QueryClient();
 
 function InstanceCard({ id, info, setError }) {
-	const sets = info.settings;
-	const [ state, setState ] = useState(info.state);
+	const queryClient = useQueryClient();
+	const sets = info.settings, state = info.state;
 	const progress = useQuery([id], async () => {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id, { credentials: 'include' });
 		if (res.status !== 200)
 			return;
 		const resp = await res.json();
 		if (resp.state !== 'processing')
-			setState(resp.state);
+			queryClient.invalidateQueries({ queryKey: ['instances'] });
 		return resp;
 	}, {
 		enabled: state === 'processing',
 		refetchInterval: 1000
 	});
-	const queryClient = useQueryClient();
 	const deleteMutation = useMutation(async () => {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id + '/delete', {
 			method: 'POST',
@@ -30,18 +29,18 @@ function InstanceCard({ id, info, setError }) {
 			return `HTTP: ${res.status}`;
 	}, {
 		onError: (err) => {
+			queryClient.invalidateQueries({ queryKey: ['instances'] });
 			setError(err.message);
-			queryClient.invalidateQueries(['instances']);
 		},
 		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ['instances'] });
 			if (data)
 				return setError(data);
-			queryClient.invalidateQueries(['instances']);
 		}
 	});
 	const station = findStation(sets.lat, sets.lon);
 	const date = new Date(sets.datetime * 1e3).toISOString().split('T')[0];
-	const percentage = progress.isLoading ? 0 : (progress.data?.progress != null && (progress.data.progress * 100).toFixed(0));
+	const percentage = progress.isLoading ? 0 : (progress.data?.progress != null ? (progress.data.progress * 100).toFixed(0) : null);
 	return (
 		<div className='InstanceCard'>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
@@ -79,12 +78,12 @@ function App() {
 	const spawnMutation = useMutation(spawnInstance, {
 		onError: (err) => {
 			setError(err.message);
-			queryClient.invalidateQueries(['instances']);
+			queryClient.invalidateQueries();
 		},
 		onSuccess: (data) => {
 			if (data.error)
 				return setError(data.error);
-			queryClient.invalidateQueries(['instances']);
+			queryClient.invalidateQueries({ queryKey: ['instances'] });
 		}
 	});
 
