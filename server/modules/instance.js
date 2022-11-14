@@ -33,7 +33,7 @@ export function spawn(settings, owner) {
 		instance.finished = new Date();
 		if (isFail)
 			return instances.set(id, {...instance, state: 'failed'});
-		if (!settings.cones)
+		if (settings.noCones)
 			return instances.set(id, {...instance, state: 'done'});
 
 		const cutoffRigidity = data(id, false).effective;

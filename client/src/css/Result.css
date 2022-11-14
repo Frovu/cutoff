@@ -1,5 +1,22 @@
 .Result {
 	padding: 1em;
 	display: flex;
+	justify-content: space-between;
 	gap: 1em;
+}
+
+.Cones {
+	outline: none;
+	background-color: inherit;
+	color: inherit;
+	border: 1px var(--color-border) solid;
+	overflow-y: scroll;
+	resize: none;
+	min-height: 4.2em;
+}
+
+.ResultLeft {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 2em;
 }

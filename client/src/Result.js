@@ -2,7 +2,7 @@ import { useQuery } from 'react-query';
 import { useState, useRef, useEffect } from 'react';
 import './css/Result.css';
 
-function Penumbra({ data, width }) {
+function Penumbra({ data, width, height }) {
 	const [ hovered, setHovered ] = useState();
 	const canvasRef = useRef();
 	useEffect(() => {
@@ -51,7 +51,7 @@ function Penumbra({ data, width }) {
 			if (hovered === i) {
 				ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
 				ctx.fillStyle = color.text;
-				ctx.fillRect(x, timeH - particleWidthHalf, particleWidth, particleWidth);
+				ctx.fillRect(x, timeH - particleWidthHalf, 4, 4);
 				const text = rigidity + ' GV';
 				const textWidth = ctx.measureText(text).width;
 				if (canvas.width - x > textWidth + particleWidth * 3)
@@ -90,7 +90,7 @@ function Penumbra({ data, width }) {
 		const i = Math.floor(x / (rect.width / data.particles.length));
 		setHovered(i);
 	}
-	return <canvas ref={canvasRef} width={width} height='128px' style={{ cursor: 'pointer' }}
+	return <canvas ref={canvasRef} width={width} height={height} style={{ cursor: 'pointer' }}
 		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)}/>;
 }
 
@@ -100,19 +100,41 @@ export default function Result({ id, info }) {
 	const secondsElapsed = (new Date(info.finished) - new Date(info.created)) / 1000;
 	const error = query.error ? query.error.message : query.data?.error;
 	const data = !error && query.data;
+	
 	return (
 		<div className='Result'>
-			<div style={{ display: 'inline-block' }}>
-				{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
-				{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
-					<u>Cutoff rigidity</u><br/>
-					<b>effective = {query.data.effective} GV</b><br/>
-					upper = {query.data.upper} GV<br/>
-					lower = {query.data.lower} GV
+			<div className='ResultLeft'>
+				<div>
+					{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
+					{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
+						<u>Cutoff rigidity</u><br/>
+						<b>effective = {query.data.effective} GV</b><br/>
+						upper = {query.data.upper} GV<br/>
+						lower = {query.data.lower} GV<br/>
+						<span style={{ fontSize: '14px', color: 'var(--color-text-dark)' }}>Computed in {secondsElapsed.toFixed(2)} seconds</span>
+					</div>}
+				</div>
+				{data?.cones && <div style={{ display: 'inline-block', textAlign: 'center' }}>
+					<u>Asymptotic directions</u><br/>
+					<div style={{ fontSize: '12px', marginBottom: '.5em' }}>
+						(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lat={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
+						
+					</div>
+					<div>
+						<textarea className='Cones' spellcheck='false' readOnly='true' value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
+							`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
+					</div>
+					<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>
+						(use Ctrl+A and Ctrl+C)
+					</div>
 				</div>}
-				<span style={{ fontSize: '14px', color: 'var(--color-text-dark)' }}>Computed in {secondsElapsed.toFixed(2)} seconds</span>
 			</div>
-			{data && <Penumbra {...{ data, width: '480px' }}/>}
+			<div>
+				{data && <Penumbra {...{ data,
+					width: document.body.offsetWidth > 1280 ? 720 : 460,
+					height: document.body.offsetWidth > 1280 ? 160 : 120 
+				}}/>}
+			</div>
 		</div>
 	);
 }

@@ -88,7 +88,7 @@ function conesRigiditiesList(cutoffRigidity) {
 		res.push(rig += 25);
 	while (rig < 500)
 		res.push(rig += 100);
-	res.push(999.99);
+	res.push(999.9);
 	return res;
 }
 
