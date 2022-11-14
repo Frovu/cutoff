@@ -24,27 +24,42 @@ function Penumbra({ data, width }) {
 		// ctx.rect(0, 0, canvas.width, canvas.height);
 		// ctx.stroke();
 
+		const bottomHeight = 16;
 		const particleWidth = canvas.width / data.particles.length;
 		const particleWidthHalf = particleWidth / 2;
-		const timeHeight = canvas.height * 2 / 3;
-		const penumbraHeight = canvas.height - timeHeight;
+		const timeHeight = canvas.height / 2;
+		const penumbraHeight = canvas.height - timeHeight - bottomHeight;
 		const maxTime = Math.max.apply(Math, data.particles.map(particle => particle[2]));
 
 		ctx.strokeStyle = color.text;
 		ctx.lineWidth = 1;
 		ctx.beginPath();
 		for (let i=0; i < data.particles.length; ++i) {
-			const [, fate, time] = data.particles[i];
+			const [rigidity, fate, time] = data.particles[i];
 			const timeH = timeHeight - timeHeight * (time / maxTime);
+			const x = i * particleWidth;
 			if (i < 1) {
 				ctx.moveTo(particleWidthHalf, timeH);
 			} else {
-				ctx.lineTo(i * particleWidth + particleWidthHalf, timeH);
-				ctx.moveTo(i * particleWidth + particleWidthHalf, timeH);
+				ctx.lineTo(x + particleWidthHalf, timeH);
+				ctx.moveTo(x + particleWidthHalf, timeH);
 			}
 
 			ctx.fillStyle = particleColor[fate];
-			ctx.fillRect(i * particleWidth, timeHeight, particleWidth + 1, penumbraHeight);
+			ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight);
+
+			if (hovered === i) {
+				ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
+				ctx.fillStyle = color.text;
+				ctx.fillRect(x, timeH - particleWidthHalf, particleWidth, particleWidth);
+				const text = rigidity + ' GV';
+				const textWidth = ctx.measureText(text).width;
+				if (canvas.width - x > textWidth + particleWidth * 3)
+					ctx.fillText(text, x + particleWidth * 3, canvas.height);
+				else
+					ctx.fillText(text, x - textWidth - particleWidth * 3, canvas.height);
+
+			}
 		}
 		ctx.stroke();
 
@@ -68,8 +83,15 @@ function Penumbra({ data, width }) {
 		ctx.fillText(leftText, 8, y);
 		ctx.fillText(rightText, canvas.width - ctx.measureText(rightText).width - 8, y);
 
-	}, [data]);
-	return <canvas ref={canvasRef} width={width} height='128px'/>;
+	}, [data, hovered]);
+	function mouseMove(e) {
+		const rect = e.target.getBoundingClientRect();
+		const x = e.clientX - rect.x;
+		const i = Math.floor(x / (rect.width / data.particles.length));
+		setHovered(i);
+	}
+	return <canvas ref={canvasRef} width={width} height='128px' style={{ cursor: 'pointer' }}
+		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)}/>;
 }
 
 export default function Result({ id, info }) {
