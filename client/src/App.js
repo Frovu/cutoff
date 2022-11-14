@@ -21,8 +21,7 @@ function InstanceCard({ id, info, active, setError, setActive }) {
 		enabled: state === 'processing',
 		refetchInterval: 1000
 	});
-	const deleteMutation = useMutation(async (e) => {
-		e.stopPropagation();
+	const deleteMutation = useMutation(async () => {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance/' + id + '/delete', {
 			method: 'POST',
 			credentials: 'include'
@@ -45,7 +44,7 @@ function InstanceCard({ id, info, active, setError, setActive }) {
 	return (
 		<div className='InstanceCard' onClick={() => setActive(id)} style={{ ...(active && { color: 'var(--color-active)' }) }}>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
-				onClick={deleteMutation.mutate}>&times;</span>
+				onClick={(e) => {e.stopPropagation(); deleteMutation.mutate();}}>&times;</span>
 			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
 			<div style={{
 				height: '4px', width: (state === 'processing' ? (percentage ?? 33) : 100) + '%', margin: '4px 0 2px 0',
@@ -84,11 +83,13 @@ function App() {
 		},
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ['instances'] });
-			if (data.error)
-				return setError(data.error);
-			setActive(data.id);
 		}
 	});
+	useEffect(() => {
+		if (!spawnMutation.data) return;
+		setActive(spawnMutation.data.id);
+		setError(spawnMutation.data.error);
+	}, [spawnMutation.data]);
 
 	const listQuery = useQuery(['instances'], async () => {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' });

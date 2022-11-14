@@ -16,9 +16,11 @@ export default function Result({ id, info }) {
 	const query = useQuery(['result', id], () =>
 		fetch(`${process.env.REACT_APP_API}api/instance/${id}/data`, { credentials: 'include' }).then(res => res.json()));
 	const secondsElapsed = (new Date(info.finished) - new Date(info.created)) / 1000;
+	const error = query.error ? query.error.message : query.data?.error;
 	return (
 		<div className='Result'>
-			{query.data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
+			{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
+			{!error && query.data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
 				<u>Cutoff rigidity</u><br/>
 				<b>effective = {query.data.effective} GV</b><br/>
 				upper = {query.data.upper} GV<br/>
