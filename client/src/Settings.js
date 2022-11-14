@@ -83,7 +83,7 @@ export default function Settings({ callback, setError }) {
 					</select>
 				</div>
 				<button style={{ color: 'var(--color-text-dark)', borderColor: 'var(--color-text-dark)', fontSize: '14px' }}
-					onClick={() => setSettings(DEFAULT)}>reset settings</button>
+					onClick={() => setSettings({ ...DEFAULT, mode: settings.mode })}>reset settings</button>
 				<button style={{ width: '8em', fontWeight: 'bold', boxShadow: '0 0 8px 2px var(--color-active)' }}
 					onClick={submit}>- Compute -</button>
 			</div>
