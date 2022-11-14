@@ -61,7 +61,6 @@ export default function Settings({ callback, setError }) {
 	});
 	const submit = () => {
 		const rendered = Object.fromEntries(Object.entries(filter(settings)).map(([key, val]) => [key, transformed(key, val)]));
-		console.log(rendered);
 		if (!validate(rendered))
 			return setError('Invalid settings');
 		window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings));

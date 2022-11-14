@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQuery, QueryClient, QueryClientProvider, useQueryClient } from 'react-query';
 import './css/App.css';
 import Settings, { findStation, MODEL_NAME } from './Settings.js';
+import Result from './Result.js';
 
 const theQueryClient = new QueryClient();
 
-function InstanceCard({ id, info, setError }) {
+function InstanceCard({ id, info, active, setError, onClick }) {
 	const queryClient = useQueryClient();
 	const sets = info.settings, state = info.state;
 	const progress = useQuery([id], async () => {
@@ -42,7 +43,7 @@ function InstanceCard({ id, info, setError }) {
 	const date = new Date(sets.datetime * 1e3).toISOString().split('T')[0];
 	const percentage = progress.isLoading ? 0 : (progress.data?.progress != null ? (progress.data.progress * 100).toFixed(0) : null);
 	return (
-		<div className='InstanceCard'>
+		<div className='InstanceCard' onClick={onClick} style={{ ...(active && { color: 'var(--color-active)' }) }}>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
 				onClick={deleteMutation.mutate}>&times;</span>
 			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
@@ -69,6 +70,7 @@ async function spawnInstance(settings) {
 }
 
 function App() {
+	const [activeInstance, setActive] = useState();
 	const [error, setError] = useState();
 	useEffect(() => {
 		const timeout = setTimeout(() => setError(null), 3000);
@@ -90,6 +92,7 @@ function App() {
 	const listQuery = useQuery(['instances'], () =>
 		fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' }).then(res => res.json()));
 	
+	const activeInstanceInfo =  listQuery.data?.[activeInstance];
 	return (
 		<div className='App'>
 			<div className='LeftPanel'>
@@ -99,7 +102,8 @@ function App() {
 				</div>
 				{ listQuery.error && <div style={{ color: 'red', padding: '8px', borderBottom: '2px var(--color-border) solid' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data &&
-					Object.entries(listQuery.data).map(([id, info]) => <InstanceCard key={id} {...{ id, info, setError }}/>)}
+					Object.entries(listQuery.data).map(([id, info]) =>
+						<InstanceCard key={id} active={id === activeInstance} onClick={() => setActive(id)} {...{ id, info, setError }}/>)}
 			</div>
 			<div className='TopPanel'>
 				<Settings callback={spawnMutation.mutate} setError={setError}/>
@@ -108,9 +112,8 @@ function App() {
 				</div>
 			</div>
 			<div className='BottomPanel'>
-				RESULT
+				{activeInstanceInfo?.state === 'done' && <Result id={activeInstance} info={activeInstanceInfo}/>}
 			</div>
-    
 		</div>
 	);
 }

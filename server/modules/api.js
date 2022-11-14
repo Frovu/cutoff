@@ -29,6 +29,11 @@ router.get('/:id', (req, res) => {
 	});
 });
 
+router.get('/:id/data', (req, res) => {
+	const data = instance.data(req.id);
+	res.status(200).json(data);
+});
+
 router.post('/:id/delete', (req, res) => {
 	instance.remove(req.id);
 	res.sendStatus(200);
