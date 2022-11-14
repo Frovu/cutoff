@@ -33,6 +33,7 @@
 }
 
 .InstanceCard {
+  cursor: pointer;
   position: relative;
   padding: 4px;
   border: 2px transparent solid;

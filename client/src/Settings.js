@@ -2,7 +2,7 @@ import { useState } from 'react';
 import validation from './common/validation.js';
 import stationList from './common/stations.json';
 import './css/Settings.css';
-const { validateParam, validate } = validation;
+const { validateParam, validate, filter } = validation;
 
 export const MODEL_NAME = {
 	'00': 'Dipole',
@@ -60,7 +60,8 @@ export default function Settings({ callback, setError }) {
 		}
 	});
 	const submit = () => {
-		const rendered = Object.fromEntries(Object.entries(settings).map(([key, val]) => [key, transformed(key, val)]));
+		const rendered = Object.fromEntries(Object.entries(filter(settings)).map(([key, val]) => [key, transformed(key, val)]));
+		console.log(rendered);
 		if (!validate(rendered))
 			return setError('Invalid settings');
 		window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings));
@@ -150,7 +151,34 @@ export default function Settings({ callback, setError }) {
 						onChange={changeProp('azimutal')}></input>
 					°
 				</div>
-			</div>			
+			</div>
+			{settings.mode === 'advanced' && <>
+				<div className='settingsLine'>
+					<div>
+						Rigidity range:
+						from
+						<input value={settings.lower} onChange={changeProp('lower')}
+							style={{ width: '3em', margin: '0 6px 0 6px', ...redIfInvalid('lower') }}/>
+						to
+						<input value={settings.upper} onChange={changeProp('upper')}
+							style={{ width: '3em', margin: '0 6px 0 6px', ...redIfInvalid('upper') }}/>
+						GV, step=
+						<select value={settings.step} onChange={changeProp('step')}>
+							<option value='.1'>0.1</option>
+							<option value='.01'>0.01</option>
+							<option value='.001'>0.001</option>
+						</select>
+					</div>
+				</div>
+				<div className='settingsLine'>
+					<div>
+						Max flight time:
+						<input value={settings.flightTime} onChange={changeProp('flightTime')}
+							style={{ width: '2.5em', margin: '0 6px 0 6px', ...redIfInvalid('flightTime') }}/>
+						seconds
+					</div>
+				</div>
+			</>}
 		</div>
 	);
 }

@@ -92,7 +92,7 @@ function App() {
 					<b>Cutoff2050</b><br/>
 					Geomagentic Calculator
 				</div>
-				{ listQuery.error && <div style={{ color: 'red' }}>{listQuery.error?.message}</div> }
+				{ listQuery.error && <div style={{ color: 'red', padding: '8px', borderBottom: '2px var(--color-border) solid' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data &&
 					Object.entries(listQuery.data).map(([id, info]) => <InstanceCard key={id} {...{ id, info, setError }}/>)}
 			</div>
