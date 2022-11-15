@@ -45,7 +45,7 @@ function InstanceCard({ id, info, active, setError, setActive }) {
 		<div className='InstanceCard' onClick={() => setActive(id)} style={{ ...(active && { color: 'var(--color-active)' }) }}>
 			<span className='CloseButton' style={{ position: 'absolute', right: '4px', top: '-3px', fontSize: '20px' }}
 				onClick={(e) => {e.stopPropagation(); deleteMutation.mutate();}}>&times;</span>
-			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}, {MODEL_NAME[sets.model]}, {date}</span>
+			<span>{station || `(${sets.lat.toFixed(2)},${sets.lon.toFixed(2)})`}{info.settings.mode==='advanced'?' (a)':''}, {MODEL_NAME[sets.model]}, {date}</span>
 			<div style={{
 				height: '4px', width: (state === 'processing' ? (percentage ?? 33) : 100) + '%', margin: '4px 0 2px 0',
 				backgroundColor: state === 'processing' ? 'var(--color-active)' : (state === 'done' ? '#0f5' : 'red')

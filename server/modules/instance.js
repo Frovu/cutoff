@@ -27,9 +27,10 @@ async function run(id, settings) {
 			return false;
 	} else {
 		const steps = [ 
-			[  1, 5 ],
-			[ .1, 10],
-			[.01, 8 ],
+			[  1, 10 ],
+			[.05, 10],
+			[.01, 10 ],
+			[.002, 8 ],
 		];
 		let lower = 0, upper = 100;
 		for (const [step, flightTime] of steps) {
@@ -42,8 +43,9 @@ async function run(id, settings) {
 			const result = data(id, false);
 			console.log(step, lower, upper);
 			console.log('=', result.lower, result.effective, result.upper);
-			lower = result.lower - Math.min(3 * step, .5);
-			upper = result.upper + Math.min(3 * step, .5);
+			lower = result.lower - (step >= .1 ? .5 : .3);
+			upper = result.upper + (step >= .1 ? .5 : .3);
+			if (lower < step) lower = step;
 		}
 	}
 	if (settings.noCones)
