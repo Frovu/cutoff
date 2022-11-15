@@ -33,10 +33,12 @@ function Penumbra({ data, width, height }) {
 
 		for (const tick of ['lower', 'upper', 'effective']) {
 			const idx = data.particles.findIndex(p => p[0] === data[tick]);
+			ctx.fillStyle = color.bg;
+			ctx.fillRect(idx * particleWidth - 2, canvas.height - bottomHeight, 42, bottomHeight);
 			ctx.fillStyle = particleColor[data.particles[idx][1]];
 			ctx.fillRect(idx * particleWidth, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
-			ctx.fillStyle = color.text;
 			const textX = idx * particleWidth + particleWidth + 4;
+			ctx.fillStyle = color.text;
 			ctx.font = style.font.replace(/\d+px/, '14px');;
 			ctx.fillText('R', textX, canvas.height - 2);
 			ctx.font = style.font.replace(/\d+px/, '11px');;
