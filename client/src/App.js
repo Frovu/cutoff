@@ -110,7 +110,7 @@ function App() {
 						<InstanceCard key={id} active={id === activeInstance} {...{ id, info, setActive, setError }}/>)}
 			</div>
 			<div className='TopPanel'>
-				<Settings callback={spawnMutation.mutate} setError={setError}/>
+				<Settings callback={spawnMutation.mutate} setError={setError} settings={activeInstanceInfo?.settings}/>
 				<div style={{ margin: '1em', color: 'red' }}>
 					{error}
 				</div>

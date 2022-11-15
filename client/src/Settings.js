@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import validation from './common/validation.js';
 import stationList from './common/stations.json';
 import './css/Settings.css';
@@ -51,19 +51,18 @@ export function findStation(lat, lon) {
 		&& stationList[k][1] === parseFloat(lon));
 }
 
-export default function Settings({ callback, setError }) {
-	const [settings, setSettings] = useState(() => {
-		try {
-			return JSON.parse(window.localStorage.getItem('cutoffCalcSettings')) || DEFAULT;
-		} catch {
-			return DEFAULT;
-		}
-	});
+export default function Settings({ callback, settings: instanceSettings, setError }) {
+	const [settings, setSettings] = useState(DEFAULT);
+	useEffect(() => {
+		if (!instanceSettings) return;
+		const date = new Date(instanceSettings.datetime * 1e3).toISOString().replace('T', ' ').replace(/:\d\d\..*/, '');
+		const datetime = date.includes('00:00') ? date.split(' ')[0] : date;
+		setSettings(sets => ({ ...sets, ...instanceSettings, datetime }));
+	}, [instanceSettings]);
 	const submit = () => {
 		const rendered = Object.fromEntries(Object.entries(filter(settings)).map(([key, val]) => [key, transformed(key, val)]));
 		if (!validate(rendered))
 			return setError('Invalid settings');
-		window.localStorage.setItem('cutoffCalcSettings', JSON.stringify(settings));
 		callback(rendered);
 	};
 	const changeProp = (prop) => (e) => setSettings({ ...settings, [prop]: e.target.value });
