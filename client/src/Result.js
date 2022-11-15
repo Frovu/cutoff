@@ -31,6 +31,19 @@ function Penumbra({ data, width, height }) {
 		const penumbraHeight = canvas.height - timeHeight - bottomHeight;
 		const maxTime = Math.max.apply(Math, data.particles.map(particle => particle[2]));
 
+		for (const tick of ['lower', 'upper', 'effective']) {
+			const idx = data.particles.findIndex(p => p[0] === data[tick]);
+			ctx.fillStyle = particleColor[data.particles[idx][1]];
+			ctx.fillRect(idx * particleWidth, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
+			ctx.fillStyle = color.text;
+			const textX = idx * particleWidth + particleWidth + 4;
+			ctx.font = style.font.replace(/\d+px/, '14px');;
+			ctx.fillText('R', textX, canvas.height - 2);
+			ctx.font = style.font.replace(/\d+px/, '11px');;
+			ctx.fillText(tick.slice(0, 3), textX + 10, canvas.height - 2);
+		}
+
+		ctx.font = style.font;
 		ctx.strokeStyle = color.text;
 		ctx.lineWidth = 1;
 		ctx.beginPath();
@@ -50,14 +63,16 @@ function Penumbra({ data, width, height }) {
 
 			if (hovered === i) {
 				ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
-				ctx.fillStyle = color.text;
-				ctx.fillRect(x, timeH - particleWidthHalf, 4, 4);
 				const text = rigidity + ' GV';
 				const textWidth = ctx.measureText(text).width;
-				if (canvas.width - x > textWidth + particleWidth * 3)
-					ctx.fillText(text, x + particleWidth + 4, canvas.height);
-				else
-					ctx.fillText(text, x - textWidth - 4, canvas.height);
+				const textX = (canvas.width - x > textWidth + particleWidth * 3)
+					? x + particleWidth + 4
+					: x - textWidth - 4;
+				ctx.fillStyle = color.bg;
+				ctx.fillRect(textX - 3, canvas.height - bottomHeight, textWidth, bottomHeight);
+				ctx.fillStyle = color.text;
+				ctx.fillRect(x, timeH - particleWidthHalf, 4, 4); // point on time graph
+				ctx.fillText(text, textX, canvas.height);
 
 			}
 		}
