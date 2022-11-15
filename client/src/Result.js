@@ -55,9 +55,9 @@ function Penumbra({ data, width, height }) {
 				const text = rigidity + ' GV';
 				const textWidth = ctx.measureText(text).width;
 				if (canvas.width - x > textWidth + particleWidth * 3)
-					ctx.fillText(text, x + particleWidth * 3, canvas.height);
+					ctx.fillText(text, x + particleWidth + 4, canvas.height);
 				else
-					ctx.fillText(text, x - textWidth - particleWidth * 3, canvas.height);
+					ctx.fillText(text, x - textWidth - 4, canvas.height);
 
 			}
 		}
@@ -121,7 +121,7 @@ export default function Result({ id, info }) {
 						
 					</div>
 					<div>
-						<textarea className='Cones' spellcheck='false' readOnly='true' value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
+						<textarea className='Cones' spellCheck='false' readOnly='true' value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
 							`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
 					</div>
 					<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>

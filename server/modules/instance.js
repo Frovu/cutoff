@@ -21,9 +21,10 @@ async function run(id, settings) {
 	if (settings.mode === 'advanced') {
 		const { isSuccess, isFail } = await cutoff.runCutoff(id, { ...settings });
 		const instance = instances.get(id);
-		if (!instance || (!isSuccess && !isFail)) // instance killed
+		if (isFail)
+			return instances.set(id, {...instance, state: 'failed'});
+		if (!instance || !isSuccess) // instance is probably killed
 			return false;
-		return instances.set(id, {...instance, state: 'failed'});
 	} else {
 		const steps = [ 
 			[  1, 5 ],
@@ -59,7 +60,7 @@ async function run(id, settings) {
 	return instances.set(id, {...instance, finished: new Date(), state: 'done'});
 }
 
-export async function spawn(settings, owner) {
+export function spawn(settings, owner) {
 	const id = uuid();
 	fs.mkdirSync(path.join(DIR, id));
 	instances.set(id, {
