@@ -17,7 +17,49 @@ function clearDeadInstances() {
 }
 clearDeadInstances();
 
-export function spawn(settings, owner) {
+async function run(id, settings) {
+	if (settings.mode === 'advanced') {
+		const { isSuccess, isFail } = await cutoff.runCutoff(id, { ...settings });
+		const instance = instances.get(id);
+		if (!instance || (!isSuccess && !isFail)) // instance killed
+			return false;
+		return instances.set(id, {...instance, state: 'failed'});
+	} else {
+		const steps = [ 
+			[  1, 5 ],
+			[ .1, 10],
+			[.01, 8 ],
+		];
+		let lower = 0, upper = 100;
+		for (const [step, flightTime] of steps) {
+			const done = await cutoff.runCutoff(id, { ...settings, step, lower, upper, flightTime });
+			const instance = instances.get(id);
+			if (instance && done.isFail)
+				return instances.set(id, {...instances.get(id), state: 'failed'});
+			if (!instance || !done.isSuccess)
+				return false;
+			const result = data(id, false);
+			console.log(step, lower, upper);
+			console.log('=', result.lower, result.effective, result.upper);
+			lower = result.lower - Math.min(3 * step, .5);
+			upper = result.upper + Math.min(3 * step, .5);
+		}
+	}
+	if (settings.noCones)
+		return instances.set(id, {...instances.get(id), finished: new Date(), state: 'done'});
+
+	const cutoffRigidity = data(id, false).effective;
+	const { isSuccess, isFail } = await cutoff.runCones(id, settings, cutoffRigidity);
+
+	const instance = instances.get(id);	
+	if (isFail)
+		return instances.set(id, {...instance, state: 'failed cones'});
+	if (!instance || !isSuccess)
+		return;
+	return instances.set(id, {...instance, finished: new Date(), state: 'done'});
+}
+
+export async function spawn(settings, owner) {
 	const id = uuid();
 	fs.mkdirSync(path.join(DIR, id));
 	instances.set(id, {
@@ -26,27 +68,7 @@ export function spawn(settings, owner) {
 		settings,
 		owner
 	});
-	cutoff.runCutoff(id, settings, ({ isSuccess, isFail }) => {
-		const instance = instances.get(id);
-		if (!instance || (!isSuccess && !isFail)) // instance killed
-			return;
-		instance.finished = new Date();
-		if (isFail)
-			return instances.set(id, {...instance, state: 'failed'});
-		if (settings.noCones)
-			return instances.set(id, {...instance, state: 'done'});
-
-		const cutoffRigidity = data(id, false).effective;
-		cutoff.runCones(id, settings, cutoffRigidity, ({ isSuccess, isFail }) => {
-			instance.finished = new Date();
-			if (isFail)
-				return instances.set(id, {...instance, state: 'failed cones'});
-			if (!isSuccess)
-				return;
-			
-			instances.set(id, {...instance, state: 'done'});
-		});
-	});
+	run(id, settings);
 	return id;
 }
 

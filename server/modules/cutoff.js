@@ -35,41 +35,43 @@ function serializeIni(ini, trace=null, conesRigidities=null) {
 	}
 }
 
-function run(id, program, iniContent, callback, progressPerLine=0, trace=false) {
+function run(id, program, iniContent, progressPerLine=0, trace=false) {
 	fs.writeFileSync(path.join(DIR, id, FILENAMES[program].ini), iniContent);
-	const process = spawn('wine', [path.resolve('bin', FILENAMES[program].exe)], { cwd: path.resolve(DIR, id) });
-	const spawned = Date.now();
-	process.on('exit', (code, signal) => {
-		const time = ((Date.now() - spawned) / 1000).toFixed(2);
-		global.log(`Process ${program}${trace?'/trace':''} exited [${code??''},${signal??''}] in ${time} sec`);
-		if (!trace && code === 0)
-			fs.renameSync(path.join(DIR, id, FILENAMES[program].dat), path.join(DIR, id, program + '.result'));
-		callback?.({
-			time,
+	return new Promise(resolve => {
+		const process = spawn('wine', [path.resolve('bin', FILENAMES[program].exe)], { cwd: path.resolve(DIR, id) });
+		const spawned = Date.now();
+		process.on('exit', (code, signal) => {
+			const time = ((Date.now() - spawned) / 1000).toFixed(2);
+			global.log(`Process ${program}${trace?'/trace':''} exited [${code??''},${signal??''}] in ${time} sec`);
+			if (!trace && code === 0)
+				fs.renameSync(path.join(DIR, id, FILENAMES[program].dat), path.join(DIR, id, program + '.result'));
+			resolve({
+				time,
+				program,
+				isSuccess: code === 0,
+				isFail: code !== 0 && signal === null,
+			});
+		});
+		process.stdout.on('data', () => {
+			if (!progressPerLine) return;
+			const record = running.get(id); 
+			if (!record) return;
+			record.progress += progressPerLine;
+		});
+		running.set(id, {
+			process,
 			program,
-			isSuccess: code === 0,
-			isFail: code !== 0 && signal === null,
+			progress: 0
 		});
 	});
-	process.stdout.on('data', () => {
-		if (!progressPerLine) return;
-		const record = running.get(id); 
-		if (!record) return;
-		record.progress += progressPerLine;
-	});
-	running.set(id, {
-		process,
-		program,
-		progress: 0
-	});
 }
 
-export function runCutoff(id, settings, callback) {
-	run(id, 'cutoff', serializeIni(settings), callback, 1 / ((settings.upper - settings.lower) / settings.step * 2));
+export function runCutoff(id, settings) {
+	return run(id, 'cutoff', serializeIni(settings), 1 / ((settings.upper - settings.lower) / settings.step * 2));
 }
 
-export function runTrace(id, settings, rigidity, callback) {
-	run(id, 'cutoff', serializeIni(settings, rigidity), callback, 0, true);
+export function runTrace(id, settings, rigidity) {
+	return run(id, 'cutoff', serializeIni(settings, rigidity), 0, true);
 }
 
 function conesRigiditiesList(cutoffRigidity) {
@@ -92,9 +94,9 @@ function conesRigiditiesList(cutoffRigidity) {
 	return res;
 }
 
-export function runCones(id, settings, rigidity, callback) {
+export function runCones(id, settings, rigidity) {
 	const rigidities = conesRigiditiesList(rigidity);
-	run(id, 'cones', serializeIni(settings, null, rigidities), callback, 1 / rigidities.length);
+	return run(id, 'cones', serializeIni(settings, null, rigidities), 1 / rigidities.length);
 }
 
 export function get(id) {
