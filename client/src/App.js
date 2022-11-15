@@ -50,6 +50,9 @@ function InstanceCard({ id, info, active, setError, setActive }) {
 				height: '4px', width: (state === 'processing' ? (percentage ?? 33) : 100) + '%', margin: '4px 0 2px 0',
 				backgroundColor: state === 'processing' ? 'var(--color-active)' : (state === 'done' ? '#0f5' : 'red')
 			}}></div>
+			<div style={{ position: 'absolute', bottom: '4px', left: '4px', color: 'var(--color-text-dark)', fontSize: '12px' }}>
+				{new Date(info.created).toISOString().replace(/\..*/, '').replace('T',' ')}
+			</div>
 			<div style={{ textAlign: 'right' }}>{state === 'processing' ? `=${percentage ?? '??'}%` : state}</div>
 		</div>
 	);
@@ -96,7 +99,7 @@ function App() {
 		const res = await fetch(process.env.REACT_APP_API + 'api/instance', { credentials: 'include' });
 		return await res.json();
 	});
-	
+
 	const activeInstanceInfo = listQuery.data?.[activeInstance];
 	return (
 		<div className='App'>
@@ -107,7 +110,7 @@ function App() {
 				</div>
 				{ listQuery.error && <div style={{ color: 'red', padding: '8px', borderBottom: '2px var(--color-border) solid' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data &&
-					Object.entries(listQuery.data).map(([id, info]) =>
+					Object.entries(listQuery.data).reverse().map(([id, info]) =>
 						<InstanceCard key={id} active={id === activeInstance} {...{ id, info, setActive, setError }}/>)}
 			</div>
 			<div className='TopPanel'>
