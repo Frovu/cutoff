@@ -1,28 +1,43 @@
 .App {
   display: grid;
-  grid-template-columns: minmax(256px, 1fr) 3fr;
-  grid-template-rows: 2fr 1fr;
-  height: 100vh;
-  border: 1px var(--color-border) solid;
+  grid-template-columns: minmax(196px, 1fr) 3fr;
+  min-height: 100vh;
+}
+
+@media (max-width: 1250px) {
+  .Earth {
+    min-width: 100%;
+    height: 1px;
+  }
+}
+@media (min-width: 1280px) {
+  .TopPanel {
+   display: flex;
+   justify-content: left;
+  }
+  .App {
+    max-height: 100vh;
+  }
+  .LeftPanel {
+    height: 100vh;
+  }
+  .Earth {
+    flex-grow: 1;
+    max-width: 720px;
+  }
 }
 
 .LeftPanel {
   grid-column: 1;
-  grid-row: 1 / 3;
-  border: inherit;
+  border: 2px var(--color-border) solid;
   display: flex;
   flex-direction: column;
 }
 
-.TopPanel {
+.RightPanel {
   grid-column: 2;
-  border: inherit;
-}
-
-.BottomPanel {
-  grid-column: 2;
-  border: inherit;
-
+  border: 2px var(--color-border) solid;
+  border-left-width: 0;
 }
 
 .Menu {

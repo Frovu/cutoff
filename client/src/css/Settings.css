@@ -1,4 +1,7 @@
 .Settings {
+	border-right: 2px var(--color-border) solid;
+	border-bottom: 2px var(--color-border) solid;
+	width: fit-content;
 	padding: 1em;
 	display: flex;
 	flex-direction: column;
