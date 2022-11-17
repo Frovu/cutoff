@@ -11,7 +11,8 @@
 .settingsLine {
 	position: relative;
 	display: inline-flex;
-	gap: 2em;
+	flex-wrap: wrap;
+	gap: 1em 1em;
 }
 
 .input {

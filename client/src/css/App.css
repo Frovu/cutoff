@@ -1,22 +1,17 @@
 .App {
   display: grid;
-  grid-template-columns: minmax(196px, 1fr) 3fr;
+  grid-template-columns: clamp(196px, 24vw, 420px) auto;
   min-height: 100vh;
   max-width: 100vw;
 }
 
 @media (max-width: 1250px) {
-  .App {
-    grid-template-columns: auto;
-  }
-  .RightPanel {
-    grid-column: 1;
-  }
   .Earth {
     min-width: 100%;
     height: 1px;
   }
   .RightPanel {
+    grid-column: 2;
     grid-template-columns: auto;
     grid-template-rows: repeat(4, max-content);
   }
@@ -41,6 +36,7 @@
     height: 100vh;
   }
   .RightPanel {
+    grid-column: 2;
     grid-template-columns: max-content minmax(auto, 720px);
     grid-template-rows: max-content auto auto auto;
   }
@@ -54,6 +50,14 @@
   .EarthAndPenumbra {
     grid-column: 2;
     grid-row: 1 / 4;
+  }
+}
+@media (max-width: 640px) {
+  .App {
+    grid-template-columns: auto;
+  }
+  .RightPanel {
+    grid-column: 1;
   }
 }
 

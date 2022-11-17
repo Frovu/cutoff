@@ -96,6 +96,8 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 						<option key='custom' value='custom' disabled>(custom)</option>
 						{Object.keys(stationList).map(n => <option key={n} value={n}>{n}</option>)}
 					</select>
+				</div>
+				<div style={{ display: 'inline-block' }}>
 					&nbsp;lat=
 					<div className='input'>
 						<input style={{ width: '5em', ...redIfInvalid('lat') }} type='text'
@@ -118,7 +120,7 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 					</select>
 				</div>
 			</div>
-			<div className='settingsLine' style={{ height: '2em' }}>
+			<div className='settingsLine'>
 				<div>
 					Date:&nbsp;
 					<div className='input'>
@@ -138,6 +140,8 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 			<div className='settingsLine'>
 				<div>
 					Direction:
+				</div>
+				<div>
 					vertical=
 					<input type='text' value={settings.vertical}
 						style={{ width: '3.5em', margin: '0 2px 0 2px', ...redIfInvalid('vertical') }}
