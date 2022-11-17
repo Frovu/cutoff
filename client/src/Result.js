@@ -113,62 +113,79 @@ function Penumbra({ data, width, height }) {
 		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)}/>;
 }
 
-function Result({ id, info, width }) {
-	const query = useQuery(['result', id], () =>
-		fetch(`${process.env.REACT_APP_API}api/instance/${id}/data`, { credentials: 'include' }).then(res => res.json()));
+function useResultQuery(id) {
+	return useQuery(['result', id], () =>
+		fetch(`${process.env.REACT_APP_API}api/instance/${id}/data`, { credentials: 'include' })
+			.then(res => res.json()));
+}
+
+function ResultPenumbra({ id, width }) {
+	const query = useResultQuery(id);
+	const height = 128;
+	if (!query?.data) return null;
+	return (
+		<div className='Penumbra' style={{ minHeight: height + 4 + 'px', position: 'relative' }}>
+			<Penumbra {...{
+				data: query.data,
+				width: width - 16,
+				height: height 
+			}}/>
+		</div>
+	);	
+}
+
+function ResultText({ id, info }) {
+	const query = useResultQuery(id);
 	const secondsElapsed = (new Date(info.finished) - new Date(info.created)) / 1000;
 	const error = query.error ? query.error.message : query.data?.error;
 	const data = !error && query.data;
-	const penumbraHeight = 128;
 	return (
-		<>
-			<div className='Result'>
-				<div>
-					{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
-					{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
-						<u>Cutoff rigidity</u><br/>
-						<b>effective = {query.data.effective} GV</b><br/>
-						upper = {query.data.upper} GV<br/>
-						lower = {query.data.lower} GV<br/>
-						<span style={{ fontSize: '14px', color: 'var(--color-text-dark)' }}>Computed in {secondsElapsed.toFixed(2)} seconds</span>
-					</div>}
-				</div>
-				{data?.cones && <div style={{ display: 'inline-block', textAlign: 'center' }}>
-					<u>Asymptotic directions</u><br/>
-					<div style={{ fontSize: '12px', marginBottom: '.5em' }}>
-						(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lat={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
-						
-					</div>
-					<div>
-						<textarea className='Cones' spellCheck='false' readOnly={true} value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
-							`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
-					</div>
-					<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>
-						(use Ctrl+A and Ctrl+C)
-					</div>
+		<div className='Result'>
+			<div>
+				{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
+				{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
+					<u>Cutoff rigidity</u><br/>
+					<b>effective = {query.data.effective} GV</b><br/>
+					upper = {query.data.upper} GV<br/>
+					lower = {query.data.lower} GV<br/>
+					<span style={{ fontSize: '14px', color: 'var(--color-text-dark)' }}>Computed in {secondsElapsed.toFixed(2)} seconds</span>
 				</div>}
 			</div>
-			<div className='Penumbra' style={{ minHeight: penumbraHeight + 4 + 'px', position: 'relative' }}>
-				{data && <Penumbra {...{ data,
-					width: width - 16,
-					height: penumbraHeight 
-				}}/>}
-			</div>
-		</>
+			{data?.cones && <div style={{ display: 'inline-block', textAlign: 'center' }}>
+				<u>Asymptotic directions</u><br/>
+				<div style={{ fontSize: '12px', marginBottom: '.5em' }}>
+					(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lat={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
+					
+				</div>
+				<div>
+					<textarea className='Cones' spellCheck='false' readOnly={true} value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
+						`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
+				</div>
+				<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>
+					(use Ctrl+A and Ctrl+C)
+				</div>
+			</div>}
+		</div>
 	);
 }
 
 export default function ResultOrEarth({ id, info }) {
 	const target = useRef(null);
 	const [width, setWidth] = useState();
+	const height = width * 2 / 3;
 	useLayoutEffect(() => {
 		setWidth(target.current.offsetWidth);
 	 }, [target]);
 	useResizeObserver(target, (entry) => setWidth(entry.contentRect.width));
 	return (
 		<>
-			<Earth target={target} width={width}/>
-			{info?.state === 'done' && <Result {...{ id, info, width }}/>}
+			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
+			<div className='EarthAndPenumbra'>
+				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
+					<Earth {...{ width, height }}/>
+				</div>
+				{info?.state === 'done' && <ResultPenumbra {...{ id, width }}/>}
+			</div>
 		</>
 	)
 

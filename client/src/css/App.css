@@ -6,6 +6,12 @@
 }
 
 @media (max-width: 1250px) {
+  .App {
+    grid-template-columns: auto;
+  }
+  .RightPanel {
+    grid-column: 1;
+  }
   .Earth {
     min-width: 100%;
     height: 1px;
@@ -36,22 +42,18 @@
   }
   .RightPanel {
     grid-template-columns: max-content minmax(auto, 720px);
-    grid-template-rows: max-content max-content auto;
+    grid-template-rows: max-content auto auto auto;
   }
   .SettingsPanel {
     grid-column: 1;
-  }
+  } 
   .Result {
     grid-column: 1;
-    grid-row: 2 / 4;
+    grid-row: 2 / 3;
   }
-  .Earth {
+  .EarthAndPenumbra {
     grid-column: 2;
-    grid-row: 1 / 3;
-  }
-  .Penumbra {
-    grid-column: 2;
-    grid-row: 3 / 5;
+    grid-row: 1 / 4;
   }
 }
 
@@ -68,7 +70,6 @@
 
 .RightPanel {
   display: grid;
-  grid-column: 2;
   border: 2px var(--color-border) solid;
   border-left-width: 0;
 }

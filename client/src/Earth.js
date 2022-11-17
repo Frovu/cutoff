@@ -13,16 +13,13 @@ function Earth() {
 	);
 }
 
-export default function EarthView({ target, width }) {
-	const height = width * 2 / 3;
+export default function EarthView({ width, height }) {
 	return (
-		<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
-			<div style={{ position: 'absolute', width, height }}>
-				<Canvas>
-					<ambientLight/>
-					<Earth/>
-				</Canvas>
-			</div>
+		<div style={{ position: 'absolute', width, height }}>
+			<Canvas>
+				<ambientLight/>
+				<Earth/>
+			</Canvas>
 		</div>
 	);
 }
