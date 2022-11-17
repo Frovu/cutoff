@@ -3,7 +3,6 @@ import { useMutation, useQuery, QueryClient, QueryClientProvider, useQueryClient
 import './css/App.css';
 import Settings, { findStation, MODEL_NAME } from './Settings.js';
 import Result from './Result.js';
-import Earth from './Earth.js';
 
 const theQueryClient = new QueryClient();
 
@@ -116,18 +115,13 @@ function App() {
 				</div>}
 			</div>
 			<div className='RightPanel'>
-				<div className='TopPanel'>
-					<div>
-						<Settings callback={spawnMutation.mutate} setError={setError} settings={activeInstanceInfo?.settings}/>
-						<div style={{ margin: '1em', color: 'red' }}>
-							{error}
-						</div>
+				<div className='SettingsPanel'>
+					<Settings callback={spawnMutation.mutate} setError={setError} settings={activeInstanceInfo?.settings}/>
+					<div style={{ margin: '1em', color: 'red' }}>
+						{error}
 					</div>
-					<div className='Earth' style={{backgroundColor: 'red'}}/>
 				</div>
-				<div className='BottomPanel'>
-					{activeInstanceInfo?.state === 'done' && <Result id={activeInstance} info={activeInstanceInfo}/>}
-				</div>
+				<Result id={activeInstance} info={activeInstanceInfo}/>
 			</div>
 		</div>
 	);

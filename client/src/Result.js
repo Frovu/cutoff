@@ -1,6 +1,8 @@
 import { useQuery } from 'react-query';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import useResizeObserver from '@react-hook/resize-observer';
 import './css/Result.css';
+import Earth from './Earth.js';
 
 function Penumbra({ data, width, height }) {
 	const [ hovered, setHovered ] = useState();
@@ -100,27 +102,27 @@ function Penumbra({ data, width, height }) {
 		ctx.fillText(leftText, 8, y);
 		ctx.fillText(rightText, canvas.width - ctx.measureText(rightText).width - 8, y);
 
-	}, [data, hovered]);
+	}, [data, hovered, width]);
 	function mouseMove(e) {
 		const rect = e.target.getBoundingClientRect();
 		const x = e.clientX - rect.x;
 		const i = Math.floor(x / (rect.width / data.particles.length));
 		setHovered(i);
 	}
-	return <canvas ref={canvasRef} width={width} height={height} style={{ cursor: 'pointer' }}
+	return <canvas ref={canvasRef} width={width} height={height} style={{ cursor: 'pointer', position: 'absolute', left: '8px' }}
 		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)}/>;
 }
 
-export default function Result({ id, info }) {
+function Result({ id, info, width }) {
 	const query = useQuery(['result', id], () =>
 		fetch(`${process.env.REACT_APP_API}api/instance/${id}/data`, { credentials: 'include' }).then(res => res.json()));
 	const secondsElapsed = (new Date(info.finished) - new Date(info.created)) / 1000;
 	const error = query.error ? query.error.message : query.data?.error;
 	const data = !error && query.data;
-	
+	const penumbraHeight = 128;
 	return (
-		<div className='Result'>
-			<div className='ResultLeft'>
+		<>
+			<div className='Result'>
 				<div>
 					{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
 					{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
@@ -138,7 +140,7 @@ export default function Result({ id, info }) {
 						
 					</div>
 					<div>
-						<textarea className='Cones' spellCheck='false' readOnly='true' value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
+						<textarea className='Cones' spellCheck='false' readOnly={true} value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
 							`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
 					</div>
 					<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>
@@ -146,12 +148,28 @@ export default function Result({ id, info }) {
 					</div>
 				</div>}
 			</div>
-			<div>
+			<div className='Penumbra' style={{ minHeight: penumbraHeight + 4 + 'px', position: 'relative' }}>
 				{data && <Penumbra {...{ data,
-					width: document.body.offsetWidth > 1280 ? 720 : 460,
-					height: document.body.offsetWidth > 1280 ? 160 : 120 
+					width: width - 16,
+					height: penumbraHeight 
 				}}/>}
 			</div>
-		</div>
+		</>
 	);
+}
+
+export default function ResultOrEarth({ id, info }) {
+	const target = useRef(null);
+	const [width, setWidth] = useState();
+	useLayoutEffect(() => {
+		setWidth(target.current.offsetWidth);
+	 }, [target]);
+	useResizeObserver(target, (entry) => setWidth(entry.contentRect.width));
+	return (
+		<>
+			<Earth target={target} width={width}/>
+			{info?.state === 'done' && <Result {...{ id, info, width }}/>}
+		</>
+	)
+
 }

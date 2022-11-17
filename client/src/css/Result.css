@@ -1,7 +1,7 @@
 .Result {
 	padding: 1em;
 	display: flex;
-	justify-content: left;
+	justify-content: space-evenly;
 	gap: 1em;
 }
 
