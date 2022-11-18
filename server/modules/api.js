@@ -34,6 +34,15 @@ router.get('/:id/data', (req, res) => {
 	res.status(200).json(data);
 });
 
+router.get('/:id/:trace', async (req, res) => {
+	if (instance.status(req.id)?.state !== 'done')
+		res.status(400).json({ error: 'Instance didn\'t finish' });
+	const trace = await instance.trace(req.id, req.params.trace);
+	if (!trace)
+		res.status(500).json({ error: 'failed' });
+	res.status(200).json(trace);
+});
+
 router.post('/:id/delete', (req, res) => {
 	instance.remove(req.id);
 	res.sendStatus(200);

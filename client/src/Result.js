@@ -4,7 +4,7 @@ import useResizeObserver from '@react-hook/resize-observer';
 import './css/Result.css';
 import Earth from './Earth.js';
 
-function Penumbra({ data, width, height }) {
+function Penumbra({ data, width, height, callback }) {
 	const [ hovered, setHovered ] = useState();
 	const canvasRef = useRef();
 	useEffect(() => {
@@ -103,14 +103,19 @@ function Penumbra({ data, width, height }) {
 		ctx.fillText(rightText, canvas.width - ctx.measureText(rightText).width - 8, y);
 
 	}, [data, hovered, width]);
-	function mouseMove(e) {
+	function posToIndex(e) {
 		const rect = e.target.getBoundingClientRect();
 		const x = e.clientX - rect.x;
-		const i = Math.floor(x / (rect.width / data.particles.length));
-		setHovered(i);
+		return Math.floor(x / (rect.width / data.particles.length));
+	}
+	function mouseMove(e) {
+		setHovered(posToIndex(e));
+	}
+	function click(e) {
+		callback(data.particles[posToIndex(e)][0]);
 	}
 	return <canvas ref={canvasRef} width={width} height={height} style={{ cursor: 'pointer', position: 'absolute', left: '8px' }}
-		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)}/>;
+		onMouseMove={mouseMove} onMouseOut={()=>setHovered(null)} onClick={click}/>;
 }
 
 function useResultQuery(id) {
@@ -119,7 +124,7 @@ function useResultQuery(id) {
 			.then(res => res.json()));
 }
 
-function ResultPenumbra({ id, width }) {
+function ResultPenumbra({ id, width, callback }) {
 	const query = useResultQuery(id);
 	const height = 128;
 	if (!query?.data) return null;
@@ -128,7 +133,8 @@ function ResultPenumbra({ id, width }) {
 			<Penumbra {...{
 				data: query.data,
 				width: width - 16,
-				height: height 
+				height: height,
+				callback
 			}}/>
 		</div>
 	);	
@@ -171,22 +177,28 @@ function ResultText({ id, info }) {
 
 export default function ResultOrEarth({ id, info }) {
 	const target = useRef(null);
+	const [traces, setTraces] = useState({});
 	const [width, setWidth] = useState(0);
 	const height = width * 3 / 4;
 	useLayoutEffect(() => {
 		setWidth(target.current.offsetWidth);
 	 }, [target]);
 	useResizeObserver(target, (entry) => setWidth(entry.contentRect.width));
+
+	function spawnTrace(rigidity) {
+		const newList = traces[id] ? [...traces[id], rigidity] : [rigidity];
+		setTraces({ ...traces, [id]: newList });
+	}
 	return (
 		<>
 			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
-					<Earth {...{ width, height }}/>
+					<Earth {...{ width, height, id, traces: traces[id] || [] }}/>
 				</div>
-				{info?.state === 'done' && <ResultPenumbra {...{ id, width }}/>}
+				{info?.state === 'done' && <ResultPenumbra {...{ id, width, callback: spawnTrace }}/>}
 			</div>
 		</>
-	)
+	);
 
 }

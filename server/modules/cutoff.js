@@ -21,7 +21,7 @@ const INI_ORDER = ['kp', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'g3',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
 function serializeIni(ini, trace=null, conesRigidities=null) {
-	let [date, time] = new Date(ini.datetime).toISOString().replace(/\..*/, '').split('T');
+	let [date, time] = new Date(ini.datetime * 1e3).toISOString().replace(/\..*/, '').split('T');
 	date = date.split('-').reverse().join('.');
 
 	if (conesRigidities) { // TODO: choose coordinate system (GEO [0], GSE [1] or GSM [2])
@@ -71,7 +71,12 @@ export function runCutoff(id, settings) {
 }
 
 export function runTrace(id, settings, rigidity) {
-	return run(id, 'cutoff', serializeIni(settings, rigidity), 0, true);
+	const traceSettings = {
+		...settings,
+		lower: rigidity, upper: rigidity, step: 1,
+		flightTime: settings.flightTime ?? 20
+	};
+	return run(id, 'cutoff', serializeIni(traceSettings, rigidity), 0, true);
 }
 
 function conesRigiditiesList(cutoffRigidity) {

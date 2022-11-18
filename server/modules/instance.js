@@ -148,7 +148,7 @@ function parseTrace(filename) {
 	return threshold ? optimized : trace;
 }
 
-export function trace(id, rigidity) {
+export async function trace(id, rigidity) {
 	const namePart = parseFloat(rigidity).toFixed(3).replace('.', '');
 	const fileName = `Trace${'00000'.slice(namePart.length)}${namePart}.dat`;
 	const filePath = path.join(DIR, id, fileName);
@@ -156,9 +156,6 @@ export function trace(id, rigidity) {
 	if (fs.existsSync(filePath))
 		return parseTrace(filePath);
 
-	return new Promise((resolve) => {
-		cutoff.runTrace(id, rigidity, ({ isSuccess }) => {
-			resolve(isSuccess ? parseTrace(filePath) : null);
-		});
-	});
+	const { isSuccess } = await cutoff.runTrace(id, instances.get(id).settings, rigidity);
+	return isSuccess ? parseTrace(filePath) : null;
 }
