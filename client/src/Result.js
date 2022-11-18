@@ -194,7 +194,7 @@ export default function ResultOrEarth({ id, info }) {
 			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
-					<Earth {...{ width, height, id, traces: traces[id] || [] }}/>
+					<Earth {...{ width, height, id, info, traces: traces[id] || [] }}/>
 				</div>
 				{info?.state === 'done' && <ResultPenumbra {...{ id, width, callback: spawnTrace }}/>}
 			</div>
