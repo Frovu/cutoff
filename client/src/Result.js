@@ -171,8 +171,8 @@ function ResultText({ id, info }) {
 
 export default function ResultOrEarth({ id, info }) {
 	const target = useRef(null);
-	const [width, setWidth] = useState();
-	const height = width * 2 / 3;
+	const [width, setWidth] = useState(0);
+	const height = width * 3 / 4;
 	useLayoutEffect(() => {
 		setWidth(target.current.offsetWidth);
 	 }, [target]);
