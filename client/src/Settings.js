@@ -158,8 +158,8 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 			{!['10', '00'].includes(settings.model) && <div className='settingsLine' style={{ maxWidth: '32em' }}>
 				{Object.entries(MODEL_SETTINGS)
 					.filter(([key]) => settingsRanges[key]?.for.includes(settings.model))
-					.map(([key, name]) => <div>
-						<div className='input' key={key}>
+					.map(([key, name]) => <div key={key}>
+						<div className='input'>
 							{name}:
 							<input type='text' value={settings[key]}
 								style={{ width: '3.5em', margin: '0 6px 0 2px', ...redIfInvalid(key) }}

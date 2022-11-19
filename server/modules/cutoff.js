@@ -24,6 +24,10 @@ function serializeIni(ini, trace=null, conesRigidities=null) {
 	let [date, time] = new Date(ini.datetime * 1e3).toISOString().replace(/\..*/, '').split('T');
 	date = date.split('-').reverse().join('.');
 
+	// This is a workaround for strange crash in cones
+	if (ini.model === '01' || ini.model === '03')
+		ini.kp = 1;
+
 	if (conesRigidities) { // TODO: choose coordinate system (GEO [0], GSE [1] or GSM [2])
 		return `\n${date}\n${time}\n${INI_ORDER.slice(0, -8).map(i => ini[i] || 0).join('\n')}\n`
 			+ `0\n-180. 180.\n#\n${INI_ORDER.slice(-8, -4).map(i => ini[i]).join(' ')} =\n#\n`

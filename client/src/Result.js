@@ -66,6 +66,7 @@ function Penumbra({ data, width, height, callback, traces }) {
 
 		for (const tick of ['lower', 'upper', 'effective']) {
 			const idx = data.particles.findIndex(p => p[0] === data[tick]);
+			if (idx < 0) continue;
 			ctx.fillStyle = color.bg;
 			ctx.fillRect(idx * particleWidth - 2, canvas.height - bottomHeight, 42, bottomHeight);
 			ctx.fillStyle = particleColor[data.particles[idx][1]];
