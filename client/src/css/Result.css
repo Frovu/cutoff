@@ -49,15 +49,20 @@
 	color: red;
 }
 
-.AxesSwitch {
+.Switches {
+	text-align: right;
 	z-index: 1;
-	cursor: pointer;
 	position: absolute;
 	top: 0;
 	right: 6px;
+
+}
+
+.Switch {
+	cursor: pointer;
 	font-size: 14px;
 }
 
-.AxesSwitch:hover {
+.Switch:hover {
 	color: var(--color-active);
 }

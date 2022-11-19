@@ -26,6 +26,10 @@ function CameraController({ position }) {
 			controls.dispose();
 		};
 	}, [camera, gl]);
+	useEffect(() => {
+		camera.position.set(...position);
+		camera.lookAt(0, 0, 0);
+	}, [camera, position]);
 	return null;
 };
 
@@ -100,9 +104,12 @@ function TraceCard({ id, rigidity, removeTrace, color }) {
 }
 
 export default function EarthView({ width, height, id, info, traces, removeTrace }) {
+	const CAMERA = [.7, 1, -1.6];
+	const [ cameraReset, setCameraReset ] = useState(true);
 	const [ launchSite, setSite ] = useState({ rigidity: 0 });
 	const AXES = ['none', 'gsm', 'rotation'];
 	const [ axes, setAxes ] = useState(0);
+	const [ cameraPosition, setCamera ] = useState(CAMERA);
 	const site = launchSite.location;
 	const noTraces = traces.length < 1;
 	
@@ -131,6 +138,10 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 			rotAxis.applyQuaternion(new THREE.Quaternion().setFromEuler(rotation));
 		}
 	}
+	useEffect(() => {
+		if (!site || !cameraReset) return;
+		setCamera(new THREE.Vector3(...site).multiplyScalar(6).toArray());
+	}, [site, cameraReset]);
 
 	useEffect(() => {
 		setSite({ rigidity: 0 });
@@ -139,19 +150,24 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 		setSite(st => (rigidity > st.rigidity ? { rigidity, location } : st));
 	}, []);
 	return (<>
-		<div className='AxesSwitch' onClick={()=>setAxes((axes + 1) % AXES.length)}>
-			axes={AXES[axes]}
+		<div className='Switches'>
+			<div className='Switch' onClick={()=>setAxes((axes + 1) % AXES.length)}>
+				axes={AXES[axes]}
+			</div>
+			<div className='Switch' onClick={()=>setCameraReset(!cameraReset)}>
+				camera={cameraReset?'reset':'keep'}
+			</div>
 		</div>
 		{traces.map((r, i) => <TraceCard key={r} {...{ id, removeTrace, rigidity: r, color: traceColor(i) }}/>)}
 		<div style={{ position: 'absolute', top: 0, left: 0, width, height, cursor: 'grab' }}>
-			<Canvas>
+			<Canvas camera={{ position: cameraPosition }}>
 				{!noTraces && AXES[axes] === 'gsm' && <primitive object={new THREE.AxesHelper(3)} />}
 				{!noTraces && AXES[axes] === 'rotation' && <line geometry={rotAxis}>
 					<lineBasicMaterial color={'grey'}/>
 				</line>}
-    			<CameraController />
-				<ambientLight intensity={.15}/>
-				<spotLight intensity={0.3} position={[100, 0, 0]} />
+    			<CameraController position={cameraPosition}/>
+				<ambientLight intensity={.12}/>
+				<spotLight intensity={0.5} position={[100, 0, 0]} />
 				<Earth spin={noTraces} rotation={site && rotation}/>
 				{traces.map((r, i) => <Trace key={r} {...{ id, callback, rigidity: r, color: traceColor(i) }}/>)}
 			</Canvas>
