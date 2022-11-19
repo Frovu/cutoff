@@ -5,6 +5,17 @@ import { TextureLoader } from 'three/src/loaders/TextureLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as THREE from 'three';
 
+const TRACE_COLOR = [
+	'white',
+	'orange',
+	'cyan',
+	'hotpink',
+	'#0f0',
+];
+function traceColor(i) {
+	return TRACE_COLOR[i % TRACE_COLOR.length];
+}
+
 const CameraController = () => {
 	const { camera, gl } = useThree();
 	useEffect(() => {
@@ -44,26 +55,26 @@ function useTraceQuery(id, rigidity) {
 			.then(res => res.json()));
 }
 
-function Trace({ id, rigidity, callback }) {
+function Trace({ id, rigidity, callback, color }) {
 	const query = useTraceQuery(id, rigidity);
 	const ref = useRef();
 	useLayoutEffect(() => {
-		if (!query.data) return;
+		if (!query.data || query.data?.error) return;
 		console.log('draw trace', rigidity);
 		ref.current.geometry.setFromPoints(query.data.map(p => new THREE.Vector3(p[1], p[3], p[2])));
 		const p = query.data[0];
 		callback(rigidity, [p[1], p[3], p[2]]);
-	}, [query.data, rigidity, callback]);
-	if (!query.data) return null;
+	}, [query.data, rigidity, callback, color]);
+	if (!query.data || query.data?.error) return null;
 	return (
 		<line ref={ref}>
 			<bufferGeometry/>
-			<lineBasicMaterial color={'hotpink'}/>
+			<lineBasicMaterial color={new THREE.Color(color)}/>
 		</line>
 	);
 }
 
-function TraceCard({ id, rigidity, removeTrace }) {
+function TraceCard({ id, rigidity, removeTrace, color }) {
 	const SPIN = '\\|/-';
 	const interval = useRef();
 	const [ spinner, setSpinner ] = useState(0);
@@ -77,10 +88,10 @@ function TraceCard({ id, rigidity, removeTrace }) {
 		return () => clearInterval(interval.current);
 	}, [query.isLoading]);
 	return (
-		<div className='TraceCard' onClick={()=>removeTrace(id, rigidity)}>
+		<div className='TraceCard' style={{ color }} onClick={()=>removeTrace(id, rigidity)}>
 			{query.isLoading && SPIN[spinner].repeat(3)}
-			{query.isError && <span style={{ color: 'red' }}>Error..</span>}
-			{query.data && <>
+			{(query.isError || query.data?.error) && <span style={{ color: 'red' }}>Error</span>}
+			{(query.data && !query.data.error) && <>
 				t={query.data[query.data.length-1][0].toFixed(1)}<br/>
 				R={rigidity}
 			</>}
@@ -119,7 +130,7 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 		setSite(st => (rigidity > st.rigidity ? { rigidity, location } : st));
 	}, []);
 	return (<>
-		{traces.map(r => <TraceCard key={r} id={id} rigidity={r} removeTrace={removeTrace}/>)}
+		{traces.map((r, i) => <TraceCard key={r} {...{ id, removeTrace, rigidity: r, color: traceColor(i) }}/>)}
 		<div style={{ position: 'absolute', top: 0, left: 0, width, height }}>
 			<Canvas>
 				{!noTraces && <primitive object={new THREE.AxesHelper(3)} />}
@@ -127,7 +138,7 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 				<ambientLight intensity={.15}/>
 				<spotLight intensity={0.3} position={[100, 0, 0]} />
 				<Earth spin={noTraces} rotation={rotation}/>
-				{traces.map(r => <Trace key={r} id={id} rigidity={r} callback={callback}/>)}
+				{traces.map((r, i) => <Trace key={r} {...{ id, callback, rigidity: r, color: traceColor(i) }}/>)}
 			</Canvas>
 		</div>
 	</>);

@@ -195,9 +195,8 @@ export default function ResultOrEarth({ id, info }) {
 			: [rigidity];
 		setTraces({ ...traces, [id]: newList });
 	}
-	const removeTrace = useCallback((id, rigidity) => {
-		console.log(id, rigidity)
-		setTraces(tr => ({ ...tr, [id]: tr[id]?.filter(r => r !== rigidity) }));
+	const removeTrace = useCallback((tid, rigidity) => {
+		setTraces(tr => ({ ...tr, [tid]: tr[tid]?.filter(r => r !== rigidity) }));
 	}, []);
 	return (
 		<>
