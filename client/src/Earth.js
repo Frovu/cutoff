@@ -12,11 +12,11 @@ const TRACE_COLOR = [
 	'hotpink',
 	'#0f0',
 ];
-function traceColor(i) {
+export function traceColor(i) {
 	return TRACE_COLOR[i % TRACE_COLOR.length];
 }
 
-const CameraController = () => {
+function CameraController({ position }) {
 	const { camera, gl } = useThree();
 	useEffect(() => {
 		const controls = new OrbitControls(camera, gl.domElement);
@@ -143,7 +143,7 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 			axes={AXES[axes]}
 		</div>
 		{traces.map((r, i) => <TraceCard key={r} {...{ id, removeTrace, rigidity: r, color: traceColor(i) }}/>)}
-		<div style={{ position: 'absolute', top: 0, left: 0, width, height }}>
+		<div style={{ position: 'absolute', top: 0, left: 0, width, height, cursor: 'grab' }}>
 			<Canvas>
 				{!noTraces && AXES[axes] === 'gsm' && <primitive object={new THREE.AxesHelper(3)} />}
 				{!noTraces && AXES[axes] === 'rotation' && <line geometry={rotAxis}>
@@ -152,7 +152,7 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
     			<CameraController />
 				<ambientLight intensity={.15}/>
 				<spotLight intensity={0.3} position={[100, 0, 0]} />
-				<Earth spin={noTraces} rotation={rotation}/>
+				<Earth spin={noTraces} rotation={site && rotation}/>
 				{traces.map((r, i) => <Trace key={r} {...{ id, callback, rigidity: r, color: traceColor(i) }}/>)}
 			</Canvas>
 		</div>

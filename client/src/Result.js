@@ -2,11 +2,11 @@ import { useQuery } from 'react-query';
 import { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 import useResizeObserver from '@react-hook/resize-observer';
 import './css/Result.css';
-import Earth from './Earth.js';
+import Earth, { traceColor } from './Earth.js';
 
 const MAX_TRACES = 5;
 
-function Penumbra({ data, width, height, callback }) {
+function Penumbra({ data, width, height, callback, traces }) {
 	const [ hovered, setHovered ] = useState();
 	const canvasRef = useRef();
 	useEffect(() => {
@@ -35,20 +35,6 @@ function Penumbra({ data, width, height, callback }) {
 		const timeHeight = canvas.height / 2;
 		const penumbraHeight = canvas.height - timeHeight - bottomHeight;
 		const maxTime = Math.max.apply(Math, data.particles.map(particle => particle[2]));
-
-		for (const tick of ['lower', 'upper', 'effective']) {
-			const idx = data.particles.findIndex(p => p[0] === data[tick]);
-			ctx.fillStyle = color.bg;
-			ctx.fillRect(idx * particleWidth - 2, canvas.height - bottomHeight, 42, bottomHeight);
-			ctx.fillStyle = particleColor[data.particles[idx][1]];
-			ctx.fillRect(idx * particleWidth, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
-			const textX = idx * particleWidth + particleWidth + 4;
-			ctx.fillStyle = color.text;
-			ctx.font = style.font.replace(/\d+px/, '14px');;
-			ctx.fillText('R', textX, canvas.height - 2);
-			ctx.font = style.font.replace(/\d+px/, '11px');;
-			ctx.fillText(tick.slice(0, 3), textX + 10, canvas.height - 2);
-		}
 
 		ctx.font = style.font;
 		ctx.strokeStyle = color.text;
@@ -85,6 +71,28 @@ function Penumbra({ data, width, height, callback }) {
 		}
 		ctx.stroke();
 
+		for (const [i, trace] of traces.entries()) {
+			const idx = data.particles.findIndex(p => p[0] === trace);
+			if (idx >= 0) {
+				ctx.fillStyle = traceColor(i);
+				ctx.fillRect(idx * particleWidth, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
+			}
+		}
+
+		for (const tick of ['lower', 'upper', 'effective']) {
+			const idx = data.particles.findIndex(p => p[0] === data[tick]);
+			ctx.fillStyle = color.bg;
+			ctx.fillRect(idx * particleWidth - 2, canvas.height - bottomHeight, 42, bottomHeight);
+			ctx.fillStyle = particleColor[data.particles[idx][1]];
+			ctx.fillRect(idx * particleWidth, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
+			const textX = idx * particleWidth + particleWidth + 4;
+			ctx.fillStyle = color.text;
+			ctx.font = style.font.replace(/\d+px/, '14px');;
+			ctx.fillText('R', textX, canvas.height - 2);
+			ctx.font = style.font.replace(/\d+px/, '11px');;
+			ctx.fillText(tick.slice(0, 3), textX + 10, canvas.height - 2);
+		}
+
 		ctx.font = style.font;
 		ctx.fillStyle = color.text;
 
@@ -105,7 +113,7 @@ function Penumbra({ data, width, height, callback }) {
 		ctx.fillText(leftText, 8, y);
 		ctx.fillText(rightText, canvas.width - ctx.measureText(rightText).width - 8, y);
 		// console.timeEnd('draw penumbra');
-	}, [data, hovered, width]);
+	}, [data, hovered, width, traces]);
 	function posToIndex(e) {
 		const rect = e.target.getBoundingClientRect();
 		const x = e.clientX - rect.x;
@@ -127,7 +135,7 @@ function useResultQuery(id) {
 			.then(res => res.json()));
 }
 
-function ResultPenumbra({ id, width, callback }) {
+function ResultPenumbra({ id, width, callback, traces }) {
 	const query = useResultQuery(id);
 	const height = 128;
 	if (!query?.data) return null;
@@ -137,7 +145,8 @@ function ResultPenumbra({ id, width, callback }) {
 				data: query.data,
 				width: width - 16,
 				height: height,
-				callback
+				callback,
+				traces
 			}}/>
 		</div>
 	);	
@@ -198,14 +207,15 @@ export default function ResultOrEarth({ id, info }) {
 	const removeTrace = useCallback((tid, rigidity) => {
 		setTraces(tr => ({ ...tr, [tid]: tr[tid]?.filter(r => r !== rigidity) }));
 	}, []);
+	const showTraces = traces[id] || [];
 	return (
 		<>
 			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
-					<Earth {...{ width, height, id, info, removeTrace, traces: traces[id] || [] }}/>
+					<Earth {...{ width, height, id, info, removeTrace, traces: showTraces }}/>
 				</div>
-				{info?.state === 'done' && <ResultPenumbra {...{ id, width, callback: spawnTrace }}/>}
+				{info?.state === 'done' && <ResultPenumbra {...{ id, width, traces: showTraces, callback: spawnTrace }}/>}
 			</div>
 		</>
 	);
