@@ -60,7 +60,6 @@ function Trace({ id, rigidity, callback, color }) {
 	const ref = useRef();
 	useLayoutEffect(() => {
 		if (!query.data || query.data?.error) return;
-		console.log('draw trace', rigidity);
 		ref.current.geometry.setFromPoints(query.data.map(p => new THREE.Vector3(p[1], p[3], p[2])));
 		const p = query.data[0];
 		callback(rigidity, [p[1], p[3], p[2]]);
@@ -102,10 +101,13 @@ function TraceCard({ id, rigidity, removeTrace, color }) {
 
 export default function EarthView({ width, height, id, info, traces, removeTrace }) {
 	const [ launchSite, setSite ] = useState({ rigidity: 0 });
+	const AXES = ['none', 'gsm', 'rotation'];
+	const [ axes, setAxes ] = useState(0);
 	const site = launchSite.location;
 	const noTraces = traces.length < 1;
 	
-	let rotation = new THREE.Euler();
+	const rotation = new THREE.Euler();
+	const rotAxis = new THREE.BufferGeometry();
 	if (site && info) {
 		// legitimately perfectly cursed
 		const siteVec = new THREE.Vector3(...site).normalize();
@@ -115,12 +117,19 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 		const rotated = new THREE.Vector3().setFromSphericalCoords(1, lat, lon).applyEuler(rotate);
 		const quat = new THREE.Quaternion().setFromUnitVectors(siteVec, rotated);
 		const tilt = new THREE.Euler().setFromQuaternion(quat);
-		rotation = new THREE.Euler(
+		rotation.set(
 			-tilt.x,
 			rotate.y + tilt.y,
 			-tilt.z,
 			'XZY'
 		);
+
+		if (AXES[axes] === 'rotation') {
+			const a = new THREE.Vector3(0, 2.5, 0);
+			const b = new THREE.Vector3(0, -2.5, 0);
+			rotAxis.setFromPoints([a, b]);
+			rotAxis.applyQuaternion(new THREE.Quaternion().setFromEuler(rotation));
+		}
 	}
 
 	useEffect(() => {
@@ -130,10 +139,16 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 		setSite(st => (rigidity > st.rigidity ? { rigidity, location } : st));
 	}, []);
 	return (<>
+		<div className='AxesSwitch' onClick={()=>setAxes((axes + 1) % AXES.length)}>
+			axes={AXES[axes]}
+		</div>
 		{traces.map((r, i) => <TraceCard key={r} {...{ id, removeTrace, rigidity: r, color: traceColor(i) }}/>)}
 		<div style={{ position: 'absolute', top: 0, left: 0, width, height }}>
 			<Canvas>
-				{!noTraces && <primitive object={new THREE.AxesHelper(3)} />}
+				{!noTraces && AXES[axes] === 'gsm' && <primitive object={new THREE.AxesHelper(3)} />}
+				{!noTraces && AXES[axes] === 'rotation' && <line geometry={rotAxis}>
+					<lineBasicMaterial color={'grey'}/>
+				</line>}
     			<CameraController />
 				<ambientLight intensity={.15}/>
 				<spotLight intensity={0.3} position={[100, 0, 0]} />

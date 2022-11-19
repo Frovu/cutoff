@@ -48,3 +48,16 @@
 	font-size: 18px;
 	color: red;
 }
+
+.AxesSwitch {
+	z-index: 1;
+	cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 6px;
+	font-size: 14px;
+}
+
+.AxesSwitch:hover {
+	color: var(--color-active);
+}

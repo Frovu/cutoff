@@ -90,7 +90,6 @@ function App() {
 	});
 	useEffect(() => {
 		if (!spawnMutation.data) return;
-		console.log('effect', spawnMutation.data);
 		setActive(spawnMutation.data.id);
 		setError(spawnMutation.data.error);
 	}, [spawnMutation.data]);
