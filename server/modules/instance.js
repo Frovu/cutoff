@@ -56,7 +56,7 @@ async function run(id, settings) {
 
 	const instance = instances.get(id);	
 	if (isFail)
-		return instances.set(id, {...instance, state: 'failed cones'});
+		return instances.set(id, {...instance, finished: new Date(), state: 'failed cones'});
 	if (!instance || !isSuccess)
 		return;
 	return instances.set(id, {...instance, finished: new Date(), state: 'done'});

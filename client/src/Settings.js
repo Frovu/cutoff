@@ -159,7 +159,7 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 				{Object.entries(MODEL_SETTINGS)
 					.filter(([key]) => settingsRanges[key]?.for.includes(settings.model))
 					.map(([key, name]) => <div>
-						<div className='input'>
+						<div className='input' key={key}>
 							{name}:
 							<input type='text' value={settings[key]}
 								style={{ width: '3.5em', margin: '0 6px 0 2px', ...redIfInvalid(key) }}

@@ -210,14 +210,15 @@ export default function ResultOrEarth({ id, info }) {
 		setTraces(tr => ({ ...tr, [tid]: tr[tid]?.filter(r => r !== rigidity) }));
 	}, []);
 	const showTraces = traces[id] || [];
+	const isDone = ['done', 'failed cones'].includes(info?.state);
 	return (
 		<>
-			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
+			{isDone && <ResultText {...{ id, info }}/>}
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
 					<Earth {...{ width, height, id, info, removeTrace, traces: showTraces }}/>
 				</div>
-				{info?.state === 'done' && <ResultPenumbra {...{ id, width, traces: showTraces, callback: spawnTrace }}/>}
+				{isDone && <ResultPenumbra {...{ id, width, traces: showTraces, callback: spawnTrace }}/>}
 			</div>
 		</>
 	);

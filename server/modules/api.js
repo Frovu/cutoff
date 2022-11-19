@@ -35,7 +35,7 @@ router.get('/:id/data', (req, res) => {
 });
 
 router.get('/:id/:trace', async (req, res) => {
-	if (instance.status(req.id)?.state !== 'done')
+	if (instance.status(req.id)?.state === 'processing')
 		return res.status(400).json({ error: 'Instance didn\'t finish' });
 	const trace = await instance.trace(req.id, req.params.trace);
 	if (!trace)
