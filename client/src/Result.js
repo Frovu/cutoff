@@ -1,13 +1,16 @@
 import { useQuery } from 'react-query';
-import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 import useResizeObserver from '@react-hook/resize-observer';
 import './css/Result.css';
 import Earth from './Earth.js';
+
+const MAX_TRACES = 5;
 
 function Penumbra({ data, width, height, callback }) {
 	const [ hovered, setHovered ] = useState();
 	const canvasRef = useRef();
 	useEffect(() => {
+		// console.time('draw penumbra');
 		const canvas = canvasRef.current;
 		const style = window.getComputedStyle(canvas);
 		const color = {
@@ -101,7 +104,7 @@ function Penumbra({ data, width, height, callback }) {
 		const y = timeHeight + textHeight / 2 + penumbraHeight / 2;
 		ctx.fillText(leftText, 8, y);
 		ctx.fillText(rightText, canvas.width - ctx.measureText(rightText).width - 8, y);
-
+		// console.timeEnd('draw penumbra');
 	}, [data, hovered, width]);
 	function posToIndex(e) {
 		const rect = e.target.getBoundingClientRect();
@@ -186,15 +189,22 @@ export default function ResultOrEarth({ id, info }) {
 	useResizeObserver(target, (entry) => setWidth(entry.contentRect.width));
 
 	function spawnTrace(rigidity) {
-		const newList = traces[id] ? [...traces[id], rigidity] : [rigidity];
+		if (traces[id]?.includes(rigidity)) return;
+		const newList = traces[id]
+			? [...(traces[id].length < MAX_TRACES ? traces[id] : traces[id].slice(0, -1)), rigidity]
+			: [rigidity];
 		setTraces({ ...traces, [id]: newList });
 	}
+	const removeTrace = useCallback((id, rigidity) => {
+		console.log(id, rigidity)
+		setTraces(tr => ({ ...tr, [id]: tr[id]?.filter(r => r !== rigidity) }));
+	}, []);
 	return (
 		<>
 			{info?.state === 'done' && <ResultText {...{ id, info }}/>}
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
-					<Earth {...{ width, height, id, info, traces: traces[id] || [] }}/>
+					<Earth {...{ width, height, id, info, removeTrace, traces: traces[id] || [] }}/>
 				</div>
 				{info?.state === 'done' && <ResultPenumbra {...{ id, width, callback: spawnTrace }}/>}
 			</div>

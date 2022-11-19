@@ -63,7 +63,7 @@ function Trace({ id, rigidity, callback }) {
 	);
 }
 
-function TraceCard({ id, rigidity }) {
+function TraceCard({ id, rigidity, removeTrace }) {
 	const SPIN = '\\|/-';
 	const interval = useRef();
 	const [ spinner, setSpinner ] = useState(0);
@@ -77,7 +77,7 @@ function TraceCard({ id, rigidity }) {
 		return () => clearInterval(interval.current);
 	}, [query.isLoading]);
 	return (
-		<div className='TraceCard'>
+		<div className='TraceCard' onClick={()=>removeTrace(id, rigidity)}>
 			{query.isLoading && SPIN[spinner].repeat(3)}
 			{query.isError && <span style={{ color: 'red' }}>Error..</span>}
 			{query.data && <>
@@ -119,7 +119,7 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 		setSite(st => (rigidity > st.rigidity ? { rigidity, location } : st));
 	}, []);
 	return (<>
-		{traces.map(r => <TraceCard key={r} id={id} rigidity={r}/>)}
+		{traces.map(r => <TraceCard key={r} id={id} rigidity={r} removeTrace={removeTrace}/>)}
 		<div style={{ position: 'absolute', top: 0, left: 0, width, height }}>
 			<Canvas>
 				{!noTraces && <primitive object={new THREE.AxesHelper(3)} />}
