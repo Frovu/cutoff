@@ -157,5 +157,5 @@ export async function trace(id, rigidity) {
 		return parseTrace(filePath);
 
 	const { isSuccess } = await cutoff.runTrace(id, instances.get(id).settings, rigidity);
-	return isSuccess ? parseTrace(filePath) : null;
+	return isSuccess ? fs.existsSync(filePath) && parseTrace(filePath) : null;
 }
