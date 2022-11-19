@@ -37,7 +37,7 @@
   }
   .RightPanel {
     grid-column: 2;
-    grid-template-columns: max-content minmax(auto, 720px);
+    grid-template-columns: max-content auto;
     grid-template-rows: max-content auto auto auto;
   }
   .SettingsPanel {

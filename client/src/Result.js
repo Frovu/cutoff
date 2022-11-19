@@ -41,7 +41,7 @@ function Penumbra({ data, width, height, callback, traces }) {
 		ctx.lineWidth = 1;
 		ctx.beginPath();
 		for (let i=0; i < data.particles.length; ++i) {
-			const [rigidity, fate, time] = data.particles[i];
+			const [, fate, time] = data.particles[i];
 			const timeH = timeHeight - timeHeight * (time / maxTime);
 			const x = i * particleWidth;
 			if (i < 1) {
@@ -53,21 +53,6 @@ function Penumbra({ data, width, height, callback, traces }) {
 
 			ctx.fillStyle = particleColor[fate];
 			ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight);
-
-			if (hovered === i) {
-				ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
-				const text = rigidity + ' GV';
-				const textWidth = ctx.measureText(text).width;
-				const textX = (canvas.width - x > textWidth + particleWidth * 3)
-					? x + particleWidth + 4
-					: x - textWidth - 4;
-				ctx.fillStyle = color.bg;
-				ctx.fillRect(textX - 3, canvas.height - bottomHeight, textWidth, bottomHeight);
-				ctx.fillStyle = color.text;
-				ctx.fillRect(x, timeH - particleWidthHalf, 4, 4); // point on time graph
-				ctx.fillText(text, textX, canvas.height);
-
-			}
 		}
 		ctx.stroke();
 
@@ -91,6 +76,23 @@ function Penumbra({ data, width, height, callback, traces }) {
 			ctx.fillText('R', textX, canvas.height - 2);
 			ctx.font = style.font.replace(/\d+px/, '11px');;
 			ctx.fillText(tick.slice(0, 3), textX + 10, canvas.height - 2);
+		}
+
+		ctx.font = style.font;
+		if (hovered != null) {
+			const timeH = timeHeight - timeHeight * (data.particles[hovered][2] / maxTime);
+			const x = hovered * particleWidth;
+			ctx.fillRect(x, timeHeight, particleWidth + 1, penumbraHeight + bottomHeight);
+			const text = data.particles[hovered][0] + ' GV';
+			const textWidth = ctx.measureText(text).width;
+			const textX = (canvas.width - x > textWidth + particleWidth * 3)
+				? x + particleWidth + 4
+				: x - textWidth - 4;
+			ctx.fillStyle = color.bg;
+			ctx.fillRect(textX - 3, canvas.height - bottomHeight, textWidth, bottomHeight);
+			ctx.fillStyle = color.text;
+			ctx.fillRect(x, timeH - particleWidthHalf, 4, 4); // point on time graph
+			ctx.fillText(text, textX, canvas.height);
 		}
 
 		ctx.font = style.font;
