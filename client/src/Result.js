@@ -161,7 +161,7 @@ function ResultText({ id, info }) {
 	const error = query.error ? query.error.message : query.data?.error;
 	const data = !error && query.data;
 	return (
-		<div className='Result'>
+		<div className='ResultText'>
 			<div>
 				{error && <div style={{ coor: 'red' }}>Failed to load the result</div>}
 				{data && <div style={{ textAlign: 'right', width: 'fit-content' }}>
@@ -190,6 +190,74 @@ function ResultText({ id, info }) {
 	);
 }
 
+function ResultCones({ id, info }) {
+	const query = useResultQuery(id);
+	const canvasRef = useRef(null);
+	const target = useRef(null);
+	const [width, setWidth] = useState(0);
+	const height = width * 514 / 900;
+	useLayoutEffect(() => {
+		setWidth(target.current.offsetWidth);
+	 }, [target]);
+	useResizeObserver(target, (entry) => setWidth(entry.contentRect.width));
+	useEffect(() => {
+		const ctx = canvasRef.current.getContext('2d');
+		const image = new Image();
+  		image.src = 'earthOutline.png';
+		image.onload = () => {
+			if (!query.data.cones) return;
+			const style = window.getComputedStyle(canvasRef.current);
+			const color = {
+				red: 'red',
+				bg: style.getPropertyValue('--color-bg'),
+				text: style.getPropertyValue('--color-text'),
+				active: style.getPropertyValue('--color-active'),
+			};
+			ctx.fillStyle = color.bg;
+			ctx.fillRect(0, 0, width, height);
+			ctx.drawImage(image, 0, 0, width, height);
+
+			const coords = (lat, lon) => [
+				(lon + 180) / 360 * width,
+				(90 - lat) / 180 * height,
+			];
+
+			const [sx, sy] = coords(info.settings.lat, info.settings.lon);
+			ctx.strokeStyle = color.red;
+			ctx.lineWidth = 1;
+			const triSize = 12;
+			ctx.beginPath();
+			ctx.moveTo(sx, sy - 1 - triSize / 2);
+			ctx.lineTo(sx + triSize / 2, sy + triSize - triSize / 2);
+			ctx.lineTo(sx - triSize / 2, sy + triSize - triSize / 2);
+			ctx.closePath();
+			ctx.stroke();
+
+			ctx.fillStyle = color.active;
+			ctx.strokeStyle = color.active;
+			ctx.lineWidth = 1;
+			// ctx.beginPath();
+			// ctx.moveTo(sx, sy);
+			for (const [, lat, lon] of query.data.cones.reverse()) {
+				const [x, y] = coords(lat, lon);
+				// ctx.lineTo(x, y);
+				// ctx.moveTo(x, y);
+
+				ctx.beginPath();
+				ctx.arc(x, y, 2, 0, 2 * Math.PI);
+				ctx.fill();
+			}
+			// ctx.stroke();
+		};
+	}, [width, height, query.data, info]);
+
+	return (
+		<div ref={target} className='ResultCones' style={{ position: 'relative', height, margin: '11px', border: '1px solid' }}>
+			<canvas ref={canvasRef} width={width-1} height={height-1} style={{ position: 'absolute' }}/>
+		</div>
+	);
+}
+
 export default function ResultOrEarth({ id, info }) {
 	const target = useRef(null);
 	const [traces, setTraces] = useState({});
@@ -214,7 +282,10 @@ export default function ResultOrEarth({ id, info }) {
 	const isDone = ['done', 'failed cones'].includes(info?.state);
 	return (
 		<>
-			{isDone && <ResultText {...{ id, info }}/>}
+			<div className='Result'>
+				{isDone && <ResultText {...{ id, info }}/>}
+				{isDone && <ResultCones {...{ id, info }}/>}
+			</div>
 			<div className='EarthAndPenumbra'>
 				<div ref={target} className='Earth' style={{ height, position: 'relative' }}>
 					<Earth {...{ width, height, id, info, removeTrace, traces: showTraces }}/>
