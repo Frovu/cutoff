@@ -238,7 +238,7 @@ function ResultCones({ id, info }) {
 			};
 			drawTriangle(sx, sy, 12);
 
-			for (const [rig, lat, lon] of query.data.cones.reverse()) {
+			for (const [rig, lat, lon] of query.data.cones) {
 				const [x, y] = coords(lat, lon);
 				ctx.fillStyle = rig > 10 ? color.hotpink : color.active;
 				ctx.beginPath();

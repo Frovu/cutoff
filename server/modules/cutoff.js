@@ -20,6 +20,37 @@ const FILENAMES = {
 const INI_ORDER = ['kp', 'swdp', 'dst', 'imfBy', 'imfBz', 'g1', 'g2', 'g3',
 	'model', 'alt', 'lat', 'lon', 'vertical', 'azimutal', 'lower', 'upper', 'step', 'flightTime'];
 
+
+function conesRigiditiesList() {
+	let rig = .1, res = [ rig ];
+	const push = (v) => res.push(parseFloat(v.toFixed(2)));
+	for(let i=0; i<39; ++i) // =4
+		push(rig += .1);
+	for(let i=0; i<12; ++i) // =7
+		push(rig += .25);
+	for(let i=0; i<16; ++i) // =15
+		push(rig += .5);
+	for(let i=0; i<9; ++i) // =24
+		push(rig += 1);
+	for(let i=0; i<8; ++i) // =40
+		push(rig += 2);
+	for(let i=0; i<4; ++i) // =50
+		push(rig += 5);
+	for(let i=0; i<5; ++i)
+		push(rig += 10);
+	push(125);
+	push(150);
+	push(175);
+	push(200);
+	push(250);
+	push(300);
+	push(400);
+	push(500);
+	push(999.9);
+	return res;
+}
+const rigiditiesList = conesRigiditiesList();
+
 function serializeIni(ini, trace=null, conesRigidities=null) {
 	let [date, time] = new Date(ini.datetime * 1e3).toISOString().replace(/\..*/, '').split('T');
 	date = date.split('-').reverse().join('.');
@@ -83,28 +114,9 @@ export function runTrace(id, settings, rigidity) {
 	return run(id, 'cutoff', serializeIni(traceSettings, rigidity), 0, true);
 }
 
-function conesRigiditiesList(cutoffRigidity) {
-	let rig = Math.ceil(cutoffRigidity * 10) / 10, res = [ rig ];
-	while (rig < Math.ceil(cutoffRigidity) + 1)
-		res.push(rig += .1);
-	while (rig < 12)
-		res.push(rig += .5);
-	while (rig < 20)
-		res.push(rig += 1.);
-	while (rig < 20)
-		res.push(rig += 1.);
-	while (rig < 75)
-		res.push(rig += 5.);
-	while (rig < 200)
-		res.push(rig += 25);
-	while (rig < 500)
-		res.push(rig += 100);
-	res.push(999.9);
-	return res;
-}
-
 export function runCones(id, settings, rigidity) {
-	const rigidities = conesRigiditiesList(rigidity);
+	const idx = rigiditiesList.findIndex(r => r > rigidity);
+	const rigidities = rigiditiesList.slice(idx);
 	return run(id, 'cones', serializeIni(settings, null, rigidities), 1 / rigidities.length);
 }
 
