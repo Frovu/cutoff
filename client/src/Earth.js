@@ -64,10 +64,29 @@ function Trace({ id, rigidity, callback }) {
 }
 
 function TraceCard({ id, rigidity }) {
+	const SPIN = '\\|/-';
+	const interval = useRef();
+	const [ spinner, setSpinner ] = useState(0);
 	const query = useTraceQuery(id, rigidity);
-	if (query.isLoading) return 'Loading';
-	if (!query.data) return 'Error';
-	return 'Done '+rigidity;
+	useEffect(() => {
+		if (!query.isLoading)
+			return clearInterval(interval.current);
+		interval.current = setInterval(() => {
+			setSpinner(spin => spin >= SPIN.length - 1 ? 0 : spin + 1);
+		}, 100);
+		return () => clearInterval(interval.current);
+	}, [query.isLoading]);
+	return (
+		<div className='TraceCard'>
+			{query.isLoading && SPIN[spinner].repeat(3)}
+			{query.isError && <span style={{ color: 'red' }}>Error..</span>}
+			{query.data && <>
+				t={query.data[query.data.length-1][0].toFixed(1)}<br/>
+				R={rigidity}
+			</>}
+			<span className='Close'>&times;</span>
+		</div>
+	);
 }
 
 export default function EarthView({ width, height, id, info, traces, removeTrace }) {

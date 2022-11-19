@@ -20,3 +20,31 @@
 	flex-wrap: wrap;
 	gap: 2em;
 }
+
+.TraceCard {
+	width: 5em;
+	margin-left: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	z-index: 1;
+	position: relative;
+	padding: 2px;
+}
+
+.TraceCard:hover {
+	color: var(--color-active) !important;
+	background-color: var(--color-text-dark);
+}
+
+.TraceCard:hover > .Close {
+	color: var(--color-active);
+}
+
+.Close {
+	user-select: none;
+	position: absolute;
+	right: 4px;
+	top: -2px;
+	font-size: 18px;
+	color: red;
+}
