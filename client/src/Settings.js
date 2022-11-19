@@ -96,7 +96,6 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 					<select value={settings.mode} onChange={changeProp('mode')}>
 						<option value='simple'>simple</option>
 						<option value='advanced'>advanced</option>
-						<option value='multi'>multi</option>
 					</select>
 				</div>
 				<button style={{ color: 'var(--color-text-dark)', borderColor: 'var(--color-text-dark)', fontSize: '14px' }}
