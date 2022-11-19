@@ -175,7 +175,7 @@ function ResultText({ id, info }) {
 			{data?.cones && <div style={{ display: 'inline-block', textAlign: 'center' }}>
 				<u>Asymptotic directions</u><br/>
 				<div style={{ fontSize: '12px', marginBottom: '.5em' }}>
-					(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lat={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
+					(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lon={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
 					
 				</div>
 				<div>
@@ -205,10 +205,11 @@ function ResultCones({ id, info }) {
 		const image = new Image();
   		image.src = 'earthOutline.png';
 		image.onload = () => {
-			if (!query.data.cones) return;
+			if (!query.data?.cones) return;
 			const style = window.getComputedStyle(canvasRef.current);
 			const color = {
 				red: 'red',
+				hotpink: 'hotpink',
 				bg: style.getPropertyValue('--color-bg'),
 				text: style.getPropertyValue('--color-text'),
 				active: style.getPropertyValue('--color-active'),
@@ -223,37 +224,56 @@ function ResultCones({ id, info }) {
 			];
 
 			const [sx, sy] = coords(info.settings.lat, info.settings.lon);
-			ctx.strokeStyle = color.red;
-			ctx.lineWidth = 1;
-			const triSize = 12;
-			ctx.beginPath();
-			ctx.moveTo(sx, sy - 1 - triSize / 2);
-			ctx.lineTo(sx + triSize / 2, sy + triSize - triSize / 2);
-			ctx.lineTo(sx - triSize / 2, sy + triSize - triSize / 2);
-			ctx.closePath();
-			ctx.stroke();
 
-			ctx.fillStyle = color.active;
-			ctx.strokeStyle = color.active;
-			ctx.lineWidth = 1;
-			// ctx.beginPath();
-			// ctx.moveTo(sx, sy);
-			for (const [, lat, lon] of query.data.cones.reverse()) {
+			const drawTriangle = (x, y, size) => {
+				ctx.strokeStyle = color.red;
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.moveTo(x, y - 1);
+				ctx.lineTo(x + size / 2, y + size);
+				ctx.lineTo(x - size / 2, y + size);
+				ctx.closePath();
+				ctx.stroke();
+
+			};
+			drawTriangle(sx, sy, 12);
+
+			for (const [rig, lat, lon] of query.data.cones.reverse()) {
 				const [x, y] = coords(lat, lon);
-				// ctx.lineTo(x, y);
-				// ctx.moveTo(x, y);
-
+				ctx.fillStyle = rig > 10 ? color.hotpink : color.active;
 				ctx.beginPath();
 				ctx.arc(x, y, 2, 0, 2 * Math.PI);
 				ctx.fill();
 			}
-			// ctx.stroke();
+
+			ctx.font = style.font.replace(/\d+px/, '12px');
+			const locText = info.settings.lat + ', ' + info.settings.lon;
+			const measure = ctx.measureText(locText);
+			const lw = (measure.width > 66 ? measure.width : 66) + 24;
+			const lh = 50;
+			const lx = 8, ly = height - lh - height / 7;
+			ctx.strokeStyle = color.text;
+			ctx.lineWidth = 1;
+			ctx.strokeRect(lx, ly, lw, lh);
+			drawTriangle(lx + 10, ly + 6, 8);
+			ctx.fillStyle = color.active;
+			ctx.beginPath();
+			ctx.arc(lx + 10, ly + 25, 4, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.fillStyle = color.hotpink;
+			ctx.beginPath();
+			ctx.arc(lx + 10, ly + 40, 4, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.fillStyle = color.text;
+			ctx.fillText(locText, lx + 20, ly + 14);
+			ctx.fillText('R <=10 GV', lx + 20, ly + 30);
+			ctx.fillText('R > 10 GV', lx + 20, ly + 45);
 		};
 	}, [width, height, query.data, info]);
 
 	return (
 		<div ref={target} className='ResultCones' style={{ position: 'relative', height, margin: '11px', border: '1px solid' }}>
-			<canvas ref={canvasRef} width={width-1} height={height-1} style={{ position: 'absolute' }}/>
+			<canvas ref={canvasRef} width={width-1} height={height-2} style={{ position: 'absolute' }}/>
 		</div>
 	);
 }
