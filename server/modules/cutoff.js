@@ -74,7 +74,7 @@ export function runTrace(id, settings, rigidity) {
 	const traceSettings = {
 		...settings,
 		lower: rigidity, upper: rigidity, step: 1,
-		flightTime: settings.flightTime ?? 20
+		flightTime: settings.flightTime ?? 60
 	};
 	return run(id, 'cutoff', serializeIni(traceSettings, rigidity), 0, true);
 }

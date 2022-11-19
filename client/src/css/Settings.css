@@ -2,10 +2,10 @@
 	border-right: 2px var(--color-border) solid;
 	border-bottom: 2px var(--color-border) solid;
 	width: fit-content;
-	padding: 1em;
+	padding: .75em;
 	display: flex;
 	flex-direction: column;
-	gap: 1em;
+	gap: 1.25em;
 }
 
 .settingsLine {
@@ -50,7 +50,6 @@ select {
 input:focus-visible, button:focus-visible, select:focus-visible {
 	border: 1px var(--color-active) solid;
 }
-
 
 button:hover, select:hover {
 	border: 1px var(--color-active) solid !important;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import validation from './common/validation.js';
+import settingsRanges from './common/validation.json';
 import stationList from './common/stations.json';
 import './css/Settings.css';
 const { validateParam, validate, filter } = validation;
@@ -13,11 +14,28 @@ export const MODEL_NAME = {
 	'03': 'IGRF+T01_S',
 };
 
+const MODEL_SETTINGS = {
+	swdp: 'SWDP',
+	dst: 'Dst',
+	imfBy: 'IMF By',
+	imfBz: 'IMF Bz',
+	g1: 'G1',
+	g2: 'G2',
+	g3: 'G3',
+	kp: 'Kp'
+};
+
 const DEFAULT = {
 	mode: 'simple',
 	model: '10',
 	datetime: '2022-01-01',
 	swdp: .5,
+	dst: 0,
+	imfBy: 0,
+	imfBz: 0,
+	g1: 2,
+	g2: 7,
+	g3: 10,
 	alt: 20,
 	lat: 55.47,
 	lon: 37.32,
@@ -137,6 +155,21 @@ export default function Settings({ callback, settings: instanceSettings, setErro
 					km
 				</div>
 			</div>
+			{!['10', '00'].includes(settings.model) && <div className='settingsLine' style={{ maxWidth: '32em' }}>
+				{Object.entries(MODEL_SETTINGS)
+					.filter(([key]) => settingsRanges[key]?.for.includes(settings.model))
+					.map(([key, name]) => <div>
+						<div className='input'>
+							{name}:
+							<input type='text' value={settings[key]}
+								style={{ width: '3.5em', margin: '0 6px 0 2px', ...redIfInvalid(key) }}
+								onChange={changeProp(key)}></input>
+							<div className='footer'>
+								{settingsRanges[key].min} to {settingsRanges[key].max}
+							</div>
+						</div>
+					</div>)}
+			</div>}
 			<div className='settingsLine'>
 				<div>
 					Direction:
