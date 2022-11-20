@@ -156,6 +156,7 @@ function ResultPenumbra({ id, width, callback, traces }) {
 }
 
 function ResultText({ id, info }) {
+	const [ json, setJson ] = useState(false);
 	const query = useResultQuery(id);
 	const secondsElapsed = (new Date(info.finished) - new Date(info.created)) / 1000;
 	const error = query.error ? query.error.message : query.data?.error;
@@ -174,16 +175,20 @@ function ResultText({ id, info }) {
 			</div>
 			{data?.cones && <div style={{ display: 'inline-block', textAlign: 'center' }}>
 				<u>Asymptotic directions</u><br/>
-				<div style={{ fontSize: '12px', marginBottom: '.5em' }}>
-					(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lon={data.cones.find(c => c[0] === 10)?.[2]??''}<br/>
-					
+				<div style={{ fontSize: '12px', marginBottom: '4px' }}>
+					(10 GV) lat={data.cones.find(c => c[0] === 10)?.[1]??''} lon={data.cones.find(c => c[0] === 10)?.[2]??''}
 				</div>
 				<div>
-					<textarea className='Cones' spellCheck='false' readOnly={true} value={[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
-						`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
+					<textarea className='Cones' spellCheck='false' readOnly={true} value={
+						json ? JSON.stringify(data.cones, null, 2) :
+							[['R,GV', 'lat', 'lon']].concat(data.cones).map(([r, lat, lon]) =>
+								`${r.toString().padStart(5, ' ')} ${(lat ?? 'N/A').toString().padStart(5, ' ')} ${(lon ?? 'N/A').toString().padStart(6, ' ')}`).join('\n')}/>
 				</div>
 				<div style={{ fontSize: '12px', color: 'var(--color-text-dark)' }}>
 					(use Ctrl+A and Ctrl+C)
+				</div>
+				<div className='Switch' style={{ fontSize: '12px', color: 'var(--color-text-dark)' }} onClick={()=>setJson(!json)}>
+					format={json ? 'json' : 'plaintext'}
 				</div>
 			</div>}
 		</div>
