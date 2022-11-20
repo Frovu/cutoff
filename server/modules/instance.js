@@ -36,10 +36,9 @@ async function run(id, settings) {
 			return false;
 	} else {
 		const steps = [ 
-			[  1,  8],
-			[.05,  4],
-			[.01,  4],
-			[.002, 8],
+			[  1,  5],
+			[ .1,  4],
+			[.002, 5],
 		];
 		let lower = 0, upper = 100;
 		for (const [step, flightTime] of steps) {
@@ -50,8 +49,8 @@ async function run(id, settings) {
 			if (!instance || !done.isSuccess)
 				return false;
 			const result = data(id, false);
-			lower = result.lower - (step >= .1 ? .5 : .3);
-			upper = result.upper + (step >= .1 ? .5 : .3);
+			lower = result.lower - .5;
+			upper = result.upper + .5;
 			if (lower < step) lower = step;
 		}
 	}
