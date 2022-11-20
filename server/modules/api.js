@@ -17,7 +17,7 @@ router.post('/', (req, res) => {
 	if (!settings || !validate.validate(settings))
 		return res.status(400).json({ error: 'Invalid settings' });
 	const id = instance.spawn(settings, req.sessionID);
-	req.session.last = id;
+	req.session.init = 1;
 	res.status(200).json({ id: id });
 });
 

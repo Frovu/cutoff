@@ -8,15 +8,20 @@ import logging from './modules/logging.js';
 global.log = logging;
 import api from './modules/api.js';
 
-
+const FileStore = fileStore(session);
 const app = express();
 
 app.use(session({
-	store: new (fileStore(session)),
+	store: new FileStore({
+		reapInterval: 86400,
+		retries: 1,
+		logFn: logging }),
+	rolling: true,
 	secret: process.env.SECRET,
 	resave: false,
 	saveUninitialized: false,
-	cookie: {expires: new Date(253402300000000)}
+	name: 'cutoffSession',
+	cookie: { maxAge: 86400 * 1000 * 10 } // 10 days
 }));
 
 if (process.env.CORS_CLIENT) {
