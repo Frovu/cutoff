@@ -151,11 +151,11 @@ export default function EarthView({ width, height, id, info, traces, removeTrace
 	}, []);
 	return (<>
 		<div className='Switches'>
-			<div className='Switch' onClick={()=>setAxes((axes + 1) % AXES.length)}>
-				axes={AXES[axes]}
-			</div>
 			<div className='Switch' onClick={()=>setCameraReset(!cameraReset)}>
 				camera={cameraReset?'reset':'keep'}
+			</div>
+			<div className='Switch' onClick={()=>setAxes((axes + 1) % AXES.length)}>
+				axes={AXES[axes]}
 			</div>
 		</div>
 		{traces.map((r, i) => <TraceCard key={r} {...{ id, removeTrace, rigidity: r, color: traceColor(i) }}/>)}
