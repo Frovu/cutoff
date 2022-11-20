@@ -18,6 +18,8 @@ router.post('/', (req, res) => {
 		return res.status(400).json({ error: 'Invalid settings' });
 	const id = instance.spawn(settings, req.sessionID);
 	req.session.init = 1;
+	const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+	global.log(`Instance by (${ip}) ${settings.mode}/${settings.model} ${settings.lat},${settings.lon},${settings.vertical},${settings.azimutal}`);
 	res.status(200).json({ id: id });
 });
 

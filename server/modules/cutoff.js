@@ -77,7 +77,7 @@ function run(id, program, iniContent, progressPerLine=0, trace=false) {
 		const spawned = Date.now();
 		process.on('exit', (code, signal) => {
 			const time = ((Date.now() - spawned) / 1000).toFixed(2);
-			global.log(`Process ${program}${trace?'/trace':''} exited [${code??''},${signal??''}] in ${time} sec`);
+			global.log(`${program}${trace?'/trace':''} exited [${code??''},${signal??''}] in ${time} sec`);
 			if (!trace && code === 0)
 				fs.renameSync(path.join(DIR, id, FILENAMES[program].dat), path.join(DIR, id, program + '.result'));
 			resolve({
