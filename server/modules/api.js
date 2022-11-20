@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as instanceStorage from './database.js';
 import * as instance from './instance.js';
-import validate from '../../client/src/common/validation.js';
+import * as validate from './validation.js';
 
 const router = Router();
 

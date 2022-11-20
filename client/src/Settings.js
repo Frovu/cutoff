@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import validation from './common/validation.js';
+import { validateParam, validate, filter } from './validation.js';
 import settingsRanges from './common/validation.json';
 import stationList from './common/stations.json';
 import './css/Settings.css';
-const { validateParam, validate, filter } = validation;
 
 export const MODEL_NAME = {
 	'00': 'Dipole',

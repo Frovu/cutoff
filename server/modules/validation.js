@@ -1,6 +1,9 @@
-const settings = require('./validation.json');
+import { readFileSync } from 'fs';
+import { URL } from 'url';
+const path = new URL('../../client/src/common/validation.json', import.meta.url);
+const settings = JSON.parse(readFileSync(path));
 
-function validateParam(key, value) {
+export function validateParam(key, value) {
 	const req = settings[key];
 	if (req.range && !req.range.includes(value)) // not in options range
 		return false;
@@ -11,7 +14,7 @@ function validateParam(key, value) {
 	return true;
 }
 
-function isRequired(mode, model, key) {
+export function isRequired(mode, model, key) {
 	if (mode === 'simple' && ['lower', 'upper', 'step', 'flightTime'].includes(key))
 		return false;
 	const req = settings[key]?.for;
@@ -20,7 +23,7 @@ function isRequired(mode, model, key) {
 	return true;
 }
 
-function validate(ini) {
+export function validate(ini) {
 	const model = ini.model;
 	if (!model || !validateParam('model', model))
 		return false;
@@ -35,12 +38,6 @@ function validate(ini) {
 	return true;
 }
 
-function filter(ini) {
-	return Object.fromEntries(Object.entries(ini).filter(([key, val]) => isRequired(ini.mode, ini.model, key)));
+export function filter(ini) {
+	return Object.fromEntries(Object.entries(ini).filter(([key]) => isRequired(ini.mode, ini.model, key)));
 }
-
-module.exports = {
-	filter,
-	validate,
-	validateParam
-};
