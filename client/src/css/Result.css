@@ -1,0 +1,69 @@
+.ResultText {
+	padding: 1em;
+	display: flex;
+	justify-content: space-evenly;
+	gap: 1em;
+}
+
+.Cones {
+	outline: none;
+	background-color: inherit;
+	color: inherit;
+	border: 1px var(--color-border) solid;
+	overflow-y: scroll;
+	resize: none;
+	min-height: 4.2em;
+}
+
+.ResultLeft {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 2em;
+}
+
+.TraceCard {
+	width: 5em;
+	margin-left: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	z-index: 1;
+	position: relative;
+	padding: 2px;
+}
+
+.TraceCard:hover {
+	color: var(--color-active) !important;
+	background-color: var(--color-text-dark);
+}
+
+.TraceCard:hover > .Close {
+	color: var(--color-active);
+}
+
+.Close {
+	user-select: none;
+	position: absolute;
+	right: 4px;
+	top: -2px;
+	font-size: 18px;
+	color: red;
+}
+
+.Switches {
+	text-align: right;
+	z-index: 1;
+	position: absolute;
+	top: 0;
+	right: 6px;
+
+}
+
+.Switch {
+	user-select: none;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.Switch:hover {
+	color: var(--color-active) !important;
+}

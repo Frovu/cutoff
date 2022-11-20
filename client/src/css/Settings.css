@@ -1,0 +1,56 @@
+.Settings {
+	border-right: 2px var(--color-border) solid;
+	border-bottom: 2px var(--color-border) solid;
+	width: fit-content;
+	padding: .75em;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25em;
+}
+
+.settingsLine {
+	position: relative;
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 1em 1em;
+}
+
+.input {
+	display: inline-block;
+	position: relative;
+}
+
+.footer {
+	text-align: center;
+	width: 100%;
+	position: absolute;
+	bottom: -1.3em;
+	font-size: 12px;
+	color: var(--color-text-dark);
+}
+
+input, button, select {
+	text-align: center;
+	border: 1px var(--color-border) solid;
+	border-radius: 4px;
+	background-color: inherit;
+	font-family: inherit;
+	font-size: inherit;
+	color: inherit;
+	outline: none;
+}
+button {
+	cursor: pointer;
+	border-style: outset;
+}
+select {
+	cursor: pointer;
+}
+
+input:focus-visible, button:focus-visible, select:focus-visible {
+	border: 1px var(--color-active) solid;
+}
+
+button:hover, select:hover {
+	border: 1px var(--color-active) solid !important;
+}
