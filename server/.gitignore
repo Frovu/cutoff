@@ -2,4 +2,5 @@ logs
 sessions
 instances
 instances.json
+/node_modules
 .env
