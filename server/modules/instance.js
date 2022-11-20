@@ -1,21 +1,30 @@
-import { v4 as uuid} from 'uuid';
+import { v4 as uuid } from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as instances from './database.js';
 import * as cutoff from './cutoff.js';
 
 const DIR = 'instances';
+const SESSIONS = 'sessions';
 
-function clearDeadInstances() {
+function doCleanup() {
 	if (!fs.existsSync(DIR))
 		return fs.mkdirSync(DIR);
-	fs.readdir(DIR, (err, files) => {
-		files.filter(file => !instances.get(file)).forEach(file => {
-			fs.rmSync(path.join(DIR, file), {recursive: true});
-		});
-	});
+	try {
+		const sessions = fs.readdirSync(SESSIONS).map(fn => fn.slice(0, -5));
+		const expired = instances.entries().filter(([,info]) => !sessions.includes(info.owner));
+		expired.forEach(([id]) => instances.remove(id));
+		const instanceDirs = fs.readdirSync(DIR);
+		const lost = instanceDirs.filter(file => !instances.get(file));
+		lost.forEach(file => fs.rmSync(path.join(DIR, file), { recursive: true }));
+		global.log(`Cleanup removed ${expired.length} / ${lost.length} instances`);
+		global.log(`Kept alive ${instances.entries().length} instances of ${sessions.length} sessions`);
+	} catch (e) {
+		global.log('Failed cleanup ' + e.stack);
+	}
 }
-clearDeadInstances();
+setTimeout(doCleanup, 3000);
+setInterval(doCleanup, 86400 * 1000);
 
 async function run(id, settings) {
 	if (settings.mode === 'advanced') {
