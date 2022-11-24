@@ -3,6 +3,7 @@ import { useMutation, useQuery, QueryClient, QueryClientProvider, useQueryClient
 import './css/App.css';
 import Settings, { findStation, MODEL_NAME } from './Settings.js';
 import Result from './Result.js';
+import Help from './Help.js';
 
 const theQueryClient = new QueryClient();
 
@@ -105,7 +106,8 @@ function App() {
 			<div className='LeftPanel'>
 				<div className='Menu'>
 					<b>Cutoff2050</b><br/>
-					Geomagentic Calculator
+					Geomagentic Calculator<br/>
+					<a href='info' target='_blank' className='HelpLink'>manual & references</a>
 				</div>
 				{ listQuery.error && <div style={{ color: 'red', padding: '8px', borderBottom: '2px var(--color-border) solid' }}>{listQuery.error?.message}</div> }
 				{ listQuery.data && <div style={{ overflowY: 'scroll' }}>
@@ -127,5 +129,7 @@ function App() {
 }
 
 export default function AppWrapper() {
+	if (window.location.pathname === '/info')
+		return <div className='Help'><Help/></div>;
 	return <QueryClientProvider client={theQueryClient}><App/></QueryClientProvider>;
 }

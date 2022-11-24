@@ -85,6 +85,15 @@
   border-bottom-width: 4px;
 }
 
+.HelpLink {
+  font-size: 14px;
+}
+
+.Help {
+  display: flex;
+  justify-content: center;
+}
+
 .InstanceCard {
   cursor: pointer;
   position: relative;

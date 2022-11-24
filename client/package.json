@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "homepage": "cutoff",
+  "homepage": ".",
   "dependencies": {
     "@react-hook/resize-observer": "^1.2.6",
     "@react-three/fiber": "^8.9.1",
