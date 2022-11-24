@@ -7,7 +7,7 @@ export default function Help() {
 			maxWidth: '48em',
 			textAlign: 'justify'
 		}}>
-			<a href='../'>Back to the program</a>
+			<a href='./'>Back to the program</a>
 			<h2>Cutoff2050 Geomagentic Rigidity Calculator</h2>
 			<p>
 				This tool allows one to calculate geomagnetic cutoff rigidity and asymptotic directions for any location around the Earth.

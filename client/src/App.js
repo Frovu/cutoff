@@ -129,7 +129,7 @@ function App() {
 }
 
 export default function AppWrapper() {
-	if (window.location.pathname === '/info')
+	if (window.location.pathname.endsWith('info'))
 		return <div className='Help'><Help/></div>;
 	return <QueryClientProvider client={theQueryClient}><App/></QueryClientProvider>;
 }
